@@ -6,6 +6,8 @@
  * приятнее — это прогрессивное улучшение, а не условие работоспособности.
  */
 
+import { analytics } from '../config/site';
+
 const OPERATOR_CODES = ['25', '29', '33', '44'];
 const MIN_FILL_MS = 3000;
 
@@ -56,17 +58,24 @@ function status(form: HTMLFormElement, text: string, state: '' | 'ok' | 'error' 
   box.dataset.state = state;
 }
 
-/** Цель в счётчиках: вызывается на успешной отправке и на клике по телефону. */
+/**
+ * Цель в счётчиках: вызывается на успешной отправке и на клике по телефону.
+ *
+ * Номер счётчика берём из конфига — того же, из которого его подставляет
+ * Base.astro. Вытаскивать его из внутренностей window.Ya._metrika нельзя:
+ * счётчики лежат там под ключами вида counter102469598, и Number() от такого
+ * ключа даёт NaN, то есть цель уходит в никуда.
+ */
 function reachGoal(goal: string) {
   const w = window as unknown as {
     ym?: (id: number, action: string, target: string) => void;
     gtag?: (...args: unknown[]) => void;
   };
   try {
-    const counters = (window as unknown as { Ya?: { _metrika?: { counters?: unknown } } }).Ya;
-    if (w.ym && counters) {
-      const ids = Object.keys((counters._metrika as Record<string, unknown>) ?? {});
-      for (const id of ids) w.ym(Number(id), 'reachGoal', goal);
+    // Заглушка ym появляется сразу и копит вызовы до загрузки tag.js,
+    // так что цель не потеряется, даже если кликнули в первую секунду.
+    if (analytics.yandexMetrika) {
+      w.ym?.(Number(analytics.yandexMetrika), 'reachGoal', goal);
     }
     w.gtag?.('event', goal);
   } catch {

@@ -161,35 +161,67 @@ const allSchemas = [business, website, ...schemas];
       }
     </script>
 
-    {
-      (analytics.yandexMetrika || analytics.ga4) && (
-        <script
-          is:inline
-          define:vars={{ ym: analytics.yandexMetrika, ga: analytics.ga4 }}
-          set:html={`
-        // Счётчики подключаются только когда браузер освободился,
-        // поэтому они не участвуют в измерении LCP и INP.
-        var boot = function () {
-          if (ym) {
-            (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-            m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-            (window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');
-            ym(Number(ym), 'init', { webvisor: true, clickmap: true, accurateTrackBounce: true, trackLinks: true });
-          }
-          if (ga) {
-            var s = document.createElement('script');
-            s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + ga;
-            document.head.appendChild(s);
-            window.dataLayer = window.dataLayer || [];
-            window.gtag = function () { window.dataLayer.push(arguments); };
-            window.gtag('js', new Date()); window.gtag('config', ga);
-          }
-        };
+    {/*
+      Счётчики подключаются только когда браузер освободился, поэтому они
+      не участвуют в измерении LCP и INP. Пустой ID в конфиге ничего
+      не подключает — проверка стоит внутри скрипта.
+
+      Три вещи, которые тут легко сломать обратно:
+
+      1. Код записан детьми тега, а не через set:html. Рядом с define:vars
+         атрибут set:html не работает: Astro отдаёт в сборку только объявления
+         переменных, а тело молча теряется — счётчика на странице не окажется.
+      2. Тег не обёрнут в выражение {cond && (...)}. Внутри выражения
+         содержимое разбирается как JSX, и каждую фигурную скобку JS пришлось
+         бы экранировать. Снаружи это обычный текст.
+      3. Переменные названы ymId и gaId, а счётчики вызываются через window.
+         define:vars объявляет их как const в области видимости скрипта,
+         и переменная с именем ym затенила бы глобальную функцию загрузчика
+         Метрики — вызов ym(...) попал бы в строку с номером и упал
+         с TypeError.
+    */}
+    <script is:inline define:vars={{ ymId: analytics.yandexMetrika, gaId: analytics.ga4 }}>
+      var boot = function () {
+        if (ymId) {
+          (function (m, e, t, r, i, k, a) {
+            m[i] =
+              m[i] ||
+              function () {
+                (m[i].a = m[i].a || []).push(arguments);
+              };
+            m[i].l = 1 * new Date();
+            (k = e.createElement(t)), (a = e.getElementsByTagName(t)[0]);
+            k.async = 1;
+            k.src = r;
+            a.parentNode.insertBefore(k, a);
+          })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
+
+          window.ym(Number(ymId), 'init', {
+            webvisor: true,
+            clickmap: true,
+            accurateTrackBounce: true,
+            trackLinks: true,
+          });
+        }
+
+        if (gaId) {
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
+          document.head.appendChild(s);
+          window.dataLayer = window.dataLayer || [];
+          window.gtag = function () {
+            window.dataLayer.push(arguments);
+          };
+          window.gtag('js', new Date());
+          window.gtag('config', gaId);
+        }
+      };
+
+      if (ymId || gaId) {
         if ('requestIdleCallback' in window) requestIdleCallback(boot, { timeout: 4000 });
         else addEventListener('load', function () { setTimeout(boot, 1200); });
-      `}
-        />
-      )
-    }
+      }
+    </script>
   </body>
 </html>

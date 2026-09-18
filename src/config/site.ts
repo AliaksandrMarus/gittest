@@ -73,7 +73,7 @@ export const FORM_ACCESS_KEY = '';
 
 /** Пустая строка = счётчик не подключается вовсе. */
 export const analytics = {
-  yandexMetrika: '', // TODO: номер счётчика Яндекс.Метрики
+  yandexMetrika: '102469598',
   ga4: '', // TODO: идентификатор потока GA4
 } as const;
 

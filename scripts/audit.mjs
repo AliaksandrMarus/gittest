@@ -108,6 +108,14 @@ const errors = [];
 p.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 p.on('pageerror', (e) => errors.push(e.message));
 
+// Домен Метрики закрыт сетевой политикой среды разработки, и его недоступность
+// даёт ложную ошибку в консоли. Отвечаем пустышкой: заглушка ym к этому моменту
+// уже создана, так что проверяется код сайта, а не доступность Яндекса.
+// Саму инициализацию счётчика проверяет scripts/check-metrika.mjs.
+await p.route('**/mc.yandex.ru/**', (route) =>
+  route.fulfill({ status: 200, contentType: 'application/javascript', body: '' }),
+);
+
 await p.goto(BASE + '/', { waitUntil: 'networkidle' });
 
 // Маска телефона должна привести любой ввод к единому формату.
