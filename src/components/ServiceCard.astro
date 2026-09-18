@@ -1,0 +1,33 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import { priceParts } from '../lib/format';
+
+export interface Props {
+  entry: CollectionEntry<'services'>;
+}
+
+const { entry } = Astro.props;
+const s = entry.data;
+const price = priceParts(s);
+---
+
+<article class="card">
+  <div class="card__icon">
+    <Icon name={s.icon} size={24} />
+  </div>
+
+  <h3>{s.short}</h3>
+  <p class="card__text">{s.lead}</p>
+
+  <div class="card__foot">
+    <span class="card__price">
+      {price.value}
+      {price.note && <small> · {price.note}</small>}
+    </span>
+    <a class="card__link" href={`/uslugi/${entry.id}/`}>
+      Подробнее
+      <Icon name="arrow" size={16} />
+    </a>
+  </div>
+</article>

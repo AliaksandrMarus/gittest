@@ -1,0 +1,195 @@
+---
+import { site, contacts, analytics } from '../config/site';
+import { openingHoursSchema } from '../lib/schedule';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import LightRays from '../components/LightRays.astro';
+import QuickCall from '../components/QuickCall.astro';
+import CallbackModal from '../components/CallbackModal.astro';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/components.css';
+
+export interface Props {
+  title: string;
+  description: string;
+  /** Абсолютный путь страницы, обязательно со слешем на конце. */
+  path: string;
+  /** Дополнительные блоки JSON-LD конкретной страницы. */
+  schemas?: unknown[];
+  noindex?: boolean;
+  ogImage?: string;
+}
+
+const { title, description, path, schemas = [], noindex = false, ogImage } = Astro.props;
+
+const canonical = new URL(path, site.url).href;
+const image = new URL(ogImage ?? '/og-default.png', site.url).href;
+
+/**
+ * Организация. Один и тот же объект на всех страницах — Яндекс и Google
+ * склеивают его с карточкой на Картах через sameAs.
+ */
+const business = {
+  '@context': 'https://schema.org',
+  '@type': ['AutoWash', 'LocalBusiness'],
+  '@id': `${site.url}/#organization`,
+  name: site.name,
+  legalName: site.legalName,
+  description: `${site.tagline}. ${site.slogan}`,
+  url: site.url,
+  telephone: contacts.phoneRaw,
+  email: contacts.email,
+  image,
+  priceRange: '15–800 BYN',
+  currenciesAccepted: 'BYN',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: contacts.address.street,
+    addressLocality: contacts.address.city,
+    addressRegion: contacts.address.region,
+    postalCode: contacts.address.postalCode,
+    addressCountry: contacts.address.country,
+  },
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: contacts.geo.lat,
+    longitude: contacts.geo.lon,
+  },
+  hasMap: contacts.yandexMaps,
+  openingHoursSpecification: openingHoursSchema(),
+  areaServed: { '@type': 'City', name: 'Бобруйск' },
+  sameAs: [contacts.yandexMaps, contacts.telegram, contacts.viber],
+};
+
+const website = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${site.url}/#website`,
+  url: site.url,
+  name: site.name,
+  inLanguage: 'ru-BY',
+  publisher: { '@id': `${site.url}/#organization` },
+};
+
+const allSchemas = [business, website, ...schemas];
+---
+
+<!doctype html>
+<html lang="ru-BY">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta name="robots" content="max-image-preview:large" />
+    <meta name="theme-color" content="#0a0c10" />
+    <meta name="geo.region" content="BY-MA" />
+    <meta name="geo.placename" content="Бобруйск" />
+    <meta name="geo.position" content={`${contacts.geo.lat};${contacts.geo.lon}`} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content="ru_BY" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    {/* Кириллица нужна на первом экране — грузим её раньше остального */}
+    <link
+      rel="preload"
+      href="/fonts/manrope-cyrillic-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(allSchemas)}
+    />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Перейти к содержимому</a>
+    <LightRays />
+    <Header currentPath={path} />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer />
+    <QuickCall />
+    <CallbackModal />
+
+    <script>
+      import '../scripts/forms';
+    </script>
+
+    <script>
+      // Плавное появление секций. Без JS класс .is-visible не нужен —
+      // .reveal остаётся видимым, поэтому контент доступен всегда.
+      const items = document.querySelectorAll('.reveal');
+      if (items.length && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) {
+                e.target.classList.add('is-visible');
+                io.unobserve(e.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -12% 0px' },
+        );
+        items.forEach((el) => io.observe(el));
+      } else {
+        items.forEach((el) => el.classList.add('is-visible'));
+      }
+    </script>
+
+    {
+      (analytics.yandexMetrika || analytics.ga4) && (
+        <script
+          is:inline
+          define:vars={{ ym: analytics.yandexMetrika, ga: analytics.ga4 }}
+          set:html={`
+        // Счётчики подключаются только когда браузер освободился,
+        // поэтому они не участвуют в измерении LCP и INP.
+        var boot = function () {
+          if (ym) {
+            (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+            (window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');
+            ym(Number(ym), 'init', { webvisor: true, clickmap: true, accurateTrackBounce: true, trackLinks: true });
+          }
+          if (ga) {
+            var s = document.createElement('script');
+            s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + ga;
+            document.head.appendChild(s);
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function () { window.dataLayer.push(arguments); };
+            window.gtag('js', new Date()); window.gtag('config', ga);
+          }
+        };
+        if ('requestIdleCallback' in window) requestIdleCallback(boot, { timeout: 4000 });
+        else addEventListener('load', function () { setTimeout(boot, 1200); });
+      `}
+        />
+      )
+    }
+  </body>
+</html>

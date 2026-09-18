@@ -1,0 +1,48 @@
+---
+import { getCollection } from 'astro:content';
+import { priceParts } from '../lib/format';
+
+/**
+ * Сводный прайс. Источник данных — frontmatter услуг, тот же, что у карточек
+ * и у JSON-LD. Правка цены в одном markdown-файле меняет её везде.
+ */
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<div class="price-scroll">
+  <table class="price-table">
+    <caption>
+      Цены в белорусских рублях. Актуальны на момент публикации и не являются
+      публичной офертой — итоговую стоимость подтверждаем при осмотре автомобиля.
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Услуга</th>
+        <th scope="col">Время</th>
+        <th scope="col" style="text-align:right">Цена</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        services.map((s) => {
+          const price = priceParts(s.data);
+          return (
+            <tr>
+              <td>
+                <a href={`/uslugi/${s.id}/`}>{s.data.short}</a>
+                <small>{s.data.lead.split('.')[0]}.</small>
+              </td>
+              <td class="text-dim" style="white-space:nowrap">
+                {s.data.duration}
+              </td>
+              <td class="price-cell">
+                {price.value}
+                {price.note && <small style="font-weight:600">{price.note}</small>}
+              </td>
+            </tr>
+          );
+        })
+      }
+    </tbody>
+  </table>
+</div>

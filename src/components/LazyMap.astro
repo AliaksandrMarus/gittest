@@ -1,0 +1,45 @@
+---
+import { contacts } from '../config/site';
+import Icon from './Icon.astro';
+
+/**
+ * Карта Яндекса грузится только по клику.
+ *
+ * Виджет карт тянет около мегабайта скриптов и сторонние куки. Встроить его
+ * сразу — значит обрушить Lighthouse и подписать посетителя на трекинг ещё
+ * до того, как он решил смотреть карту. Поэтому до клика стоит статичная
+ * карточка с адресом, а iframe появляется по запросу.
+ */
+const { lat, lon } = contacts.geo;
+const src = `https://yandex.by/map-widget/v1/?ll=${lon}%2C${lat}&z=17&mode=search&text=${encodeURIComponent(contacts.address.full)}`;
+---
+
+<div class="map-box" data-map data-src={src}>
+  <div class="stack" style="--flow:1rem">
+    <Icon name="pin" size={40} class="text-beam" />
+    <p style="font-size:var(--fs-lg);font-weight:700">{contacts.address.full}</p>
+    <p class="text-dim" style="font-size:var(--fs-sm);max-width:34ch;margin-inline:auto">
+      Карта загрузится по нажатию — так страница открывается быстрее,
+      а сторонние скрипты не работают без вашего согласия.
+    </p>
+    <p style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center">
+      <button class="btn btn--beam" type="button" data-map-load>Показать карту</button>
+      <a class="btn btn--ghost" href={contacts.yandexMaps} target="_blank" rel="noopener nofollow">
+        Открыть в Яндексе
+      </a>
+    </p>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-map]').forEach((box) => {
+    box.querySelector('[data-map-load]')?.addEventListener('click', () => {
+      const frame = document.createElement('iframe');
+      frame.src = box.dataset.src ?? '';
+      frame.loading = 'lazy';
+      frame.title = 'Карта проезда к автомойке «Лайт Он» в Бобруйске';
+      frame.allowFullscreen = true;
+      box.replaceChildren(frame);
+    });
+  });
+</script>

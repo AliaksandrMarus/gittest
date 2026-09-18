@@ -1,0 +1,104 @@
+---
+/**
+ * Фон: лучи прожектора в моечном боксе.
+ *
+ * Слой 1 — чистый CSS, анимируются только rotate и opacity, так что вся
+ * работа уходит на композитор и главный поток не трогается вовсе.
+ * Слой 2 — пылинки в луче на canvas. Включается только на достаточно
+ * мощных широких экранах и замирает, когда вкладка неактивна.
+ */
+---
+
+<div class="rays" aria-hidden="true">
+  <div class="rays__beam"></div>
+  <div class="rays__beam rays__beam--b"></div>
+  <div class="rays__beam rays__beam--c"></div>
+  <canvas class="rays__canvas" data-rays></canvas>
+  <div class="rays__grain"></div>
+</div>
+
+<script>
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-rays]');
+
+  const allowed =
+    canvas &&
+    !matchMedia('(prefers-reduced-motion: reduce)').matches &&
+    innerWidth >= 768 &&
+    (navigator.hardwareConcurrency ?? 2) >= 4;
+
+  if (allowed) {
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (ctx) {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      let w = 0;
+      let h = 0;
+      let raf = 0;
+      let last = 0;
+      let running = true;
+
+      type Mote = { x: number; y: number; r: number; vx: number; vy: number; a: number };
+      let motes: Mote[] = [];
+
+      function resize() {
+        w = innerWidth;
+        h = innerHeight;
+        canvas!.width = Math.round(w * dpr);
+        canvas!.height = Math.round(h * dpr);
+        ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        // Плотность привязана к площади, чтобы на широких экранах
+        // пылинки не разлетались в редкую сетку.
+        const count = Math.min(90, Math.round((w * h) / 26000));
+        motes = Array.from({ length: count }, () => ({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 1.6 + 0.4,
+          vx: (Math.random() - 0.5) * 0.12,
+          vy: -(Math.random() * 0.18 + 0.05),
+          a: Math.random() * 0.45 + 0.12,
+        }));
+      }
+
+      function frame(t: number) {
+        raf = requestAnimationFrame(frame);
+        if (!running) return;
+        // 30 кадров в секунду достаточно для медленной пыли и вдвое дешевле.
+        if (t - last < 33) return;
+        last = t;
+
+        ctx!.clearRect(0, 0, w, h);
+        for (const m of motes) {
+          m.x += m.vx;
+          m.y += m.vy;
+          if (m.y < -5) {
+            m.y = h + 5;
+            m.x = Math.random() * w;
+          }
+          if (m.x < -5) m.x = w + 5;
+          else if (m.x > w + 5) m.x = -5;
+
+          // Пыль видна только в конусе света — к краям гаснет.
+          const centerBias = 1 - Math.min(1, Math.abs(m.x - w / 2) / (w * 0.55));
+          const alpha = m.a * centerBias;
+          if (alpha <= 0.01) continue;
+
+          ctx!.beginPath();
+          ctx!.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+          ctx!.fillStyle = `rgba(158, 233, 255, ${alpha})`;
+          ctx!.fill();
+        }
+      }
+
+      resize();
+      addEventListener('resize', resize, { passive: true });
+      document.addEventListener('visibilitychange', () => {
+        running = !document.hidden;
+      });
+
+      canvas.classList.add('is-on');
+      raf = requestAnimationFrame(frame);
+
+      addEventListener('pagehide', () => cancelAnimationFrame(raf));
+    }
+  }
+</script>

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+*.log
+
+# Секреты обработчика форм и накопленные заявки
+public/api/config.local.php
+public/api/leads.log
+.audit/

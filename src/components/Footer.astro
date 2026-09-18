@@ -1,0 +1,97 @@
+---
+import { getCollection } from 'astro:content';
+import { site, contacts, scheduleHuman, nav } from '../config/site';
+import Icon from './Icon.astro';
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <div>
+        <a class="logo" href="/">
+          <span class="logo__mark" aria-hidden="true">ON</span>
+          <span>
+            {site.name}
+            <span class="logo__sub">Автомойка · Детейлинг</span>
+          </span>
+        </a>
+
+        <address class="stack" style="--flow:.75rem;margin-top:1.5rem;font-style:normal">
+          <div style="display:flex;gap:.6rem;color:var(--c-text-dim);font-size:var(--fs-sm)">
+            <Icon name="pin" size={18} class="text-beam" />
+            <span>{contacts.address.full}</span>
+          </div>
+          <div style="display:flex;gap:.6rem;color:var(--c-text-dim);font-size:var(--fs-sm)">
+            <Icon name="clock" size={18} class="text-beam" />
+            <span>{scheduleHuman}</span>
+          </div>
+          <div style="display:flex;gap:.6rem">
+            <Icon name="phone" size={18} class="text-beam" />
+            <a href={`tel:${contacts.phoneRaw}`} style="font-weight:700;color:var(--c-text)">
+              {contacts.phoneHuman}
+            </a>
+          </div>
+          <div style="display:flex;gap:.6rem">
+            <Icon name="mail" size={18} class="text-beam" />
+            <a href={`mailto:${contacts.email}`}>{contacts.email}</a>
+          </div>
+        </address>
+
+        <a
+          class="rating"
+          href={contacts.yandexMaps}
+          target="_blank"
+          rel="noopener nofollow"
+          style="margin-top:1.5rem"
+        >
+          <Icon name="star" size={16} style="color:var(--c-warm)" />
+          <strong>{contacts.rating.value.toFixed(1).replace('.', ',')}</strong>
+          <span>на Яндекс.Картах · {contacts.rating.reviews} отзыва</span>
+        </a>
+      </div>
+
+      <nav aria-label="Услуги">
+        <h2 class="footer__head">Услуги</h2>
+        <ul>
+          {
+            services.map((s) => (
+              <li>
+                <a href={`/uslugi/${s.id}/`}>{s.data.short}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <nav aria-label="Разделы сайта">
+        <h2 class="footer__head">Компания</h2>
+        <ul>
+          {
+            nav
+              .filter((n) => n.href !== '/')
+              .map((n) => (
+                <li>
+                  <a href={n.href}>{n.label}</a>
+                </li>
+              ))
+          }
+          <li><a href="/politika-konfidencialnosti/">Обработка персональных данных</a></li>
+          <li>
+            <a href={contacts.yandexMaps} target="_blank" rel="noopener nofollow">
+              Мы на Яндекс.Картах
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="footer__bottom">
+      <span>© {year} {site.legalName}. Бобруйск</span>
+      {site.unp && <span>УНП {site.unp}</span>}
+      <span>Цены на сайте не являются публичной офертой</span>
+    </div>
+  </div>
+</footer>

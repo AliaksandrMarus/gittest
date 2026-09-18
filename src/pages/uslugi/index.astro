@@ -1,0 +1,79 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import PriceTable from '../../components/PriceTable.astro';
+import LeadForm from '../../components/LeadForm.astro';
+import Icon from '../../components/Icon.astro';
+import { contacts, scheduleHuman } from '../../config/site';
+import { breadcrumbSchema } from '../../lib/schema';
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+const crumbs = [{ label: 'Услуги' }];
+---
+
+<Base
+  title="Услуги автомойки и детейлинга в Бобруйске — цены | Лайт Он"
+  description="Полный прайс автомойки «Лайт Он» в Бобруйске: мойка от 15 руб., химчистка 300 руб., антикор 800 руб., полировка фар 100 руб. Минская 123, +375 25 987-10-10."
+  path="/uslugi/"
+  schemas={[breadcrumbSchema(crumbs)]}
+>
+  <Breadcrumbs items={crumbs} />
+
+  <section class="section" style="padding-top:var(--sp-5)">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Прайс без звёздочек</p>
+        <h1 class="page-title">Услуги и цены</h1>
+        <p>
+          Девять направлений — от мойки за 15 рублей до полного антикоррозийного цикла.
+          Все цены на этой странице настоящие: это тот же прайс, что опубликован в нашей
+          карточке на Яндекс.Картах. Наценок за класс автомобиля у нас нет.
+        </p>
+      </div>
+
+      <div class="grid-auto">
+        {services.map((s) => <ServiceCard entry={s} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight reveal" aria-labelledby="price-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Одним списком</p>
+        <h2 id="price-title">Полный прайс</h2>
+      </div>
+      <PriceTable />
+    </div>
+  </section>
+
+  <section class="section section--tight reveal">
+    <div class="wrap">
+      <div class="cta">
+        <div>
+          <p class="eyebrow">Не знаете, что выбрать</p>
+          <h2 style="font-size:var(--fs-2xl)">Опишите проблему — подскажем</h2>
+          <p class="text-dim" style="margin-top:var(--sp-4)">
+            Расскажите, что беспокоит: скол на капоте, мутные фары, запах в салоне.
+            Перезвоним и честно скажем, что действительно нужно, а что можно отложить.
+            Работаем {scheduleHuman.toLowerCase()}.
+          </p>
+          <p style="margin-top:var(--sp-5);display:flex;flex-wrap:wrap;gap:.75rem">
+            <a class="btn btn--beam" href={`tel:${contacts.phoneRaw}`}>
+              <Icon name="phone" size={18} />
+              {contacts.phoneHuman}
+            </a>
+            <a class="btn btn--ghost" href={contacts.viber} target="_blank" rel="noopener">
+              <Icon name="viber" size={18} />
+              Viber
+            </a>
+          </p>
+        </div>
+
+        <LeadForm variant="full" id="form-uslugi" flat />
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,58 @@
+---
+import { getOpenState } from '../lib/schedule';
+import { schedule, TZ_OFFSET_HOURS } from '../config/site';
+
+/**
+ * Статус «открыто / закрыто». При сборке считается серверно, в браузере
+ * крошечный скрипт пересчитывает по часам посетителя — иначе на статике
+ * строка замерла бы на времени деплоя.
+ */
+const state = getOpenState();
+---
+
+<span class="open-status" data-open={String(state.open)} data-open-status>
+  <span class="open-status__dot"></span>
+  <span data-open-label>{state.label}</span>
+</span>
+
+<script is:inline define:vars={{ schedule, TZ_OFFSET_HOURS }}>
+  (function () {
+    var DAYS = ['воскресенье', 'понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу'];
+    function mins(s) {
+      var p = s.split(':');
+      return +p[0] * 60 + +p[1];
+    }
+    function state() {
+      var n = new Date();
+      var local = new Date(n.getTime() + n.getTimezoneOffset() * 60000 + TZ_OFFSET_HOURS * 3600000);
+      var day = local.getDay();
+      var m = local.getHours() * 60 + local.getMinutes();
+      var t = schedule[day];
+      if (t) {
+        if (m >= mins(t.open) && m < mins(t.close))
+          return { open: true, label: 'Открыто до ' + t.close };
+        if (m < mins(t.open)) return { open: false, label: 'Откроется сегодня в ' + t.open };
+      }
+      for (var i = 1; i <= 7; i++) {
+        var idx = (day + i) % 7;
+        var next = schedule[idx];
+        if (!next) continue;
+        return {
+          open: false,
+          label: 'Откроется ' + (i === 1 ? 'завтра' : 'в ' + DAYS[idx]) + ' в ' + next.open,
+        };
+      }
+      return { open: false, label: 'Уточните время по телефону' };
+    }
+    function apply() {
+      var s = state();
+      document.querySelectorAll('[data-open-status]').forEach(function (el) {
+        el.dataset.open = String(s.open);
+        var label = el.querySelector('[data-open-label]');
+        if (label) label.textContent = s.label;
+      });
+    }
+    apply();
+    setInterval(apply, 60000);
+  })();
+</script>

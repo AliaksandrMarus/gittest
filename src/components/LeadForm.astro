@@ -1,0 +1,161 @@
+---
+import { getCollection } from 'astro:content';
+import { contacts, FORM_ENDPOINT, FORM_ACCESS_KEY } from '../config/site';
+import { formatPrice } from '../lib/format';
+import Icon from './Icon.astro';
+
+export interface Props {
+  /**
+   * full     — полная запись: имя, телефон, услуга, время, комментарий;
+   * callback — обратный звонок: имя и телефон;
+   * calc     — расчёт стоимости на странице услуги.
+   */
+  variant?: 'full' | 'callback' | 'calc';
+  /** Предвыбранная услуга для варианта calc. */
+  service?: string;
+  title?: string;
+  flat?: boolean;
+  id?: string;
+}
+
+const { variant = 'full', service, title, flat = false, id = `form-${variant}` } = Astro.props;
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+const configured = FORM_ENDPOINT !== '';
+
+const submitLabel =
+  variant === 'callback' ? 'Жду звонка' : variant === 'calc' ? 'Узнать стоимость' : 'Записаться';
+---
+
+{
+  configured ? (
+    <form
+      class:list={['form', flat && 'form--flat']}
+      id={id}
+      action={FORM_ENDPOINT}
+      method="post"
+      data-lead-form
+      novalidate
+    >
+      {title && <h3>{title}</h3>}
+
+      <input type="hidden" name="variant" value={variant} />
+      <input type="hidden" name="page" value={Astro.url.pathname} />
+      {FORM_ACCESS_KEY && <input type="hidden" name="access_key" value={FORM_ACCESS_KEY} />}
+      {/* Метка времени: сабмит быстрее трёх секунд почти наверняка бот. */}
+      <input type="hidden" name="ts" value="" data-ts />
+
+      {/* Ловушка для ботов — вне потока, но доступна скриптам */}
+      <div class="hp" aria-hidden="true">
+        <label>
+          Не заполняйте это поле
+          <input type="text" name="company" tabindex="-1" autocomplete="off" />
+        </label>
+      </div>
+
+      <div class:list={variant !== 'callback' && 'field--row'}>
+        <label class="field">
+          <span>Как вас зовут</span>
+          <input
+            type="text"
+            name="name"
+            required
+            minlength="2"
+            maxlength="60"
+            autocomplete="name"
+            placeholder="Иван"
+          />
+          <span class="field__error" data-error-for="name" />
+        </label>
+
+        <label class="field">
+          <span>Телефон</span>
+          <input
+            type="tel"
+            name="phone"
+            required
+            inputmode="tel"
+            autocomplete="tel"
+            placeholder="+375 (29) 123-45-67"
+            data-phone
+          />
+          <span class="field__error" data-error-for="phone" />
+        </label>
+      </div>
+
+      {variant === 'full' && (
+        <div class="field--row">
+          <label class="field">
+            <span>Услуга</span>
+            <select name="service">
+              <option value="">Выберите услугу</option>
+              {services.map((s) => (
+                <option value={s.data.short}>
+                  {s.data.short} — {formatPrice(s.data)}
+                </option>
+              ))}
+              <option value="Комплекс">Комплекс — обсудим по телефону</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Удобное время</span>
+            <input type="text" name="when" maxlength="60" placeholder="Завтра после 15:00" />
+          </label>
+        </div>
+      )}
+
+      {variant === 'calc' && (
+        <>
+          <input type="hidden" name="service" value={service} />
+          <label class="field">
+            <span>Марка и модель автомобиля</span>
+            <input type="text" name="car" maxlength="80" placeholder="Volkswagen Passat B8" />
+          </label>
+        </>
+      )}
+
+      {variant === 'full' && (
+        <label class="field">
+          <span>Комментарий</span>
+          <textarea name="comment" rows="3" maxlength="600" placeholder="Что беспокоит?" />
+        </label>
+      )}
+
+      <label class="consent">
+        <input type="checkbox" name="consent" required />
+        <span>
+          Согласен на обработку персональных данных в соответствии с{' '}
+          <a href="/politika-konfidencialnosti/">политикой</a>. Данные нужны только чтобы вам
+          перезвонить.
+        </span>
+      </label>
+
+      <button class="btn btn--primary btn--wide" type="submit">
+        {submitLabel}
+      </button>
+
+      <p class="form__status" role="status" aria-live="polite" data-form-status />
+    </form>
+  ) : (
+    /* Эндпоинт не настроен — не делаем вид, что форма работает. */
+    <div class="form__fallback">
+      <strong style="color:var(--c-text)">Приём заявок пока не подключён</strong>
+      <p>Свяжитесь с нами напрямую — ответим сразу:</p>
+      <p style="display:flex;flex-wrap:wrap;gap:.75rem">
+        <a class="btn btn--beam" href={`tel:${contacts.phoneRaw}`}>
+          <Icon name="phone" size={18} />
+          {contacts.phoneHuman}
+        </a>
+        <a class="btn btn--ghost" href={contacts.telegram} target="_blank" rel="noopener">
+          <Icon name="telegram" size={18} />
+          Telegram
+        </a>
+        <a class="btn btn--ghost" href={contacts.viber} target="_blank" rel="noopener">
+          <Icon name="viber" size={18} />
+          Viber
+        </a>
+      </p>
+    </div>
+  )
+}

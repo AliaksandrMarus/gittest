@@ -1,0 +1,74 @@
+---
+import { contacts } from '../config/site';
+import Icon from './Icon.astro';
+
+/**
+ * Кнопки быстрого вызова. На телефонах — нижняя панель, на десктопе —
+ * стек у правого края. Ссылки реальные, из карточки организации.
+ */
+---
+
+<div class="quickcall" data-quickcall>
+  <a
+    class="quickcall__btn"
+    href={`tel:${contacts.phoneRaw}`}
+    aria-label={`Позвонить по номеру ${contacts.phoneHuman}`}
+    data-goal="call"
+  >
+    <Icon name="phone" size={20} />
+    <span>Позвонить</span>
+  </a>
+
+  <a
+    class="quickcall__btn"
+    href={contacts.telegram}
+    target="_blank"
+    rel="noopener"
+    aria-label="Написать в Telegram"
+    data-goal="telegram"
+  >
+    <Icon name="telegram" size={20} />
+    <span>Telegram</span>
+  </a>
+
+  <a
+    class="quickcall__btn"
+    href={contacts.viber}
+    target="_blank"
+    rel="noopener"
+    aria-label="Написать в Viber"
+    data-goal="viber"
+  >
+    <Icon name="viber" size={20} />
+    <span>Viber</span>
+  </a>
+
+  <button
+    class="quickcall__btn quickcall__btn--accent"
+    type="button"
+    data-open-callback
+    aria-label="Заказать обратный звонок"
+  >
+    <Icon name="calendar" size={20} />
+    <span>Записаться</span>
+  </button>
+</div>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-quickcall]');
+  if (bar) {
+    // Панель поднимается после первого экрана, чтобы не спорить с hero.
+    const toggle = () => {
+      const show = scrollY > 400;
+      bar.classList.toggle('is-visible', show);
+      // Контент не должен прятаться под панелью на мобильных.
+      document.documentElement.style.setProperty(
+        '--quickcall-h',
+        show && innerWidth < 992 ? `${bar.offsetHeight}px` : '0px',
+      );
+    };
+    toggle();
+    addEventListener('scroll', toggle, { passive: true });
+    addEventListener('resize', toggle, { passive: true });
+  }
+</script>
