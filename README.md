@@ -122,6 +122,12 @@ export const analytics = {
 Собирается автоматически при каждом пуше в ветку — workflow
 `.github/workflows/pages.yml`. Адрес: **https://aliaksandrmarus.github.io/gittest/**
 
+**Один раз нужно включить Pages вручную:** Settings → Pages → Source → выбрать
+«GitHub Actions». Сам workflow этого сделать не может: создание сайта Pages
+через API требует прав, которых у токена Actions нет, — попытка падает
+с «Resource not accessible by integration». Пока настройка не включена,
+сборка и проверки проходят, а падает только шаг выкладки.
+
 Превью намеренно отличается от боевого сайта в двух вещах:
 
 - **Формы не отправляют заявки.** PHP на Pages нет, поэтому вместо формы

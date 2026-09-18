@@ -38,20 +38,17 @@ jobs:
           node-version: 22
           cache: npm
 
-      # enablement: true включает Pages сам — в настройках репозитория
-      # ничего делать руками не нужно.
-      - name: Включить Pages
-        id: pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
       - run: npm ci
 
+      # Адрес собирается из имени владельца и репозитория, как его формирует
+      # GitHub для проектных страниц. Автоматически через actions/configure-pages
+      # не выходит: создание сайта Pages требует прав, которых у токена workflow
+      # нет, и шаг падает с «Resource not accessible by integration».
+      # Pages включаются один раз руками: Settings → Pages → Source: GitHub Actions.
       - name: Собрать в режиме превью
         env:
-          SITE_URL: ${{ steps.pages.outputs.origin }}
-          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          SITE_URL: https://${{ github.repository_owner }}.github.io
+          BASE_PATH: /${{ github.event.repository.name }}
           # Пустая строка — форма честно показывает телефон и мессенджеры.
           PUBLIC_FORM_ENDPOINT: ''
         run: npm run build
@@ -67,6 +64,9 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+
+  # Если Pages ещё не включены в настройках, упадёт только этот шаг —
+  # сборка и проверки к этому моменту уже отработали.
 
   deploy:
     name: Выкладка
