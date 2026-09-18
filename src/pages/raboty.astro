@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import BeforeAfter from '../components/BeforeAfter.astro';
-import Placeholder from '../components/Placeholder.astro';
+import Photo from '../components/Photo.astro';
 import LeadForm from '../components/LeadForm.astro';
 import Icon from '../components/Icon.astro';
 import { contacts } from '../config/site';
@@ -10,20 +10,22 @@ import { breadcrumbSchema } from '../lib/schema';
 
 const crumbs = [{ label: 'Наши работы' }];
 
+/* Пары «до/после». Имена файлов — соглашение из ASSETS.md: положили оба
+   кадра в src/assets/raboty/ — ползунок начинает показывать их вместо заглушек. */
 const pairs = [
-  { label: 'Полировка фар: помутневший рассеиватель и после обработки', icon: 'headlight' as const },
-  { label: 'Мойка днища: слой реагента и чистый металл', icon: 'shield' as const },
-  { label: 'Химчистка салона: засаленная ткань и после экстракции', icon: 'sofa' as const },
-  { label: 'Мойка двигателя: масляный налёт и чистое подкапотное', icon: 'engine' as const },
+  { slug: 'far', label: 'Полировка фар: помутневший рассеиватель и после обработки', icon: 'headlight' as const },
+  { slug: 'dnishche', label: 'Мойка днища: слой реагента и чистый металл', icon: 'shield' as const },
+  { slug: 'salon', label: 'Химчистка салона: засаленная ткань и после экстракции', icon: 'sofa' as const },
+  { slug: 'motor', label: 'Мойка двигателя: масляный налёт и чистое подкапотное', icon: 'engine' as const },
 ];
 
 const shots = [
-  { label: 'Тонировка чёрной плёнкой задних стёкол тёмно-синего автомобиля', icon: 'film' as const },
-  { label: 'Оклейка антигравийной плёнкой: капот с крыльями и фарами', icon: 'film' as const },
-  { label: 'Тёмно-синий автомобиль моется густой активной пеной', icon: 'droplet' as const },
-  { label: 'Антикоррозийная обработка днища на подъёмнике', icon: 'shield' as const },
-  { label: 'Мойка мотора тёмно-синего автомобиля', icon: 'engine' as const },
-  { label: 'Результат химчистки салона: ткань сидений после экстракции', icon: 'sofa' as const },
+  { file: 'raboty/tonirovka.jpg', label: 'Тонировка чёрной плёнкой задних стёкол тёмно-синего автомобиля', icon: 'film' as const },
+  { file: 'raboty/plenka.jpg', label: 'Оклейка антигравийной плёнкой: капот с крыльями и фарами', icon: 'film' as const },
+  { file: 'raboty/moyka-pena.jpg', label: 'Тёмно-синий автомобиль моется густой активной пеной', icon: 'droplet' as const },
+  { file: 'raboty/antikor.jpg', label: 'Антикоррозийная обработка днища на подъёмнике', icon: 'shield' as const },
+  { file: 'raboty/motor.jpg', label: 'Мойка мотора тёмно-синего автомобиля', icon: 'engine' as const },
+  { file: 'raboty/salon.jpg', label: 'Результат химчистки салона: ткань сидений после экстракции', icon: 'sofa' as const },
 ];
 ---
 
@@ -47,7 +49,16 @@ const shots = [
       </div>
 
       <div class="grid-auto">
-        {pairs.map((p) => <BeforeAfter label={p.label} icon={p.icon} />)}
+        {
+          pairs.map((p) => (
+            <BeforeAfter
+              label={p.label}
+              icon={p.icon}
+              beforeSrc={`raboty/${p.slug}-do.jpg`}
+              afterSrc={`raboty/${p.slug}-posle.jpg`}
+            />
+          ))
+        }
       </div>
     </div>
   </section>
@@ -67,7 +78,7 @@ const shots = [
         {
           shots.map((s) => (
             <figure>
-              <Placeholder label={s.label} icon={s.icon} ratio="4 / 3" />
+              <Photo src={s.file} alt={s.label} icon={s.icon} ratio="4 / 3" />
               <figcaption>{s.label}</figcaption>
             </figure>
           ))

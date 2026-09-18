@@ -1,5 +1,6 @@
 ---
 import Icon from './Icon.astro';
+import Photo from './Photo.astro';
 
 /**
  * Сравнение «было / стало». Ползунок — обычный input[type=range], поэтому
@@ -11,6 +12,7 @@ import Icon from './Icon.astro';
  */
 export interface Props {
   label: string;
+  /** Имена файлов в src/assets, например 'raboty/far-do.jpg'. */
   beforeSrc?: string;
   afterSrc?: string;
   beforeAlt?: string;
@@ -27,6 +29,7 @@ const {
   icon = 'sparkle',
 } = Astro.props;
 
+/* Ползунок имеет смысл только когда есть оба кадра пары. */
 const hasPhotos = Boolean(beforeSrc && afterSrc);
 ---
 
@@ -35,15 +38,8 @@ const hasPhotos = Boolean(beforeSrc && afterSrc);
     {
       hasPhotos ? (
         <>
-          <img class="ba__pane" src={beforeSrc} alt={beforeAlt} width="800" height="600" loading="lazy" />
-          <img
-            class="ba__pane ba__pane--after"
-            src={afterSrc}
-            alt={afterAlt}
-            width="800"
-            height="600"
-            loading="lazy"
-          />
+          <Photo src={beforeSrc} alt={beforeAlt} icon={icon} bare class="ba__pane" />
+          <Photo src={afterSrc} alt={afterAlt} icon={icon} bare class="ba__pane ba__pane--after" />
         </>
       ) : (
         <>

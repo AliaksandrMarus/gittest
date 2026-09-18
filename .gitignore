@@ -8,3 +8,7 @@ dist/
 public/api/config.local.php
 public/api/leads.log
 .audit/
+
+# Промежуточные выгрузки фото — в репозиторий не идут
+src/assets/yandex/
+src/assets/wp/

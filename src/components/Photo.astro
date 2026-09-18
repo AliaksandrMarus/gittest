@@ -1,0 +1,79 @@
+---
+import { Picture } from 'astro:assets';
+import Placeholder from './Placeholder.astro';
+
+/**
+ * Фотография с честным запасным вариантом.
+ *
+ * Если файл лежит в src/assets/ — отдаём его через Picture: AVIF и WebP
+ * с запасным JPEG, srcset под ширину экрана, явные width и height, поэтому
+ * вёрстка не дёргается при загрузке. Именно Picture, а не Image: у Image
+ * нет пропа formats, и он молча отдал бы один формат.
+ * Если файла нет — рисуем заглушку с подписью, что сюда нужен снимок.
+ *
+ * Смысл в том, что страницы не нужно править по мере появления фотографий:
+ * положили файл с нужным именем — он появился на сайте. Список имён — в ASSETS.md.
+ */
+export interface Props {
+  /** Имя файла в src/assets, например 'far-posle.jpg'. Можно с подпапкой. */
+  src?: string;
+  /** Описание для alt и для подписи на заглушке. */
+  alt: string;
+  ratio?: string;
+  icon?: Parameters<typeof Placeholder>[0]['icon'];
+  /** true для главного изображения первого экрана — грузится в приоритете. */
+  priority?: boolean;
+  /** Без собственной рамки и скругления: когда оформление задаёт родитель. */
+  bare?: boolean;
+  class?: string;
+}
+
+const {
+  src,
+  alt,
+  ratio = '4 / 3',
+  icon,
+  priority = false,
+  bare = false,
+  class: cls,
+} = Astro.props;
+
+/** Все картинки проекта, известные сборщику на этапе компиляции. */
+const assets = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/**/*.{jpg,jpeg,png,webp,avif}',
+);
+
+const key = src ? Object.keys(assets).find((p) => p.endsWith(`/${src}`)) : undefined;
+const image = key ? (await assets[key]()).default : undefined;
+---
+
+{
+  image ? (
+    <Picture
+      src={image}
+      alt={alt}
+      class:list={[!bare && 'photo', cls]}
+      style={`aspect-ratio:${ratio}`}
+      widths={[480, 800, 1200]}
+      sizes="(min-width: 62rem) 40vw, 100vw"
+      formats={['avif', 'webp']}
+      fallbackFormat="jpeg"
+      quality={72}
+      loading={priority ? 'eager' : 'lazy'}
+      fetchpriority={priority ? 'high' : 'auto'}
+      decoding={priority ? 'sync' : 'async'}
+    />
+  ) : (
+    <Placeholder label={alt} icon={icon} ratio={ratio} class={cls} />
+  )
+}
+
+<style>
+  .photo {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--c-line);
+  }
+</style>

@@ -4,7 +4,7 @@ import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import Faq from '../../components/Faq.astro';
 import LeadForm from '../../components/LeadForm.astro';
-import Placeholder from '../../components/Placeholder.astro';
+import Photo from '../../components/Photo.astro';
 import ServiceCard from '../../components/ServiceCard.astro';
 import Icon from '../../components/Icon.astro';
 import { contacts, scheduleHuman } from '../../config/site';
@@ -72,7 +72,13 @@ const schemas = [
           </div>
         </div>
 
-        <Placeholder label={s.imageAlt} icon={s.icon} ratio="4 / 3" />
+        <Photo
+          src={`uslugi/${entry.id}.jpg`}
+          alt={s.imageAlt}
+          icon={s.icon}
+          ratio="4 / 3"
+          priority
+        />
       </div>
     </div>
   </section>
