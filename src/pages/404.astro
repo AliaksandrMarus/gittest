@@ -1,0 +1,46 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import Icon from '../components/Icon.astro';
+import { contacts } from '../config/site';
+import { link } from '../lib/url';
+
+const popular = (await getCollection('services'))
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 3);
+---
+
+<Base
+  title="Страница не найдена | Лайт Он"
+  description="Такой страницы на сайте автомойки «Лайт Он» нет. Посмотрите услуги или позвоните нам: +375 25 987-10-10."
+  path="/404/"
+  noindex
+>
+  <section class="section">
+    <div class="wrap" style="text-align:center">
+      <p class="eyebrow" style="justify-content:center">404</p>
+      <h1 style="font-size:var(--fs-3xl)">Такой страницы нет</h1>
+      <p class="text-dim" style="max-width:40ch;margin:var(--sp-4) auto 0;font-size:var(--fs-lg)">
+        Возможно, адрес изменился или в ссылке опечатка. Машину мы всё равно помоем —
+        выберите услугу или позвоните.
+      </p>
+
+      <p style="margin-top:var(--sp-6);display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center">
+        <a class="btn btn--primary" href={link('/uslugi/')}>Все услуги и цены</a>
+        <a class="btn btn--ghost" href={`tel:${contacts.phoneRaw}`}>
+          <Icon name="phone" size={18} />
+          {contacts.phoneHuman}
+        </a>
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="wrap">
+      <div class="grid-auto">
+        {popular.map((s) => <ServiceCard entry={s} />)}
+      </div>
+    </div>
+  </section>
+</Base>

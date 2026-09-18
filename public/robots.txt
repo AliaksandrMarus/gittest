@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /politika-konfidencialnosti/
+
+# Метки рекламных кампаний не должны плодить дубли страниц в индексе Яндекса
+Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&yclid&gclid&from&_openstat
+
+Sitemap: https://lighton.by/sitemap-index.xml

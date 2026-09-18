@@ -1,0 +1,118 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import BeforeAfter from '../components/BeforeAfter.astro';
+import Photo from '../components/Photo.astro';
+import LeadForm from '../components/LeadForm.astro';
+import Icon from '../components/Icon.astro';
+import { contacts } from '../config/site';
+import { breadcrumbSchema } from '../lib/schema';
+
+const crumbs = [{ label: 'Наши работы' }];
+
+/* Пары «до/после». Имена файлов — соглашение из ASSETS.md: положили оба
+   кадра в src/assets/raboty/ — ползунок начинает показывать их вместо заглушек. */
+const pairs = [
+  { slug: 'far', label: 'Полировка фар: помутневший рассеиватель и после обработки', icon: 'headlight' as const },
+  { slug: 'dnishche', label: 'Мойка днища: слой реагента и чистый металл', icon: 'shield' as const },
+  { slug: 'salon', label: 'Химчистка салона: засаленная ткань и после экстракции', icon: 'sofa' as const },
+  { slug: 'motor', label: 'Мойка двигателя: масляный налёт и чистое подкапотное', icon: 'engine' as const },
+];
+
+const shots = [
+  { file: 'raboty/tonirovka.jpg', label: 'Тонировка чёрной плёнкой задних стёкол тёмно-синего автомобиля', icon: 'film' as const },
+  { file: 'raboty/plenka.jpg', label: 'Оклейка антигравийной плёнкой: капот с крыльями и фарами', icon: 'film' as const },
+  { file: 'raboty/moyka-pena.jpg', label: 'Тёмно-синий автомобиль моется густой активной пеной', icon: 'droplet' as const },
+  { file: 'raboty/antikor.jpg', label: 'Антикоррозийная обработка днища на подъёмнике', icon: 'shield' as const },
+  { file: 'raboty/motor.jpg', label: 'Мойка мотора тёмно-синего автомобиля', icon: 'engine' as const },
+  { file: 'raboty/salon.jpg', label: 'Результат химчистки салона: ткань сидений после экстракции', icon: 'sofa' as const },
+];
+---
+
+<Base
+  title="Наши работы — фото до и после | Автомойка Лайт Он, Бобруйск"
+  description="Результаты работ автомойки и детейлинг-центра «Лайт Он» в Бобруйске: полировка фар, химчистка салона, антикор, тонировка. Фото до и после."
+  path="/raboty/"
+  schemas={[breadcrumbSchema(crumbs)]}
+>
+  <Breadcrumbs items={crumbs} />
+
+  <section class="section" style="padding-top:var(--sp-5)">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Было & Стало</p>
+        <h1 class="page-title">Посмотрите на результат нашей работы</h1>
+        <p>
+          Моем. Защищаем от ржавчины. Тонируем. Реставрируем. Возвращаем автомобилю
+          безупречный вид. Потяните ползунок, чтобы сравнить состояние до и после.
+        </p>
+      </div>
+
+      <div class="grid-auto">
+        {
+          pairs.map((p) => (
+            <BeforeAfter
+              label={p.label}
+              icon={p.icon}
+              beforeSrc={`raboty/${p.slug}-do.jpg`}
+              afterSrc={`raboty/${p.slug}-posle.jpg`}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight reveal">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Из бокса</p>
+        <h2 style="font-size:var(--fs-2xl)">Как идёт работа</h2>
+        <p>
+          Ещё больше снимков — в карточке организации на Яндекс.Картах: там
+          собран весь фотоархив, включая работы, которые сюда не поместились.
+        </p>
+      </div>
+
+      <div class="gallery">
+        {
+          shots.map((s) => (
+            <figure>
+              <Photo src={s.file} alt={s.label} icon={s.icon} ratio="4 / 3" />
+              <figcaption>{s.label}</figcaption>
+            </figure>
+          ))
+        }
+      </div>
+
+      <p style="margin-top:var(--sp-6)">
+        <a class="btn btn--ghost" href={contacts.yandexMaps} target="_blank" rel="noopener nofollow">
+          Фотоархив на Яндекс.Картах
+          <Icon name="arrow" size={16} />
+        </a>
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--tight reveal">
+    <div class="wrap">
+      <div class="cta">
+        <div>
+          <p class="eyebrow">Ваша машина следующая</p>
+          <h2 style="font-size:var(--fs-2xl)">Покажем результат на вашем автомобиле</h2>
+          <p class="text-dim" style="margin-top:var(--sp-4)">
+            Оставьте номер — перезвоним, уточним, что нужно, и назовём точную
+            стоимость. Фотографируем до и после, если вы не против.
+          </p>
+          <p style="margin-top:var(--sp-5)">
+            <a class="btn btn--beam" href={`tel:${contacts.phoneRaw}`}>
+              <Icon name="phone" size={18} />
+              {contacts.phoneHuman}
+            </a>
+          </p>
+        </div>
+        <LeadForm variant="full" id="form-raboty" flat />
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,308 @@
+/* Шрифт, сброс, типографика, примитивы раскладки. */
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 800;
+  src: url('/fonts/manrope-cyrillic-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 800;
+  src: url('/fonts/manrope-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* Липкая шапка не должна накрывать якорную цель */
+  scroll-padding-top: 6rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  font-family: var(--font);
+  font-size: var(--fs-base);
+  line-height: 1.65;
+  color: var(--c-text);
+  background: var(--c-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  /* Место под мобильную панель быстрого вызова */
+  padding-bottom: var(--quickcall-h);
+}
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.12;
+  font-weight: 800;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--fs-4xl);
+}
+
+/* Размер первого экрана нужен только главной. На внутренних страницах
+   заголовок в три строки съедает экран и отодвигает цену вниз. */
+.page-title {
+  font-size: var(--fs-3xl);
+}
+
+h2 {
+  font-size: var(--fs-3xl);
+}
+
+h3 {
+  font-size: var(--fs-xl);
+}
+
+h4 {
+  font-size: var(--fs-lg);
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--c-beam);
+  text-decoration-color: rgb(94 231 255 / 0.35);
+  text-underline-offset: 0.2em;
+  transition: color var(--dur) var(--ease);
+}
+
+a:hover {
+  color: #9af0ff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-beam);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--c-beam);
+  color: var(--c-void);
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--c-line);
+}
+
+/* ─── Примитивы раскладки ─────────────────────────────────────── */
+
+.wrap {
+  width: min(100% - 2rem, var(--w-content));
+  margin-inline: auto;
+}
+
+@media (min-width: 48rem) {
+  .wrap {
+    width: min(100% - 4rem, var(--w-content));
+  }
+}
+
+.section {
+  padding-block: var(--sp-9);
+  position: relative;
+}
+
+.section--tight {
+  padding-block: var(--sp-8);
+}
+
+.stack > * + * {
+  margin-top: var(--flow, var(--sp-4));
+}
+
+.grid-auto {
+  display: grid;
+  gap: var(--sp-5);
+  grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr));
+}
+
+.prose {
+  max-width: var(--w-text);
+  color: var(--c-text-dim);
+  font-size: var(--fs-lg);
+}
+
+.prose > * + * {
+  margin-top: var(--sp-4);
+}
+
+.prose h2 {
+  margin-top: var(--sp-7);
+  color: var(--c-text);
+  font-size: var(--fs-2xl);
+}
+
+.prose h3 {
+  margin-top: var(--sp-6);
+  color: var(--c-text);
+}
+
+.prose strong {
+  color: var(--c-text);
+  font-weight: 700;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.25rem;
+}
+
+.prose li + li {
+  margin-top: var(--sp-2);
+}
+
+/* ─── Заголовки секций ────────────────────────────────────────── */
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--c-beam);
+}
+
+.eyebrow::before {
+  content: '';
+  width: 1.75rem;
+  height: 1px;
+  background: currentColor;
+}
+
+.section-head {
+  max-width: 46rem;
+  margin-bottom: var(--sp-7);
+}
+
+.section-head p {
+  margin-top: var(--sp-4);
+  color: var(--c-text-dim);
+  font-size: var(--fs-lg);
+}
+
+/* ─── Утилиты ─────────────────────────────────────────────────── */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  translate: -50% -110%;
+  z-index: 200;
+  padding: var(--sp-3) var(--sp-5);
+  border-radius: 0 0 var(--r-md) var(--r-md);
+  background: var(--c-beam);
+  color: var(--c-void);
+  font-weight: 700;
+  text-decoration: none;
+  transition: translate var(--dur) var(--ease);
+}
+
+.skip-link:focus-visible {
+  translate: -50% 0;
+}
+
+.text-dim {
+  color: var(--c-text-dim);
+}
+
+.text-beam {
+  color: var(--c-beam);
+}
+
+/* Появление секций при скролле. Без JS класс не ставится,
+   поэтому контент виден всегда — деградация безопасная. */
+.reveal {
+  opacity: 0;
+  translate: 0 1.25rem;
+  transition:
+    opacity 0.7s var(--ease),
+    translate 0.7s var(--ease);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  translate: 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    translate: none;
+  }
+}

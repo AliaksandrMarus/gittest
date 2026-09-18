@@ -1,0 +1,169 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Faq from '../../components/Faq.astro';
+import LeadForm from '../../components/LeadForm.astro';
+import Photo from '../../components/Photo.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import Icon from '../../components/Icon.astro';
+import { contacts, scheduleHuman } from '../../config/site';
+import { formatPrice, priceParts } from '../../lib/format';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../lib/schema';
+
+export async function getStaticPaths() {
+  const services = await getCollection('services');
+  return services.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const s = entry.data;
+const { Content } = await render(entry);
+
+const path = `/uslugi/${entry.id}/`;
+const price = priceParts(s);
+
+const crumbs = [{ href: '/uslugi/', label: 'Услуги' }, { label: s.short }];
+
+// Три соседние услуги — перелинковка внутри кластера работает на ранжирование
+// не хуже внешних ссылок и удерживает посетителя на сайте.
+const others = (await getCollection('services'))
+  .filter((x) => x.id !== entry.id)
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 3);
+
+const schemas = [
+  serviceSchema({
+    title: s.title,
+    description: s.description,
+    path,
+    price: s.price,
+    priceMax: s.priceMax,
+  }),
+  faqSchema(s.faq),
+  breadcrumbSchema(crumbs),
+];
+---
+
+<Base title={s.seoTitle} description={s.description} path={path} schemas={schemas}>
+  <Breadcrumbs items={crumbs} />
+
+  <section class="section" style="padding-top:var(--sp-5)">
+    <div class="wrap">
+      <div class="hero__grid">
+        <div>
+          <p class="eyebrow">
+            <Icon name={s.icon} size={16} />
+            {s.yandexCategory ?? 'Услуга'}
+          </p>
+          <h1 class="page-title">{s.title}</h1>
+          <p class="hero__lead">{s.lead}</p>
+
+          <div class="pricebox" style="margin-top:var(--sp-6)">
+            <div class="pricebox__value">
+              {price.value}
+              {price.note && <small>{price.note}</small>}
+            </div>
+            <div class="pricebox__meta">
+              <span><Icon name="clock" size={14} /> {s.duration}</span>
+              <span><Icon name="pin" size={14} /> {contacts.address.full}</span>
+            </div>
+            <button class="btn btn--primary" type="button" data-open-callback>Записаться</button>
+          </div>
+        </div>
+
+        <Photo
+          src={`uslugi/${entry.id}.jpg`}
+          alt={s.imageAlt}
+          icon={s.icon}
+          ratio="4 / 3"
+          priority
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight reveal">
+    <div class="wrap">
+      <div style="display:grid;gap:var(--sp-7)" data-two-col>
+        <div>
+          <h2 style="font-size:var(--fs-2xl)">Что входит в работу</h2>
+          <ul class="checks" style="margin-top:var(--sp-5)">
+            {s.includes.map((item) => <li>{item}</li>)}
+          </ul>
+        </div>
+
+        <div>
+          <h2 style="font-size:var(--fs-2xl)">Как проходит</h2>
+          <ol class="steps" style="margin-top:var(--sp-5)">
+            {
+              s.steps.map((step) => (
+                <li>
+                  <h3>{step.title}</h3>
+                  <p>{step.text}</p>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight reveal">
+    <div class="wrap prose">
+      <Content />
+    </div>
+  </section>
+
+  <Faq items={s.faq} />
+
+  <section class="section section--tight reveal">
+    <div class="wrap">
+      <div class="cta">
+        <div>
+          <p class="eyebrow">Запись</p>
+          <h2 style="font-size:var(--fs-2xl)">{s.short}: {formatPrice(s)}</h2>
+          <p class="text-dim" style="margin-top:var(--sp-4)">
+            Оставьте телефон — перезвоним, уточним детали и назовём точное время. Работаем {
+              scheduleHuman.toLowerCase()
+            }.
+          </p>
+          <p style="margin-top:var(--sp-5);display:flex;flex-wrap:wrap;gap:.75rem">
+            <a class="btn btn--beam" href={`tel:${contacts.phoneRaw}`}>
+              <Icon name="phone" size={18} />
+              {contacts.phoneHuman}
+            </a>
+            <a class="btn btn--ghost" href={contacts.telegram} target="_blank" rel="noopener">
+              <Icon name="telegram" size={18} />
+              Telegram
+            </a>
+          </p>
+        </div>
+
+        <LeadForm variant="calc" service={s.short} id={`calc-${entry.id}`} flat />
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight reveal">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Смотрят вместе с этим</p>
+        <h2 style="font-size:var(--fs-2xl)">Другие услуги</h2>
+      </div>
+      <div class="grid-auto">
+        {others.map((o) => <ServiceCard entry={o} />)}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  @media (min-width: 56rem) {
+    [data-two-col] {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-8);
+    }
+  }
+</style>

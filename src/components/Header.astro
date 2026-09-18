@@ -1,0 +1,80 @@
+---
+import { site, contacts, nav } from '../config/site';
+import Icon from './Icon.astro';
+import OpenStatus from './OpenStatus.astro';
+import { link } from '../lib/url';
+
+export interface Props {
+  currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+
+/** Пункт подсвечивается и на вложенных страницах: /uslugi/tonirovka/ → «Услуги». */
+const isCurrent = (href: string) =>
+  href === '/' ? currentPath === '/' : currentPath.startsWith(href);
+---
+
+<header class="header">
+  <div class="wrap header__inner">
+    <a class="logo" href={link('/')}>
+      <span class="logo__mark" aria-hidden="true">ON</span>
+      <span>
+        {site.name}
+        <span class="logo__sub">Автомойка · Детейлинг</span>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="Основное меню">
+      {
+        nav.map((item) => (
+          <a href={link(item.href)} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <a class="header__phone" href={`tel:${contacts.phoneRaw}`}>
+      <strong>{contacts.phoneHuman}</strong>
+      <OpenStatus />
+    </a>
+
+    <details class="burger">
+      <summary aria-label="Открыть меню">
+        <Icon name="menu" size={22} />
+      </summary>
+      <div class="burger__panel">
+        {
+          nav.map((item) => (
+            <a href={link(item.href)} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+              {item.label}
+            </a>
+          ))
+        }
+        <a href={`tel:${contacts.phoneRaw}`} style="color:var(--c-beam)">
+          {contacts.phoneHuman}
+        </a>
+      </div>
+    </details>
+  </div>
+</header>
+
+<script>
+  // Меню закрывается по Esc, по клику вне панели и при переходе по ссылке —
+  // <details> сам этого не умеет.
+  const burger = document.querySelector<HTMLDetailsElement>('.burger');
+  if (burger) {
+    const close = () => burger.removeAttribute('open');
+    document.addEventListener('click', (e) => {
+      if (burger.open && !burger.contains(e.target as Node)) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && burger.open) {
+        close();
+        burger.querySelector('summary')?.focus();
+      }
+    });
+    burger.querySelectorAll('a').forEach((a) => a.addEventListener('click', close));
+  }
+</script>

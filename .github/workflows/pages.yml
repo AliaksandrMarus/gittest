@@ -1,0 +1,80 @@
+name: Превью на GitHub Pages
+
+# Собирает сайт и выкладывает на https://aliaksandrmarus.github.io/gittest/
+#
+# Это превью для согласования, а не боевой сайт: PHP там нет, поэтому форма
+# показывает телефон и мессенджеры вместо отправки, а страницы закрыты
+# от индексации, чтобы копия не конкурировала с lighton.by в поиске.
+#
+# Боевая сборка делается без переменных: значения по умолчанию в конфиге
+# уже боевые, забыть их нельзя.
+
+on:
+  push:
+    branches:
+      - main
+      - claude/lighton-site-analysis-lrz8j7
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Пока идёт выкладка, следующий пуш ждёт своей очереди, а не дерётся за неё.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Сборка
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Адрес собирается из имени владельца и репозитория, как его формирует
+      # GitHub для проектных страниц. Автоматически через actions/configure-pages
+      # не выходит: создание сайта Pages требует прав, которых у токена workflow
+      # нет, и шаг падает с «Resource not accessible by integration».
+      # Pages включаются один раз руками: Settings → Pages → Source: GitHub Actions.
+      - name: Собрать в режиме превью
+        env:
+          SITE_URL: https://${{ github.repository_owner }}.github.io
+          BASE_PATH: /${{ github.event.repository.name }}
+          # Пустая строка — форма честно показывает телефон и мессенджеры.
+          PUBLIC_FORM_ENDPOINT: ''
+        run: npm run build
+
+      - name: Закрыть превью от поисковиков
+        run: |
+          printf 'User-agent: *\nDisallow: /\n' > dist/robots.txt
+          rm -f dist/sitemap-index.xml dist/sitemap-0.xml
+
+      - name: Проверить сборку
+        run: npm run verify
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  # Если Pages ещё не включены в настройках, упадёт только этот шаг —
+  # сборка и проверки к этому моменту уже отработали.
+
+  deploy:
+    name: Выкладка
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

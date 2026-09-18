@@ -1,0 +1,11 @@
+# Netlify / Cloudflare Pages. Порядок важен: правила применяются сверху вниз.
+/home            /             301
+/services        /uslugi/      301
+/details         /detailing/   301
+/realizations    /raboty/      301
+/company         /o-kompanii/  301
+/contact         /kontakty/    301
+/feed            /             301
+/comments/feed   /             301
+/wp-json/*       /             301
+/xmlrpc.php      /             301

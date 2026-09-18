@@ -1,0 +1,130 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import LazyMap from '../components/LazyMap.astro';
+import LeadForm from '../components/LeadForm.astro';
+import OpenStatus from '../components/OpenStatus.astro';
+import Icon from '../components/Icon.astro';
+import { site, contacts, schedule } from '../config/site';
+import { breadcrumbSchema } from '../lib/schema';
+
+const crumbs = [{ label: 'Контакты' }];
+
+const days = [
+  'Понедельник',
+  'Вторник',
+  'Среда',
+  'Четверг',
+  'Пятница',
+  'Суббота',
+  'Воскресенье',
+];
+/** schedule индексируется с воскресенья, а показываем неделю с понедельника. */
+const week = days.map((label, i) => ({ label, hours: schedule[(i + 1) % 7] }));
+---
+
+<Base
+  title="Контакты автомойки «Лайт Он» — Бобруйск, Минская 123"
+  description="Автомойка и детейлинг «Лайт Он»: Бобруйск, Минская ул., 123, корп. 8. Телефон +375 25 987-10-10. Пн–Сб 09:00–19:00, воскресенье выходной."
+  path="/kontakty/"
+  schemas={[breadcrumbSchema(crumbs)]}
+>
+  <Breadcrumbs items={crumbs} />
+
+  <section class="section" style="padding-top:var(--sp-5)">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Как нас найти</p>
+        <h1 class="page-title">Контакты</h1>
+        <p>
+          {site.legalName} — автомойка и детейлинг-центр в Бобруйске. Заезд со стороны
+          Минской улицы. На мойку можно приехать без записи, на детейлинг лучше позвонить заранее.
+        </p>
+      </div>
+
+      <div class="hero__grid">
+        <div class="stack" style="--flow:1.5rem">
+          <div class="card" style="gap:1rem">
+            <h2 style="font-size:var(--fs-xl)">Связаться</h2>
+
+            <p style="display:flex;gap:.75rem;align-items:center">
+              <Icon name="phone" size={20} class="text-beam" />
+              <a href={`tel:${contacts.phoneRaw}`} style="font-size:var(--fs-xl);font-weight:800;color:var(--c-text);text-decoration:none">
+                {contacts.phoneHuman}
+              </a>
+            </p>
+
+            <p><OpenStatus /></p>
+
+            <p style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.5rem">
+              <a class="btn btn--ghost" href={contacts.telegram} target="_blank" rel="noopener">
+                <Icon name="telegram" size={18} />
+                Telegram
+              </a>
+              <a class="btn btn--ghost" href={contacts.viber} target="_blank" rel="noopener">
+                <Icon name="viber" size={18} />
+                Viber
+              </a>
+              <a class="btn btn--ghost" href={`mailto:${contacts.email}`}>
+                <Icon name="mail" size={18} />
+                Почта
+              </a>
+            </p>
+
+            <p class="text-dim" style="font-size:var(--fs-sm)">
+              Почта: <a href={`mailto:${contacts.email}`}>{contacts.email}</a>
+            </p>
+          </div>
+
+          <div class="card" style="gap:1rem">
+            <h2 style="font-size:var(--fs-xl)">Адрес</h2>
+            <address style="font-style:normal;display:flex;gap:.75rem">
+              <Icon name="pin" size={20} class="text-beam" />
+              <span>
+                {contacts.address.full}<br />
+                <span class="text-dim" style="font-size:var(--fs-sm)">
+                  {contacts.address.region}, Беларусь
+                </span>
+              </span>
+            </address>
+            <p>
+              <a href={contacts.yandexMaps} target="_blank" rel="noopener nofollow">
+                Построить маршрут в Яндекс.Картах
+              </a>
+            </p>
+          </div>
+
+          <div class="card" style="gap:1rem">
+            <h2 style="font-size:var(--fs-xl)">Режим работы</h2>
+            <table class="price-table" style="margin-top:.25rem">
+              <tbody>
+                {
+                  week.map((d) => (
+                    <tr>
+                      <td style="padding-block:.6rem">{d.label}</td>
+                      <td class="price-cell" style="font-size:var(--fs-base);padding-block:.6rem">
+                        {d.hours ? `${d.hours.open} – ${d.hours.close}` : 'Выходной'}
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+            <p class="text-dim" style="font-size:var(--fs-xs)">
+              В последний час перед закрытием мы не берём работы, которые заведомо
+              не успеем закончить качественно. Лучше позвонить и записаться.
+            </p>
+          </div>
+        </div>
+
+        <div class="stack" style="--flow:1.5rem">
+          <LazyMap />
+          <div class="card">
+            <h2 style="font-size:var(--fs-xl);margin-bottom:1rem">Записаться</h2>
+            <LeadForm variant="full" id="form-kontakty" flat />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

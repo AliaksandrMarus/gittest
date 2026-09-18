@@ -1,0 +1,112 @@
+---
+import Icon from './Icon.astro';
+import Photo from './Photo.astro';
+
+/**
+ * Сравнение «было / стало». Ползунок — обычный input[type=range], поэтому
+ * работает с клавиатуры и на тач-экранах без единой строки своего кода
+ * для жестов. JS нужен только чтобы связать значение с CSS-переменной.
+ *
+ * Пока настоящих фотографий нет, панели рисуются заглушками — компонент
+ * готов принять снимки, как только они появятся.
+ */
+export interface Props {
+  label: string;
+  /** Имена файлов в src/assets, например 'raboty/far-do.jpg'. */
+  beforeSrc?: string;
+  afterSrc?: string;
+  beforeAlt?: string;
+  afterAlt?: string;
+  icon?: 'droplet' | 'engine' | 'shield' | 'film' | 'headlight' | 'sofa' | 'sparkle';
+}
+
+const {
+  label,
+  beforeSrc,
+  afterSrc,
+  beforeAlt = `До: ${label}`,
+  afterAlt = `После: ${label}`,
+  icon = 'sparkle',
+} = Astro.props;
+
+/* Ползунок имеет смысл только когда есть оба кадра пары. */
+const hasPhotos = Boolean(beforeSrc && afterSrc);
+---
+
+<figure style="margin:0">
+  <div class="ba" data-ba>
+    {
+      hasPhotos ? (
+        <>
+          <Photo src={beforeSrc} alt={beforeAlt} icon={icon} bare class="ba__pane" />
+          <Photo src={afterSrc} alt={afterAlt} icon={icon} bare class="ba__pane ba__pane--after" />
+        </>
+      ) : (
+        <>
+          <div class="ba__pane ba__stub" role="img" aria-label={beforeAlt}>
+            <Icon name={icon} size={30} />
+            <span>Фото «до»</span>
+          </div>
+          <div class="ba__pane ba__pane--after ba__stub ba__stub--after" role="img" aria-label={afterAlt}>
+            <Icon name={icon} size={30} />
+            <span>Фото «после»</span>
+          </div>
+        </>
+      )
+    }
+
+    <span class="ba__line" aria-hidden="true"></span>
+    <span class="ba__tag ba__tag--before">Было</span>
+    <span class="ba__tag ba__tag--after">Стало</span>
+
+    <input
+      class="ba__range"
+      type="range"
+      min="0"
+      max="100"
+      value="50"
+      step="1"
+      aria-label={`Сравнить до и после: ${label}`}
+      data-ba-range
+    />
+  </div>
+  <figcaption style="margin-top:.75rem;font-size:var(--fs-sm);color:var(--c-text-dim)">
+    {label}
+  </figcaption>
+</figure>
+
+<style>
+  .ba__stub {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.6rem;
+    color: var(--c-text-mute);
+    background:
+      repeating-linear-gradient(135deg, transparent 0 12px, rgb(255 255 255 / 0.02) 12px 24px),
+      var(--c-surface);
+  }
+
+  .ba__stub span {
+    font-size: var(--fs-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .ba__stub--after {
+    color: var(--c-beam);
+    background:
+      radial-gradient(80% 70% at 50% 40%, rgb(94 231 255 / 0.12), transparent 70%),
+      var(--c-surface-2);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-ba]').forEach((box) => {
+    const range = box.querySelector<HTMLInputElement>('[data-ba-range]');
+    if (!range) return;
+    const apply = () => box.style.setProperty('--pos', `${range.value}%`);
+    range.addEventListener('input', apply);
+    apply();
+  });
+</script>

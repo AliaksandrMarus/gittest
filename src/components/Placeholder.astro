@@ -1,0 +1,58 @@
+---
+import Icon from './Icon.astro';
+
+/**
+ * Заглушка вместо фотографии.
+ *
+ * Настоящих снимков у нас пока нет, и подставлять стоковые чужие машины
+ * было бы враньём. Заглушка держит раскладку и явно говорит, что сюда
+ * нужно фото — список всех мест собран в ASSETS.md.
+ */
+export interface Props {
+  label: string;
+  icon?: Parameters<typeof Icon>[0]['name'];
+  ratio?: string;
+  class?: string;
+}
+
+const { label, icon = 'sparkle', ratio = '4 / 3', class: cls } = Astro.props;
+---
+
+<div
+  class:list={['ph', cls]}
+  style={`aspect-ratio:${ratio}`}
+  role="img"
+  aria-label={`Заглушка: ${label}`}
+>
+  <Icon name={icon} size={34} />
+  <span>{label}</span>
+</div>
+
+<style>
+  .ph {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    text-align: center;
+    border-radius: var(--r-lg);
+    border: 1px dashed var(--c-line);
+    color: var(--c-text-mute);
+    background:
+      radial-gradient(70% 60% at 50% 0%, rgb(94 231 255 / 0.07), transparent 70%),
+      repeating-linear-gradient(
+        135deg,
+        transparent 0 12px,
+        rgb(255 255 255 / 0.018) 12px 24px
+      ),
+      var(--c-surface);
+  }
+
+  .ph span {
+    font-size: var(--fs-xs);
+    letter-spacing: 0.02em;
+    max-width: 26ch;
+    line-height: 1.5;
+  }
+</style>

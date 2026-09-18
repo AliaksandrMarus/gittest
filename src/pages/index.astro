@@ -1,0 +1,256 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import BeforeAfter from '../components/BeforeAfter.astro';
+import LeadForm from '../components/LeadForm.astro';
+import Faq from '../components/Faq.astro';
+import OpenStatus from '../components/OpenStatus.astro';
+import Icon from '../components/Icon.astro';
+import { site, contacts, scheduleHuman } from '../config/site';
+import { faqSchema } from '../lib/schema';
+import { link } from '../lib/url';
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+
+const advantages = [
+  {
+    icon: 'droplet' as const,
+    title: 'Без щёток по лаку',
+    text: 'Грязь снимает химия и вода. Кузова не касается ничего твёрдого, кроме чистой микрофибры на сушке.',
+  },
+  {
+    icon: 'shield' as const,
+    title: 'Говорим, что не нужно',
+    text: 'Если антикор вам сейчас не нужен, мы так и скажем. Продать лишнее один раз — потерять клиента навсегда.',
+  },
+  {
+    icon: 'sparkle' as const,
+    title: 'Полный цикл на месте',
+    text: 'Мойка, детейлинг, плёнка, тонировка и антикор — в одном боксе. Не нужно возить машину по городу.',
+  },
+  {
+    icon: 'headlight' as const,
+    title: 'Цены открыты',
+    text: 'Прайс опубликован здесь и в карточке на Яндекс.Картах. Сумма при выдаче совпадает с названной.',
+  },
+];
+
+const faq = [
+  {
+    q: 'Где вы находитесь и как до вас доехать?',
+    a: 'Бобруйск, Минская улица, 123, корпус 8. Заезд со стороны Минской, во дворе есть место для ожидания. Точку можно открыть в нашей карточке на Яндекс.Картах — маршрут построится автоматически.',
+  },
+  {
+    q: 'Нужно ли записываться заранее?',
+    a: 'На мойку можно приехать без записи в рабочие часы. На детейлинг — антикор, оклейку плёнкой, тонировку, химчистку — лучше записаться: эти работы занимают от нескольких часов до двух дней, и бокс под них планируется заранее.',
+  },
+  {
+    q: 'Какой у вас график работы?',
+    a: 'Понедельник–суббота с 09:00 до 19:00. Воскресенье — выходной. В последний час перед закрытием мы не берём работы, которые заведомо не успеем закончить качественно.',
+  },
+  {
+    q: 'Можно ли оплатить картой?',
+    a: 'Да. Также принимаем наличные. По безналичному расчёту для юридических лиц — уточните по телефону, оформим документы.',
+  },
+  {
+    q: 'Сколько времени займёт моя машина?',
+    a: 'Мойка — 20–40 минут. Полировка фар — до двух часов. Химчистка салона — 4–6 часов, машину удобнее оставить на день. Антикоррозийная обработка — один-два дня. Точный срок назовём при записи.',
+  },
+  {
+    q: 'Даёте ли вы гарантию на работы?',
+    a: 'Да. Если после мойки нашли пропущенное место — переделаем сразу и бесплатно. Если отошла кромка плёнки или тонировки — приезжайте, разберёмся. Работу, сделанную плохо, мы исправляем за свой счёт.',
+  },
+];
+---
+
+<Base
+  title="Автомойка и детейлинг в Бобруйске — Лайт Он, Минская 123"
+  description="Автомойка «Лайт Он» в Бобруйске, Минская 123/8: мойка от 15 руб., химчистка 300 руб., антикор 800 руб. Пн–Сб 09:00–19:00. Запись: +375 25 987-10-10."
+  path="/"
+  schemas={[faqSchema(faq)]}
+>
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero__grid">
+        <div>
+          <p class="eyebrow">{site.legalName} · Бобруйск</p>
+          <h1>
+            Автомойка
+            <em>& Detailing</em>
+          </h1>
+          <p class="hero__lead">
+            {site.slogan} Полный цикл заботы: от чистоты кузова до ясности фар.
+            Моем, защищаем от ржавчины, тонируем, реставрируем — в одном боксе на Минской.
+          </p>
+
+          <div class="hero__actions">
+            <button class="btn btn--primary" type="button" data-open-callback>
+              <Icon name="calendar" size={18} />
+              Записаться
+            </button>
+            <a class="btn btn--ghost" href={`tel:${contacts.phoneRaw}`}>
+              <Icon name="phone" size={18} />
+              {contacts.phoneHuman}
+            </a>
+          </div>
+
+          <div class="hero__facts">
+            <div class="fact">
+              <strong>{contacts.rating.value.toFixed(1).replace('.', ',')}</strong>
+              <span>рейтинг на Яндекс.Картах</span>
+            </div>
+            <div class="fact">
+              <strong>{services.length}</strong>
+              <span>услуг в одном месте</span>
+            </div>
+            <div class="fact">
+              <strong>15&nbsp;руб.</strong>
+              <span>мойка от этой суммы</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="gap:var(--sp-4)">
+          <p class="eyebrow" style="margin:0">Перезвоним за 5 минут</p>
+          <LeadForm variant="full" id="form-hero" flat />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal" aria-labelledby="services-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Наши услуги</p>
+        <h2 id="services-title">Что мы делаем с автомобилем</h2>
+        <p>
+          Девять направлений — от быстрой мойки до полного антикоррозийного цикла.
+          Цена каждой услуги указана честно и совпадает с прайсом в нашей карточке
+          на Яндекс.Картах.
+        </p>
+      </div>
+
+      <div class="grid-auto">
+        {services.map((s) => <ServiceCard entry={s} />)}
+      </div>
+
+      <p style="margin-top:var(--sp-6)">
+        <a class="btn btn--ghost" href={link('/uslugi/')}>
+          Полный прайс
+          <Icon name="arrow" size={16} />
+        </a>
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--tight reveal" aria-labelledby="works-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Было & Стало</p>
+        <h2 id="works-title">Посмотрите на результат нашей работы</h2>
+        <p>
+          Моем. Защищаем от ржавчины. Тонируем. Реставрируем. Возвращаем автомобилю
+          безупречный вид. Потяните ползунок, чтобы сравнить.
+        </p>
+      </div>
+
+      <div class="grid-auto" style="--flow:0">
+        <BeforeAfter
+          label="Полировка фар: помутневший рассеиватель и после обработки"
+          icon="headlight"
+          beforeSrc="raboty/far-do.jpg"
+          afterSrc="raboty/far-posle.jpg"
+        />
+        <BeforeAfter
+          label="Мойка днища: слой реагента и чистый металл"
+          icon="shield"
+          beforeSrc="raboty/dnishche-do.jpg"
+          afterSrc="raboty/dnishche-posle.jpg"
+        />
+        <BeforeAfter
+          label="Химчистка салона: засаленная ткань и после экстракции"
+          icon="sofa"
+          beforeSrc="raboty/salon-do.jpg"
+          afterSrc="raboty/salon-posle.jpg"
+        />
+      </div>
+
+      <p style="margin-top:var(--sp-6)">
+        <a class="btn btn--ghost" href={link('/raboty/')}>
+          Все работы
+          <Icon name="arrow" size={16} />
+        </a>
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--tight reveal" aria-labelledby="why-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Почему к нам возвращаются</p>
+        <h2 id="why-title">Четыре вещи, на которых мы не экономим</h2>
+      </div>
+
+      <div class="grid-auto">
+        {
+          advantages.map((a) => (
+            <article class="card">
+              <div class="card__icon">
+                <Icon name={a.icon} size={24} />
+              </div>
+              <h3>{a.title}</h3>
+              <p class="card__text">{a.text}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight reveal" aria-labelledby="contact-title">
+    <div class="wrap">
+      <div class="cta">
+        <div>
+          <p class="eyebrow">Как нас найти</p>
+          <h2 id="contact-title" style="font-size:var(--fs-2xl)">Минская 123, корпус 8</h2>
+
+          <ul class="checks" style="margin-top:var(--sp-5)">
+            <li>{contacts.address.full}</li>
+            <li>{scheduleHuman}</li>
+            <li>Оплата картой и наличными</li>
+          </ul>
+
+          <p style="margin-top:var(--sp-5);display:flex;flex-wrap:wrap;gap:.75rem">
+            <a class="btn btn--beam" href={`tel:${contacts.phoneRaw}`}>
+              <Icon name="phone" size={18} />
+              {contacts.phoneHuman}
+            </a>
+            <a class="btn btn--ghost" href={link('/kontakty/')}>
+              На карте
+              <Icon name="arrow" size={16} />
+            </a>
+          </p>
+
+          <p style="margin-top:var(--sp-5)">
+            <OpenStatus />
+          </p>
+        </div>
+
+        <div>
+          <a class="rating" href={contacts.yandexMaps} target="_blank" rel="noopener nofollow">
+            <Icon name="star" size={16} />
+            <strong>{contacts.rating.value.toFixed(1).replace('.', ',')}</strong>
+            <span>на Яндекс.Картах · {contacts.rating.reviews} отзыва</span>
+          </a>
+          <p class="text-dim" style="margin-top:var(--sp-4);font-size:var(--fs-sm)">
+            Оценка взята из нашей карточки организации. Мы не собираем отзывы на сайте
+            и не выдаём чужие оценки за свои — нажмите, чтобы прочитать их в источнике.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Faq items={faq} title="Вопросы, которые задают чаще всего" />
+</Base>

@@ -1,0 +1,46 @@
+---
+import LeadForm from './LeadForm.astro';
+import Icon from './Icon.astro';
+import { scheduleHuman } from '../config/site';
+
+/**
+ * Модалка обратного звонка на нативном <dialog>: ловушка фокуса, Esc и
+ * блокировка фона достаются от браузера, без строчки кода.
+ */
+---
+
+<dialog class="modal" data-callback-modal aria-labelledby="callback-title">
+  <div class="modal__head">
+    <div>
+      <h3 id="callback-title" style="font-size:var(--fs-xl)">Перезвоним за 5 минут</h3>
+      <p class="text-dim" style="font-size:var(--fs-sm);margin-top:.4rem">{scheduleHuman}</p>
+    </div>
+    <button class="modal__close" type="button" data-close-callback aria-label="Закрыть">
+      <Icon name="close" size={18} />
+    </button>
+  </div>
+  <div class="modal__body">
+    <LeadForm variant="callback" flat id="form-callback" />
+  </div>
+</dialog>
+
+<script>
+  const modal = document.querySelector<HTMLDialogElement>('[data-callback-modal]');
+  if (modal) {
+    const open = () => {
+      modal.showModal();
+      modal.querySelector<HTMLInputElement>('input[name="name"]')?.focus();
+    };
+
+    document.querySelectorAll('[data-open-callback]').forEach((btn) => {
+      btn.addEventListener('click', open);
+    });
+
+    modal.querySelector('[data-close-callback]')?.addEventListener('click', () => modal.close());
+
+    // Клик по затемнению за пределами карточки закрывает окно.
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.close();
+    });
+  }
+</script>

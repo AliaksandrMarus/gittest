@@ -1,0 +1,23 @@
+---
+import { site } from '../config/site';
+import { link } from '../lib/url';
+
+export interface Props {
+  items: { href?: string; label: string }[];
+}
+
+const { items } = Astro.props;
+---
+
+<nav class="crumbs wrap" aria-label="Хлебные крошки">
+  <ol>
+    <li><a href={link('/')}>Главная</a></li>
+    {
+      items.map((item) => (
+        <li>
+          {item.href ? <a href={link(item.href)}>{item.label}</a> : <span>{item.label}</span>}
+        </li>
+      ))
+    }
+  </ol>
+</nav>

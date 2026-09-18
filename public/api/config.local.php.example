@@ -1,0 +1,17 @@
+<?php
+/**
+ * Скопируйте в config.local.php рядом с lead.php и заполните.
+ * Файл добавлен в .gitignore: токен не попадёт ни в репозиторий, ни на страницу.
+ */
+
+return [
+    // Куда слать письма с заявками.
+    'mail_to'   => 'lighton9871010@mail.ru',
+    // Адрес отправителя. Должен быть на домене сайта, иначе письма уйдут в спам.
+    'mail_from' => 'noreply@lighton.by',
+
+    // Необязательно: дубль заявки в Telegram.
+    // Токен берётся у @BotFather, chat_id — у @userinfobot.
+    'telegram_token'   => '',
+    'telegram_chat_id' => '',
+];
