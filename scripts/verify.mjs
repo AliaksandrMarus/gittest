@@ -38,6 +38,17 @@ function walk(dir) {
   });
 }
 
+/**
+ * Базовый путь сборки. В боевом режиме пустой, на превью — '/gittest'.
+ * Определяется по разметке, чтобы проверку не нужно было запускать
+ * с теми же переменными, что и сборку.
+ */
+const BASE = (() => {
+  const home = readFileSync(join(DIST, 'index.html'), 'utf8');
+  const m = home.match(/href="(\/[^"/]+)\/_astro\//);
+  return m ? m[1] : '';
+})();
+
 const pages = walk(DIST).filter((f) => f.endsWith('.html'));
 const docs = pages.map((file) => ({
   file,
@@ -159,10 +170,19 @@ const known = new Set(docs.map((d) => d.url));
 known.add('/404/');
 
 for (const { url, html } of docs) {
-  const hrefs = [...html.matchAll(/href="(\/[^"#?]*)"/g)].map((m) => m[1]);
+  // Берём и абсолютные ссылки, и относительные: перелинковка внутри текстов
+  // услуг написана как ../slug/, чтобы работать в любой подпапке.
+  const hrefs = [...html.matchAll(/href="((?:\.\.?\/|\/)[^"#?]*)"/g)].map((m) => m[1]);
+
   for (const href of new Set(hrefs)) {
-    if (/\.(css|js|png|jpg|svg|woff2|xml|txt|webmanifest|php|ico)$/.test(href)) continue;
-    const normalized = href.endsWith('/') ? href : `${href}/`;
+    if (/\.(css|js|png|jpe?g|svg|woff2|xml|txt|webmanifest|php|ico|avif|webp)$/.test(href)) continue;
+
+    // Относительный адрес разрешаем от страницы, затем снимаем базовый путь —
+    // сравнивать нужно с тем, как страницы лежат в dist.
+    const resolved = new URL(href, `http://x${url}`).pathname;
+    const stripped = BASE && resolved.startsWith(BASE) ? resolved.slice(BASE.length) : resolved;
+    const normalized = stripped.endsWith('/') ? stripped : `${stripped}/`;
+
     if (!known.has(normalized)) fail(`${url}: битая внутренняя ссылка ${href}`);
   }
 }
@@ -201,7 +221,7 @@ for (const [from, to] of [
 }
 
 // ─── Итог ─────────────────────────────────────────────────────────────────
-console.log(`Страниц проверено: ${docs.length}`);
+console.log(`Страниц проверено: ${docs.length}${BASE ? ` (сборка в подпапке ${BASE})` : ''}`);
 console.log(`Схем JSON-LD найдено: ${[...seenTypes].sort().join(', ')}`);
 
 if (notes.length) {

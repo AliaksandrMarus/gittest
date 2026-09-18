@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import { priceParts } from '../lib/format';
+import { link } from '../lib/url';
 
 /**
  * Сводный прайс. Источник данных — frontmatter услуг, тот же, что у карточек
@@ -29,7 +30,7 @@ const services = (await getCollection('services')).sort((a, b) => a.data.order -
           return (
             <tr>
               <td>
-                <a href={`/uslugi/${s.id}/`}>{s.data.short}</a>
+                <a href={link(`/uslugi/${s.id}/`)}>{s.data.short}</a>
                 <small>{s.data.lead.split('.')[0]}.</small>
               </td>
               <td class="text-dim" style="white-space:nowrap">

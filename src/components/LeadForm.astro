@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import { contacts, FORM_ENDPOINT, FORM_ACCESS_KEY } from '../config/site';
 import { formatPrice } from '../lib/format';
+import { link } from '../lib/url';
 import Icon from './Icon.astro';
 
 export interface Props {
@@ -126,7 +127,7 @@ const submitLabel =
         <input type="checkbox" name="consent" required />
         <span>
           Согласен на обработку персональных данных в соответствии с{' '}
-          <a href="/politika-konfidencialnosti/">политикой</a>. Данные нужны только чтобы вам
+          <a href={link('/politika-konfidencialnosti/')}>политикой</a>. Данные нужны только чтобы вам
           перезвонить.
         </span>
       </label>

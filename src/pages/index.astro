@@ -9,6 +9,7 @@ import OpenStatus from '../components/OpenStatus.astro';
 import Icon from '../components/Icon.astro';
 import { site, contacts, scheduleHuman } from '../config/site';
 import { faqSchema } from '../lib/schema';
+import { link } from '../lib/url';
 
 const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
 
@@ -135,7 +136,7 @@ const faq = [
       </div>
 
       <p style="margin-top:var(--sp-6)">
-        <a class="btn btn--ghost" href="/uslugi/">
+        <a class="btn btn--ghost" href={link('/uslugi/')}>
           Полный прайс
           <Icon name="arrow" size={16} />
         </a>
@@ -176,7 +177,7 @@ const faq = [
       </div>
 
       <p style="margin-top:var(--sp-6)">
-        <a class="btn btn--ghost" href="/raboty/">
+        <a class="btn btn--ghost" href={link('/raboty/')}>
           Все работы
           <Icon name="arrow" size={16} />
         </a>
@@ -225,7 +226,7 @@ const faq = [
               <Icon name="phone" size={18} />
               {contacts.phoneHuman}
             </a>
-            <a class="btn btn--ghost" href="/kontakty/">
+            <a class="btn btn--ghost" href={link('/kontakty/')}>
               На карте
               <Icon name="arrow" size={16} />
             </a>

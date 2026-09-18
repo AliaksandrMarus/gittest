@@ -1,0 +1,80 @@
+name: Превью на GitHub Pages
+
+# Собирает сайт и выкладывает на https://aliaksandrmarus.github.io/gittest/
+#
+# Это превью для согласования, а не боевой сайт: PHP там нет, поэтому форма
+# показывает телефон и мессенджеры вместо отправки, а страницы закрыты
+# от индексации, чтобы копия не конкурировала с lighton.by в поиске.
+#
+# Боевая сборка делается без переменных: значения по умолчанию в конфиге
+# уже боевые, забыть их нельзя.
+
+on:
+  push:
+    branches:
+      - main
+      - claude/lighton-site-analysis-lrz8j7
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Пока идёт выкладка, следующий пуш ждёт своей очереди, а не дерётся за неё.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Сборка
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # enablement: true включает Pages сам — в настройках репозитория
+      # ничего делать руками не нужно.
+      - name: Включить Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - run: npm ci
+
+      - name: Собрать в режиме превью
+        env:
+          SITE_URL: ${{ steps.pages.outputs.origin }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          # Пустая строка — форма честно показывает телефон и мессенджеры.
+          PUBLIC_FORM_ENDPOINT: ''
+        run: npm run build
+
+      - name: Закрыть превью от поисковиков
+        run: |
+          printf 'User-agent: *\nDisallow: /\n' > dist/robots.txt
+          rm -f dist/sitemap-index.xml dist/sitemap-0.xml
+
+      - name: Проверить сборку
+        run: npm run verify
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Выкладка
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -6,6 +6,7 @@ import LeadForm from '../components/LeadForm.astro';
 import Icon from '../components/Icon.astro';
 import { site, contacts, scheduleHuman } from '../config/site';
 import { breadcrumbSchema } from '../lib/schema';
+import { link } from '../lib/url';
 
 const services = await getCollection('services');
 const crumbs = [{ label: 'О нас' }];
@@ -68,13 +69,13 @@ const crumbs = [{ label: 'О нас' }];
 
         <h2>Открытые цены</h2>
         <p>
-          Весь наш прайс опубликован на <a href="/uslugi/">странице услуг</a> и в карточке
+          Весь наш прайс опубликован на <a href={link('/uslugi/')}>странице услуг</a> и в карточке
           организации на Яндекс.Картах. Это один и тот же прайс. У нас нет наценки
           за класс легкового автомобиля, нет «уточняйте по телефону» вместо цены
           и нет сумм, которые вырастают к моменту выдачи машины.
         </p>
         <p>
-          Единственная услуга без цены в прайсе — <a href="/uslugi/restavraciya-far/">реставрация фар</a>,
+          Единственная услуга без цены в прайсе — <a href={link('/uslugi/restavraciya-far/')}>реставрация фар</a>,
           и на это есть причина: за этим словом скрываются работы от просушки с заменой
           герметика до восстановления треснувшего корпуса. Назвать цифру, не увидев фару,
           означало бы обмануть вас или себя.
@@ -120,7 +121,7 @@ const crumbs = [{ label: 'О нас' }];
               <Icon name="phone" size={18} />
               {contacts.phoneHuman}
             </a>
-            <a class="btn btn--ghost" href="/kontakty/">
+            <a class="btn btn--ghost" href={link('/kontakty/')}>
               Как доехать
               <Icon name="arrow" size={16} />
             </a>

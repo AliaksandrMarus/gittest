@@ -1,4 +1,5 @@
 import { site } from '../config/site';
+import { absolute } from './url';
 
 /** BreadcrumbList для страницы. Первый элемент — всегда главная. */
 export function breadcrumbSchema(items: { href?: string; label: string }[]) {
@@ -10,7 +11,7 @@ export function breadcrumbSchema(items: { href?: string; label: string }[]) {
       '@type': 'ListItem',
       position: i + 1,
       name: item.label,
-      ...(item.href ? { item: new URL(item.href, site.url).href } : {}),
+      ...(item.href ? { item: absolute(item.href) } : {}),
     })),
   };
 }
@@ -41,7 +42,7 @@ type ServiceInput = {
  * поэтому разметка и текст страницы не могут разойтись.
  */
 export function serviceSchema(s: ServiceInput) {
-  const url = new URL(s.path, site.url).href;
+  const url = absolute(s.path);
 
   const offers =
     s.price === null

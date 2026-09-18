@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import { site, contacts, scheduleHuman, nav } from '../config/site';
 import Icon from './Icon.astro';
+import { link } from '../lib/url';
 
 const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
 const year = new Date().getFullYear();
@@ -11,7 +12,7 @@ const year = new Date().getFullYear();
   <div class="wrap">
     <div class="footer__grid">
       <div>
-        <a class="logo" href="/">
+        <a class="logo" href={link('/')}>
           <span class="logo__mark" aria-hidden="true">ON</span>
           <span>
             {site.name}
@@ -59,7 +60,7 @@ const year = new Date().getFullYear();
           {
             services.map((s) => (
               <li>
-                <a href={`/uslugi/${s.id}/`}>{s.data.short}</a>
+                <a href={link(`/uslugi/${s.id}/`)}>{s.data.short}</a>
               </li>
             ))
           }
@@ -74,11 +75,11 @@ const year = new Date().getFullYear();
               .filter((n) => n.href !== '/')
               .map((n) => (
                 <li>
-                  <a href={n.href}>{n.label}</a>
+                  <a href={link(n.href)}>{n.label}</a>
                 </li>
               ))
           }
-          <li><a href="/politika-konfidencialnosti/">Обработка персональных данных</a></li>
+          <li><a href={link('/politika-konfidencialnosti/')}>Обработка персональных данных</a></li>
           <li>
             <a href={contacts.yandexMaps} target="_blank" rel="noopener nofollow">
               Мы на Яндекс.Картах

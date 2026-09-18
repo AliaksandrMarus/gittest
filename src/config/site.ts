@@ -11,7 +11,8 @@ export const site = {
   legalName: 'ООО «Лайт ОН»',
   tagline: 'Автомойка и детейлинг в Бобруйске',
   slogan: 'От грязи до идеала. За один визит.',
-  url: 'https://lighton.by',
+  /** На превью подменяется переменной SITE_URL; по умолчанию боевой домен. */
+  url: import.meta.env.SITE?.replace(/\/$/, '') ?? 'https://lighton.by',
   /** TODO: уточнить УНП — обязателен в подвале для юрлица РБ. */
   unp: '',
 } as const;
@@ -67,8 +68,15 @@ export const TZ_OFFSET_HOURS = 3;
  *  - 'https://api.web3forms.com/submit' и ключ в FORM_ACCESS_KEY — без бэкенда;
  *  - ''                         — форма не притворяется рабочей и показывает
  *                                 телефон, почту и мессенджеры.
+ *
+ * Переопределяется переменной PUBLIC_FORM_ENDPOINT на время сборки. На превью
+ * в GitHub Pages workflow передаёт пустую строку: PHP там нет, и форма честно
+ * показывает телефон с мессенджерами вместо отправки в никуда.
+ *
+ * Именно import.meta.env, а не process.env: этот файл попадает и в клиентский
+ * бандл через скрипт форм, а в браузере process не существует.
  */
-export const FORM_ENDPOINT = '/api/lead.php';
+export const FORM_ENDPOINT = import.meta.env.PUBLIC_FORM_ENDPOINT ?? '/api/lead.php';
 export const FORM_ACCESS_KEY = '';
 
 /** Пустая строка = счётчик не подключается вовсе. */

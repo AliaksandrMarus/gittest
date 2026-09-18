@@ -2,6 +2,7 @@
 import { site, contacts, nav } from '../config/site';
 import Icon from './Icon.astro';
 import OpenStatus from './OpenStatus.astro';
+import { link } from '../lib/url';
 
 export interface Props {
   currentPath: string;
@@ -16,7 +17,7 @@ const isCurrent = (href: string) =>
 
 <header class="header">
   <div class="wrap header__inner">
-    <a class="logo" href="/">
+    <a class="logo" href={link('/')}>
       <span class="logo__mark" aria-hidden="true">ON</span>
       <span>
         {site.name}
@@ -27,7 +28,7 @@ const isCurrent = (href: string) =>
     <nav class="nav" aria-label="Основное меню">
       {
         nav.map((item) => (
-          <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+          <a href={link(item.href)} aria-current={isCurrent(item.href) ? 'page' : undefined}>
             {item.label}
           </a>
         ))
@@ -46,7 +47,7 @@ const isCurrent = (href: string) =>
       <div class="burger__panel">
         {
           nav.map((item) => (
-            <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+            <a href={link(item.href)} aria-current={isCurrent(item.href) ? 'page' : undefined}>
               {item.label}
             </a>
           ))

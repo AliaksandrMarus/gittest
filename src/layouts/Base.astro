@@ -1,6 +1,7 @@
 ---
 import { site, contacts, analytics } from '../config/site';
 import { openingHoursSchema } from '../lib/schedule';
+import { link, absolute } from '../lib/url';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import LightRays from '../components/LightRays.astro';
@@ -23,8 +24,14 @@ export interface Props {
 
 const { title, description, path, schemas = [], noindex = false, ogImage } = Astro.props;
 
-const canonical = new URL(path, site.url).href;
-const image = new URL(ogImage ?? '/og-default.png', site.url).href;
+const canonical = absolute(path);
+const image = absolute(ogImage ?? '/og-default.png');
+
+/**
+ * Превью в подпапке не должно попадать в поиск: те же тексты на другом домене
+ * конкурировали бы с боевым сайтом за те же запросы.
+ */
+const isPreview = import.meta.env.BASE_URL !== '/';
 
 /**
  * Организация. Один и тот же объект на всех страницах — Яндекс и Google
@@ -83,8 +90,16 @@ const allSchemas = [business, website, ...schemas];
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex, follow" />}
-    <meta name="robots" content="max-image-preview:large" />
+    {
+      isPreview ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : (
+        <>
+          {noindex && <meta name="robots" content="noindex, follow" />}
+          <meta name="robots" content="max-image-preview:large" />
+        </>
+      )
+    }
     <meta name="theme-color" content="#0a0c10" />
     <meta name="geo.region" content="BY-MA" />
     <meta name="geo.placename" content="Бобруйск" />
@@ -102,14 +117,14 @@ const allSchemas = [business, website, ...schemas];
     <meta property="og:image:alt" content={title} />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="icon" href={link('/favicon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={link('/apple-touch-icon.png')} />
+    <link rel="manifest" href={link('/site.webmanifest')} />
 
     {/* Кириллица нужна на первом экране — грузим её раньше остального */}
     <link
       rel="preload"
-      href="/fonts/manrope-cyrillic-wght-normal.woff2"
+      href={link('/fonts/manrope-cyrillic-wght-normal.woff2')}
       as="font"
       type="font/woff2"
       crossorigin
