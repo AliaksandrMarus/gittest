@@ -1,0 +1,51 @@
+---
+import { contacts } from '../config/site';
+import Icon from './Icon.astro';
+
+/**
+ * Официальный виджет отзывов Яндекса, а не переписанные вручную тексты:
+ * он сам тянет live-данные из карточки организации, поэтому отзывы всегда
+ * настоящие и актуальные без разметки AggregateRating от лица сайта.
+ *
+ * Грузится по клику — та же схема приватности/производительности, что и
+ * у LazyMap: до явного согласия посетителя сторонний iframe не появляется.
+ */
+const src = `https://yandex.ru/maps-reviews-widget/${contacts.yandexOrgId}?comments`;
+---
+
+<div class="reviews-box map-box" data-reviews data-src={src}>
+  <div class="stack" style="--flow:1rem">
+    <Icon name="star" size={40} class="text-beam" />
+    <p style="font-size:var(--fs-lg);font-weight:700">
+      {contacts.rating.value.toFixed(1).replace('.', ',')} на Яндекс.Картах
+      · {contacts.rating.reviews} отзыва
+    </p>
+    <p class="text-dim" style="font-size:var(--fs-sm);max-width:34ch;margin-inline:auto">
+      Отзывы загрузятся по нажатию прямо из карточки организации на Яндексе —
+      мы их не переписываем и не выбираем, какие показать.
+    </p>
+    <p style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center">
+      <button class="btn btn--beam" type="button" data-reviews-load>Показать отзывы</button>
+      <a class="btn btn--ghost" href={contacts.yandexMaps} target="_blank" rel="noopener nofollow">
+        Открыть на Яндекс.Картах
+      </a>
+    </p>
+  </div>
+</div>
+
+<script>
+  /**
+   * Свой атрибут data-reviews, а не переиспользованный data-map:
+   * у обоих компонентов инлайновый скрипт вешается на страницу отдельно,
+   * и общий селектор навесил бы на каждую кнопку по два обработчика сразу.
+   */
+  document.querySelectorAll<HTMLElement>('[data-reviews]').forEach((box) => {
+    box.querySelector('[data-reviews-load]')?.addEventListener('click', () => {
+      const frame = document.createElement('iframe');
+      frame.src = box.dataset.src ?? '';
+      frame.loading = 'lazy';
+      frame.title = 'Отзывы об автомойке «Лайт Он» на Яндекс.Картах';
+      box.replaceChildren(frame);
+    });
+  });
+</script>

@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import LazyMap from '../components/LazyMap.astro';
+import ReviewsWidget from '../components/ReviewsWidget.astro';
 import LeadForm from '../components/LeadForm.astro';
 import OpenStatus from '../components/OpenStatus.astro';
 import Icon from '../components/Icon.astro';
@@ -122,6 +123,10 @@ const week = days.map((label, i) => ({ label, hours: schedule[(i + 1) % 7] }));
           <div class="card">
             <h2 style="font-size:var(--fs-xl);margin-bottom:1rem">Записаться</h2>
             <LeadForm variant="full" id="form-kontakty" flat />
+          </div>
+          <div>
+            <h2 style="font-size:var(--fs-xl);margin-bottom:1rem">Отзывы</h2>
+            <ReviewsWidget />
           </div>
         </div>
       </div>

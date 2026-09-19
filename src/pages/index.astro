@@ -5,6 +5,7 @@ import ServiceCard from '../components/ServiceCard.astro';
 import BeforeAfter from '../components/BeforeAfter.astro';
 import LeadForm from '../components/LeadForm.astro';
 import Faq from '../components/Faq.astro';
+import ReviewsWidget from '../components/ReviewsWidget.astro';
 import OpenStatus from '../components/OpenStatus.astro';
 import Icon from '../components/Icon.astro';
 import { site, contacts, scheduleHuman } from '../config/site';
@@ -238,15 +239,7 @@ const faq = [
         </div>
 
         <div>
-          <a class="rating" href={contacts.yandexMaps} target="_blank" rel="noopener nofollow">
-            <Icon name="star" size={16} />
-            <strong>{contacts.rating.value.toFixed(1).replace('.', ',')}</strong>
-            <span>на Яндекс.Картах · {contacts.rating.reviews} отзыва</span>
-          </a>
-          <p class="text-dim" style="margin-top:var(--sp-4);font-size:var(--fs-sm)">
-            Оценка взята из нашей карточки организации. Мы не собираем отзывы на сайте
-            и не выдаём чужие оценки за свои — нажмите, чтобы прочитать их в источнике.
-          </p>
+          <ReviewsWidget />
         </div>
       </div>
     </div>
