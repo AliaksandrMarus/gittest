@@ -8,7 +8,7 @@ import com.mywardrobe.app.data.local.db.entity.OutfitItemEntity
 
 @Dao
 interface OutfitItemDao {
-    @Query("SELECT * FROM outfit_items WHERE outfitId = :outfitId ORDER BY zIndex ASC")
+    @Query("SELECT * FROM outfit_items WHERE outfitId = :outfitId")
     suspend fun getForOutfit(outfitId: String): List<OutfitItemEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
