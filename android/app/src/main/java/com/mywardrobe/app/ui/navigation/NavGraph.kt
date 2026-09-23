@@ -2,10 +2,13 @@ package com.mywardrobe.app.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.mywardrobe.app.ui.additem.AddItemScreen
+import com.mywardrobe.app.ui.outfitbuilder.OutfitBuilderScreen
 import com.mywardrobe.app.ui.outfits.OutfitsScreen
 import com.mywardrobe.app.ui.profile.ProfileScreen
 import com.mywardrobe.app.ui.wardrobe.WardrobeScreen
@@ -31,6 +34,22 @@ fun WardrobeNavGraph(navController: NavHostController) {
             OutfitsScreen(
                 onOutfitClick = { outfitId -> navController.navigate(Destinations.outfitDetail(outfitId)) },
                 onCreateOutfitClick = { navController.navigate(Destinations.outfitBuilder()) },
+            )
+        }
+        composable(
+            route = Destinations.OUTFIT_BUILDER_WITH_ID,
+            arguments = listOf(
+                navArgument("outfitId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+            ),
+        ) { backStackEntry ->
+            OutfitBuilderScreen(
+                outfitId = backStackEntry.arguments?.getString("outfitId"),
+                onSaved = { navController.popBackStack() },
+                onCancel = { navController.popBackStack() },
             )
         }
         composable(Destinations.PROFILE) {
