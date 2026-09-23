@@ -64,7 +64,7 @@ fun OutfitBuilderScreen(
                 title = {
                     OutlinedTextField(
                         value = viewModel.outfitName,
-                        onValueChange = viewModel::setOutfitName,
+                        onValueChange = viewModel::updateOutfitName,
                         placeholder = { Text("Название образа") },
                         singleLine = true,
                     )

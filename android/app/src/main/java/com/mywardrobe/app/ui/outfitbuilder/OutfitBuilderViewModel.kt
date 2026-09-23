@@ -56,11 +56,11 @@ class OutfitBuilderViewModel(
         }
     }
 
-    fun setOutfitName(name: String) {
+    fun updateOutfitName(name: String) {
         outfitName = name
     }
 
-    fun setOccasion(value: Occasion?) {
+    fun updateOccasion(value: Occasion?) {
         occasion = value
     }
 
