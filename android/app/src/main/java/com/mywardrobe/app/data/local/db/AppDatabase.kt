@@ -14,7 +14,7 @@ import com.mywardrobe.app.data.local.db.entity.OutfitItemEntity
 
 @Database(
     entities = [ClothingItemEntity::class, OutfitEntity::class, OutfitItemEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)
@@ -33,7 +33,11 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "mywardrobe.db",
-                ).build().also { INSTANCE = it }
+                )
+                    // Приложение ещё не выпущено — полноценная миграция не нужна,
+                    // при смене схемы локальная база просто пересоздаётся.
+                    .fallbackToDestructiveMigration()
+                    .build().also { INSTANCE = it }
             }
     }
 }

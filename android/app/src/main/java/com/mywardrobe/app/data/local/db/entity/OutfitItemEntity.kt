@@ -27,9 +27,4 @@ data class OutfitItemEntity(
     @PrimaryKey val id: String,
     val outfitId: String,
     val itemId: String,
-    val x: Float,
-    val y: Float,
-    val scale: Float,
-    val rotationDegrees: Float,
-    val zIndex: Int,
 )

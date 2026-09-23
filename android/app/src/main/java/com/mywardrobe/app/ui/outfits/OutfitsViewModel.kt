@@ -6,10 +6,7 @@ import com.mywardrobe.app.data.repository.OutfitRepository
 import com.mywardrobe.app.data.repository.WardrobeRepository
 import com.mywardrobe.app.domain.advisor.OutfitAdvisor
 import com.mywardrobe.app.domain.advisor.OutfitSuggestion
-import com.mywardrobe.app.domain.model.Category
-import com.mywardrobe.app.domain.model.ClothingItem
 import com.mywardrobe.app.domain.model.Outfit
-import com.mywardrobe.app.domain.model.OutfitItemPlacement
 import com.mywardrobe.app.domain.model.OutfitSummary
 import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,7 +45,7 @@ class OutfitsViewModel(
         _suggestions.value = emptyList()
     }
 
-    /** Превращает подборку в новый образ с простой раскладкой по холсту, готовый к правке в конструкторе. */
+    /** Превращает подборку в новый образ (плоский коллаж), готовый к правке в конструкторе. */
     fun openSuggestionInBuilder(suggestion: OutfitSuggestion, onCreated: (String) -> Unit) {
         viewModelScope.launch {
             val id = UUID.randomUUID().toString()
@@ -58,35 +55,11 @@ class OutfitsViewModel(
                     name = "Подборка помощника",
                     occasion = null,
                     createdAt = System.currentTimeMillis(),
-                    placements = autoArrange(suggestion.items),
+                    items = suggestion.items,
                 ),
             )
             clearSuggestions()
             onCreated(id)
-        }
-    }
-
-    private fun autoArrange(items: List<ClothingItem>): List<OutfitItemPlacement> {
-        val order = listOf(
-            Category.OUTERWEAR,
-            Category.TOP,
-            Category.DRESS,
-            Category.BOTTOM,
-            Category.SHOES,
-            Category.ACCESSORY,
-        )
-        val sorted = items.sortedBy { item -> order.indexOf(item.category).takeIf { it >= 0 } ?: order.size }
-        val step = 1f / (sorted.size + 1)
-        return sorted.mapIndexed { index, item ->
-            OutfitItemPlacement(
-                id = UUID.randomUUID().toString(),
-                item = item,
-                x = 0.5f,
-                y = step * (index + 1),
-                scale = 1f,
-                rotationDegrees = 0f,
-                zIndex = index,
-            )
         }
     }
 }

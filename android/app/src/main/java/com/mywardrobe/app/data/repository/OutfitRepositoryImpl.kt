@@ -3,12 +3,13 @@ package com.mywardrobe.app.data.repository
 import com.mywardrobe.app.data.local.db.dao.ClothingItemDao
 import com.mywardrobe.app.data.local.db.dao.OutfitDao
 import com.mywardrobe.app.data.local.db.dao.OutfitItemDao
+import com.mywardrobe.app.data.local.db.entity.ClothingItemEntity
 import com.mywardrobe.app.data.local.db.entity.OutfitEntity
 import com.mywardrobe.app.data.local.db.entity.OutfitItemEntity
 import com.mywardrobe.app.domain.model.ClothingItem
 import com.mywardrobe.app.domain.model.Outfit
-import com.mywardrobe.app.domain.model.OutfitItemPlacement
 import com.mywardrobe.app.domain.model.OutfitSummary
+import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -27,38 +28,15 @@ class OutfitRepositoryImpl(
 
     override suspend fun getOutfit(id: String): Outfit? {
         val outfitEntity = outfitDao.getById(id) ?: return null
-        val placementEntities = outfitItemDao.getForOutfit(id)
-        val items = clothingItemDao.getByIds(placementEntities.map { it.itemId })
-            .associateBy { it.id }
-
-        val placements = placementEntities.mapNotNull { placement ->
-            val itemEntity = items[placement.itemId] ?: return@mapNotNull null
-            OutfitItemPlacement(
-                id = placement.id,
-                item = ClothingItem(
-                    id = itemEntity.id,
-                    imageUri = itemEntity.imageUri,
-                    cutoutImageUri = itemEntity.cutoutImageUri,
-                    category = itemEntity.category,
-                    dominantColorArgb = itemEntity.dominantColorArgb,
-                    seasons = itemEntity.seasons,
-                    occasions = itemEntity.occasions,
-                    createdAt = itemEntity.createdAt,
-                ),
-                x = placement.x,
-                y = placement.y,
-                scale = placement.scale,
-                rotationDegrees = placement.rotationDegrees,
-                zIndex = placement.zIndex,
-            )
-        }
+        val itemLinks = outfitItemDao.getForOutfit(id)
+        val items = clothingItemDao.getByIds(itemLinks.map { it.itemId }).map { it.toDomain() }
 
         return Outfit(
             id = outfitEntity.id,
             name = outfitEntity.name,
             occasion = outfitEntity.occasion,
             createdAt = outfitEntity.createdAt,
-            placements = placements,
+            items = items,
         )
     }
 
@@ -73,16 +51,11 @@ class OutfitRepositoryImpl(
         )
         outfitItemDao.deleteForOutfit(outfit.id)
         outfitItemDao.upsertAll(
-            outfit.placements.map { placement ->
+            outfit.items.map { item ->
                 OutfitItemEntity(
-                    id = placement.id,
+                    id = UUID.randomUUID().toString(),
                     outfitId = outfit.id,
-                    itemId = placement.item.id,
-                    x = placement.x,
-                    y = placement.y,
-                    scale = placement.scale,
-                    rotationDegrees = placement.rotationDegrees,
-                    zIndex = placement.zIndex,
+                    itemId = item.id,
                 )
             },
         )
@@ -92,3 +65,14 @@ class OutfitRepositoryImpl(
         outfitDao.getById(id)?.let { outfitDao.delete(it) }
     }
 }
+
+private fun ClothingItemEntity.toDomain() = ClothingItem(
+    id = id,
+    imageUri = imageUri,
+    cutoutImageUri = cutoutImageUri,
+    category = category,
+    dominantColorArgb = dominantColorArgb,
+    seasons = seasons,
+    occasions = occasions,
+    createdAt = createdAt,
+)

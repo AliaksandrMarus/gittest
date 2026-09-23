@@ -23,7 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mywardrobe.app.WardrobeApplication
 import com.mywardrobe.app.ui.common.ViewModelFactory
-import com.mywardrobe.app.ui.outfitbuilder.DraggableCanvas
+import com.mywardrobe.app.ui.outfitbuilder.FlatLayCollage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,12 +36,9 @@ fun OutfitDetailScreen(
     val context = LocalContext.current
     val container = (context.applicationContext as WardrobeApplication).container
     val viewModel: OutfitDetailViewModel = viewModel(
-        factory = ViewModelFactory {
-            OutfitDetailViewModel(container.outfitRepository, container.profileRepository, outfitId)
-        },
+        factory = ViewModelFactory { OutfitDetailViewModel(container.outfitRepository, outfitId) },
     )
     val outfit by viewModel.outfit.collectAsStateWithLifecycle()
-    val profilePhotoUri by viewModel.profilePhotoUri.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -74,10 +71,8 @@ fun OutfitDetailScreen(
                 CircularProgressIndicator()
             }
         } else {
-            DraggableCanvas(
-                backgroundImageUri = profilePhotoUri,
-                placements = currentOutfit.placements,
-                interactive = false,
+            FlatLayCollage(
+                items = currentOutfit.items,
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize(),
