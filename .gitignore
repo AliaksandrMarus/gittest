@@ -12,3 +12,15 @@ public/api/leads.log
 # Промежуточные выгрузки фото — в репозиторий не идут
 src/assets/yandex/
 src/assets/wp/
+
+# Android-проект «Мой гардероб» (android/)
+android/.gradle/
+android/.idea/
+android/local.properties
+android/*/build/
+android/build/
+android/.cxx/
+android/captures/
+android/*.iml
+android/*/*.iml
+android/gradle/wrapper/gradle-wrapper.jar
