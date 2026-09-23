@@ -1,6 +1,5 @@
 package com.mywardrobe.app.ui.additem
 
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import androidx.compose.runtime.getValue
@@ -42,7 +41,7 @@ class AddItemViewModel(
         _step.value = AddItemStep.Processing(uri)
         viewModelScope.launch {
             val file = imageStorage.fileForUri(uri)
-            val bitmap = file?.let { BitmapFactory.decodeFile(it.path) }
+            val bitmap = file?.let { imageStorage.loadOrientedBitmap(it) }
             if (file == null || bitmap == null) {
                 _step.value = AddItemStep.TagPicker(uri, null, Color.GRAY)
                 return@launch
