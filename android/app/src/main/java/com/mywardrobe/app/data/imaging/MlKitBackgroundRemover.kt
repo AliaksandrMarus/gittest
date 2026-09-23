@@ -4,9 +4,9 @@ import android.graphics.Bitmap
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.segmentation.subject.SubjectSegmentation
 import com.google.mlkit.vision.segmentation.subject.SubjectSegmenterOptions
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.resume
-import kotlinx.coroutines.resumeWithException
 
 class MlKitBackgroundRemover : BackgroundRemover {
     private val segmenter by lazy {
