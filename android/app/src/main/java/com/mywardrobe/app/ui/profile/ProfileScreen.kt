@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -75,16 +75,16 @@ fun ProfileScreen() {
                     contentDescription = "Фото в полный рост",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.75f),
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = { isCapturing = true }) { Text("Заменить фото") }
             } else {
                 Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.75f),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text("Фото в полный рост ещё не добавлено")
