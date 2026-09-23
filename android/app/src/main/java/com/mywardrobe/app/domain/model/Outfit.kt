@@ -8,6 +8,14 @@ data class Outfit(
     val placements: List<OutfitItemPlacement>,
 )
 
+/** Облегчённая карточка образа для списков — без загрузки всех размещённых вещей. */
+data class OutfitSummary(
+    val id: String,
+    val name: String,
+    val occasion: Occasion?,
+    val createdAt: Long,
+)
+
 data class OutfitItemPlacement(
     val id: String,
     val item: ClothingItem,
