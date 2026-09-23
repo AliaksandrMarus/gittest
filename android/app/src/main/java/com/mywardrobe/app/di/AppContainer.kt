@@ -1,6 +1,9 @@
 package com.mywardrobe.app.di
 
 import android.content.Context
+import com.mywardrobe.app.data.imaging.BackgroundRemover
+import com.mywardrobe.app.data.imaging.ImageStorage
+import com.mywardrobe.app.data.imaging.MlKitBackgroundRemover
 import com.mywardrobe.app.data.local.datastore.UserProfileStore
 import com.mywardrobe.app.data.local.db.AppDatabase
 import com.mywardrobe.app.data.repository.OutfitRepository
@@ -32,4 +35,9 @@ class AppContainer(context: Context) {
     val profileRepository: ProfileRepository by lazy {
         ProfileRepositoryImpl(userProfileStore)
     }
+
+    val imageStorage: ImageStorage by lazy { ImageStorage(appContext) }
+
+    /** Единственная точка замены реализации вырезания фона (см. BackgroundRemover). */
+    val backgroundRemover: BackgroundRemover by lazy { MlKitBackgroundRemover() }
 }
