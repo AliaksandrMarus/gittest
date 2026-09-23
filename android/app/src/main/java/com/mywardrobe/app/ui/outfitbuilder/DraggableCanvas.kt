@@ -36,10 +36,11 @@ private val ItemSize = 96.dp
 fun DraggableCanvas(
     backgroundImageUri: String?,
     placements: List<OutfitItemPlacement>,
-    selectedPlacementId: String?,
-    onPlacementSelected: (String) -> Unit,
-    onPlacementTransform: (id: String, dx: Float, dy: Float, scaleDelta: Float, rotationDelta: Float) -> Unit,
-    onPlacementRemoved: (String) -> Unit,
+    selectedPlacementId: String? = null,
+    interactive: Boolean = true,
+    onPlacementSelected: (String) -> Unit = {},
+    onPlacementTransform: (id: String, dx: Float, dy: Float, scaleDelta: Float, rotationDelta: Float) -> Unit = { _, _, _, _, _ -> },
+    onPlacementRemoved: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier = modifier) {
@@ -82,24 +83,31 @@ fun DraggableCanvas(
                                 Modifier
                             },
                         )
-                        .pointerInput(placement.id) {
-                            detectTransformGestures { _, pan, zoom, rotation ->
-                                onPlacementSelected(placement.id)
-                                onPlacementTransform(
-                                    placement.id,
-                                    pan.x / canvasWidthPx,
-                                    pan.y / canvasHeightPx,
-                                    zoom,
-                                    rotation,
-                                )
-                            }
-                        }
-                        .pointerInput(placement.id) {
-                            detectTapGestures(
-                                onTap = { onPlacementSelected(placement.id) },
-                                onLongPress = { onPlacementRemoved(placement.id) },
-                            )
-                        },
+                        .then(
+                            if (interactive) {
+                                Modifier
+                                    .pointerInput(placement.id) {
+                                        detectTransformGestures { _, pan, zoom, rotation ->
+                                            onPlacementSelected(placement.id)
+                                            onPlacementTransform(
+                                                placement.id,
+                                                pan.x / canvasWidthPx,
+                                                pan.y / canvasHeightPx,
+                                                zoom,
+                                                rotation,
+                                            )
+                                        }
+                                    }
+                                    .pointerInput(placement.id) {
+                                        detectTapGestures(
+                                            onTap = { onPlacementSelected(placement.id) },
+                                            onLongPress = { onPlacementRemoved(placement.id) },
+                                        )
+                                    }
+                            } else {
+                                Modifier
+                            },
+                        ),
                 ) {
                     AsyncImage(
                         model = placement.item.displayImageUri,
