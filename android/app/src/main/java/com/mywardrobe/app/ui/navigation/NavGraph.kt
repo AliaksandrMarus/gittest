@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.mywardrobe.app.ui.additem.AddItemScreen
 import com.mywardrobe.app.ui.outfits.OutfitsScreen
 import com.mywardrobe.app.ui.profile.ProfileScreen
 import com.mywardrobe.app.ui.wardrobe.WardrobeScreen
@@ -18,6 +19,12 @@ fun WardrobeNavGraph(navController: NavHostController) {
         composable(Destinations.WARDROBE) {
             WardrobeScreen(
                 onAddItemClick = { navController.navigate(Destinations.ADD_ITEM) },
+            )
+        }
+        composable(Destinations.ADD_ITEM) {
+            AddItemScreen(
+                onDone = { navController.popBackStack() },
+                onCancel = { navController.popBackStack() },
             )
         }
         composable(Destinations.OUTFITS) {
