@@ -1,6 +1,8 @@
 package com.mywardrobe.app.di
 
 import android.content.Context
+import com.mywardrobe.app.domain.advisor.OutfitAdvisor
+import com.mywardrobe.app.domain.advisor.RuleBasedOutfitAdvisor
 import com.mywardrobe.app.data.imaging.BackgroundRemover
 import com.mywardrobe.app.data.imaging.ImageStorage
 import com.mywardrobe.app.data.imaging.MlKitBackgroundRemover
@@ -40,4 +42,7 @@ class AppContainer(context: Context) {
 
     /** Единственная точка замены реализации вырезания фона (см. BackgroundRemover). */
     val backgroundRemover: BackgroundRemover by lazy { MlKitBackgroundRemover() }
+
+    /** Единственная точка замены на LLM-советчика позже (см. OutfitAdvisor). */
+    val outfitAdvisor: OutfitAdvisor by lazy { RuleBasedOutfitAdvisor() }
 }

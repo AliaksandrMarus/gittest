@@ -35,6 +35,7 @@ fun WardrobeNavGraph(navController: NavHostController) {
             OutfitsScreen(
                 onOutfitClick = { outfitId -> navController.navigate(Destinations.outfitDetail(outfitId)) },
                 onCreateOutfitClick = { navController.navigate(Destinations.outfitBuilder()) },
+                onOpenBuilderWithId = { outfitId -> navController.navigate(Destinations.outfitBuilder(outfitId)) },
             )
         }
         composable(
