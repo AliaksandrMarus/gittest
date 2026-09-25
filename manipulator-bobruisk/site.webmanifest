@@ -1,0 +1,22 @@
+{
+  "name": "Манипулятор Бобруйск — аренда крана-манипулятора и мини-экскаватора",
+  "short_name": "Манипулятор Бобруйск",
+  "description": "Аренда крана-манипулятора (КМУ) и мини-экскаватора в Бобруйске. Работаем круглосуточно.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0c0f",
+  "theme_color": "#0a0c0f",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "img/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "img/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
