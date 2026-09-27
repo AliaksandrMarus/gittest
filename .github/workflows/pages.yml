@@ -61,6 +61,11 @@ jobs:
       - name: Проверить сборку
         run: npm run verify
 
+      # Личное приложение-гардероб (fits/) — статическое, без сборки.
+      # Кладётся после проверок: verify относится только к страницам сайта.
+      - name: Добавить приложение Fits
+        run: cp -r fits dist/fits
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
