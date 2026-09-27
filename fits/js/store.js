@@ -227,7 +227,7 @@ export async function exportBackup() {
     app: 'fits-clone',
     version: 1,
     exportedAt: new Date().toISOString(),
-    settings: state.settings,
+    settings: { ...state.settings, aiKey: undefined, aiSpend: undefined },
     items,
     outfits,
     plans: [...state.plans.values()],
@@ -247,7 +247,10 @@ export async function importBackup(data) {
   for (const o of data.outfits ?? []) ops.push({ store: 'outfits', put: await back(o, ['preview']) });
   for (const p of data.plans ?? []) ops.push({ store: 'plans', put: p });
   for (const l of data.lookbooks ?? []) ops.push({ store: 'lookbooks', put: l });
-  if (data.settings) ops.push({ store: 'meta', put: { key: 'settings', value: { ...state.settings, ...data.settings } } });
+  if (data.settings) {
+    const { aiKey, aiSpend, ...rest } = data.settings;
+    ops.push({ store: 'meta', put: { key: 'settings', value: { ...state.settings, ...rest } } });
+  }
   await db.batch(ops);
   for (const o of ops) {
     if (o.store === 'items') state.items.set(o.put.id, o.put);

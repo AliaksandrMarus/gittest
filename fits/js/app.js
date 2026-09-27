@@ -8,6 +8,7 @@ import { builderView } from './views/builder.js';
 import { calendarView } from './views/calendar.js';
 import { statsView } from './views/stats.js';
 import { settingsView } from './views/settings.js';
+import { stylistView } from './views/stylist.js';
 
 route(/^\/closet$/, closetView, { tab: 'closet' });
 route(/^\/item\/([^/]+)$/, itemView);
@@ -15,6 +16,7 @@ route(/^\/outfits$/, outfitsView, { tab: 'outfits' });
 route(/^\/outfit\/([^/]+)$/, outfitView);
 route(/^\/lookbook\/([^/]+)$/, lookbookView);
 route(/^\/builder(?:\/([^/]+))?$/, builderView, { keep: true });
+route(/^\/stylist$/, stylistView, { tab: 'stylist' });
 route(/^\/calendar$/, calendarView, { tab: 'calendar' });
 route(/^\/stats$/, statsView, { tab: 'stats' });
 route(/^\/settings$/, settingsView);

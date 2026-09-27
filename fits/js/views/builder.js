@@ -28,7 +28,9 @@ export function builderView(root, [id], query) {
 
   if (!existing) {
     const seed = query.get('item');
-    if (query.get('shuffle')) layers = autoLayout(randomOutfit(activeItems()));
+    const many = (query.get('items') ?? '').split(',').map((x) => state.items.get(x)).filter(Boolean);
+    if (many.length) layers = autoLayout(many);
+    else if (query.get('shuffle')) layers = autoLayout(randomOutfit(activeItems()));
     else if (seed && state.items.has(seed)) layers = autoLayout([state.items.get(seed)]);
     if (layers.length) dirty = true;
   }

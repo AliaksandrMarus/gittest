@@ -3,7 +3,7 @@
  * дальше отдаётся из кэша и тихо обновляется в фоне (stale-while-revalidate).
  * Данные пользователя живут в IndexedDB и сюда не попадают.
  */
-const CACHE = 'fits-v2';
+const CACHE = 'fits-v3';
 // Модель нейросети — отдельный кэш: он не чистится при обновлении приложения.
 const AI_CACHE = 'ai-models-1.4.5';
 const SHELL = [
@@ -16,6 +16,7 @@ const SHELL = [
   'icons/icon-512.png',
   'icons/apple-touch-icon.png',
   'js/ai-bg.js',
+  'js/ai-stylist.js',
   'js/app.js',
   'js/constants.js',
   'js/db.js',
@@ -23,9 +24,11 @@ const SHELL = [
   'js/outfit-tools.js',
   'js/router.js',
   'js/store.js',
+  'js/stylist.js',
   'js/theme.js',
   'js/ui.js',
   'js/util.js',
+  'js/weather.js',
   'js/views/builder.js',
   'js/views/calendar.js',
   'js/views/closet.js',
@@ -34,7 +37,9 @@ const SHELL = [
   'js/views/outfits.js',
   'js/views/settings.js',
   'js/views/stats.js',
+  'js/views/stylist.js',
   'vendor/bg-removal.js',
+  'vendor/anthropic-sdk.js',
 ];
 
 self.addEventListener('install', (e) => {

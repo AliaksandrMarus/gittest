@@ -1,9 +1,11 @@
-import { html, pickFiles } from '../util.js';
+import { html, pickFiles, isoDate } from '../util.js';
 import { state, saveSettings, exportBackup, importBackup, wipeAll } from '../store.js';
-import { icon, toast, confirmDialog, busy } from '../ui.js';
+import { icon, toast, confirmDialog, busy, openSheet } from '../ui.js';
 import { goBack } from '../router.js';
 import { applyTheme } from '../theme.js';
 import { AI_MODELS, aiPreload } from '../ai-bg.js';
+import { AI_CHAT_MODELS, chatModel, fmtUsd } from '../ai-stylist.js';
+import { city, searchCity, setCity } from '../weather.js';
 
 export async function settingsView(root) {
   const est = await navigator.storage?.estimate?.().catch(() => null);
@@ -30,6 +32,19 @@ export async function settingsView(root) {
         </div>
         <label class="field"><span class="label">Валюта</span>
           <input class="input" name="currency" value="${state.settings.currency}" maxlength="8"></label>
+      </div>
+
+      <h3 class="section-title">Стилист</h3>
+      <div class="card-box">
+        <div class="kv link" data-act="city"><span>Город для погоды</span><b>${city().name} ${icon('chevronR', 'sm')}</b></div>
+        <label class="field"><span class="label">Ключ API Anthropic для ИИ-стилиста</span>
+          <input class="input" name="aiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…" value="${state.settings.aiKey ?? ''}"></label>
+        <p class="muted small">Ключ хранится только на этом устройстве и не попадает в резервную копию. Получить: console.anthropic.com → API Keys (нужно пополнить баланс; там же можно поставить месячный лимит). Не давайте никому пользоваться приложением на этом телефоне, если не хотите делиться балансом.</p>
+        <span class="label">Модель</span>
+        <div class="segmented">${Object.entries(AI_CHAT_MODELS).map(([k, m]) => html`<button class="${chatModel() === k ? 'on' : ''}" data-chat-model="${k}">${m.name}</button>`)}</div>
+        <p class="muted small">${AI_CHAT_MODELS[chatModel()].name}: ${AI_CHAT_MODELS[chatModel()].note}.
+          ${state.settings.aiSpend?.month === isoDate().slice(0, 7) ? `В этом месяце: ${state.settings.aiSpend.count ?? 0} запр. ≈ ${fmtUsd(state.settings.aiSpend.usd)} (оценка по токенам).` : ''}</p>
+        ${state.settings.aiKey ? html`<button class="btn sm danger-text" data-act="ai-key-del">${icon('trash')} Удалить ключ</button>` : ''}
       </div>
 
       <h3 class="section-title">Удаление фона</h3>
@@ -73,12 +88,18 @@ export async function settingsView(root) {
       applyTheme(theme);
       return;
     }
+    const cm = e.target.closest('[data-chat-model]')?.dataset.chatModel;
+    if (cm) return saveSettings({ aiChatModel: cm });
     const ai = e.target.closest('[data-ai]')?.dataset.ai;
     if (ai) return saveSettings({ aiBg: ai === 'on' });
     const model = e.target.closest('[data-model]')?.dataset.model;
     if (model) return saveSettings({ aiModel: model });
     const act = e.target.closest('[data-act]')?.dataset.act;
     if (act === 'back') goBack('/closet');
+    else if (act === 'city') chooseCity();
+    else if (act === 'ai-key-del') {
+      if (await confirmDialog('Удалить ключ API с этого устройства?', { ok: 'Удалить' })) saveSettings({ aiKey: '' });
+    }
     else if (act === 'ai-preload') {
       try {
         await busy('Готовлю нейросеть…', (setMsg) => aiPreload(setMsg));
@@ -123,5 +144,42 @@ export async function settingsView(root) {
 
   root.addEventListener('change', (e) => {
     if (e.target.name === 'currency') saveSettings({ currency: e.target.value.trim() || 'руб.' });
+    if (e.target.name === 'aiKey') {
+      const v = e.target.value.trim();
+      if (v && !v.startsWith('sk-ant-')) toast('Похоже, это не ключ Anthropic — он начинается с sk-ant-');
+      saveSettings({ aiKey: v });
+      if (v) toast('Ключ сохранён');
+    }
+  });
+}
+
+function chooseCity() {
+  const s = openSheet({
+    title: 'Город',
+    className: 'tall',
+    body: html`<form class="prompt-form"><input class="input" type="search" placeholder="Название города" value="${city().name}"><button class="btn primary">Найти</button></form><div class="action-list city-results"></div>`,
+  });
+  const list = s.body.querySelector('.city-results');
+  let found = [];
+  s.body.querySelector('form').onsubmit = async (e) => {
+    e.preventDefault();
+    const q = e.target.querySelector('input').value.trim();
+    if (!q) return;
+    list.innerHTML = '<p class="hint" style="padding:12px 16px">Ищу…</p>';
+    try {
+      found = await searchCity(q);
+      list.innerHTML = found.length
+        ? String(html`${found.map((c, i) => html`<button class="action" data-i="${i}"><span><b>${c.name}</b><br><small class="muted">${c.region}</small></span></button>`)}`)
+        : '<p class="hint" style="padding:12px 16px">Ничего не нашлось</p>';
+    } catch (err) {
+      list.innerHTML = String(html`<p class="hint" style="padding:12px 16px">${err.message}. Нужен интернет.</p>`);
+    }
+  };
+  list.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-i]');
+    if (!b) return;
+    await setCity(found[+b.dataset.i]);
+    s.close();
+    toast(`Город: ${found[+b.dataset.i].name}`);
   });
 }

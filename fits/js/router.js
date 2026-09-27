@@ -3,6 +3,8 @@
  * Каждый показ экрана получает новый корневой элемент, поэтому обработчики
  * событий не копятся между перерисовками.
  */
+import { closeAllSheets } from './ui.js';
+
 const routes = [];
 const stack = [];
 let current = null;
@@ -54,6 +56,7 @@ export function refresh() {
 
 export function startRouter() {
   window.addEventListener('hashchange', () => {
+    closeAllSheets();
     const { raw } = parse();
     if (stack.length > 1 && stack[stack.length - 2] === raw) stack.pop();
     else stack.push(raw);
