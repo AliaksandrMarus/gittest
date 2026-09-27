@@ -7,7 +7,7 @@ export const state = {
   outfits: new Map(),
   plans: new Map(),
   lookbooks: new Map(),
-  settings: { currency: 'руб.', theme: 'auto' },
+  settings: { currency: 'руб.', theme: 'auto', aiBg: false, aiModel: 'small', aiSource: null, aiReady: null },
 };
 
 const listeners = new Set();

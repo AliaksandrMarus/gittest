@@ -29,6 +29,7 @@ const P = {
   brush: '<path d="m14 4 6 6-7.5 7.5-6-6zM6.5 11.5 4 14c-1.5 1.5-.5 4-1 6 2-.5 4.5.5 6-1l2.5-2.5"/>',
   undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
   reset: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>',
+  ai: '<rect x="5" y="5" width="14" height="14" rx="3"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/><path d="m9.5 14.5 1.5-5 1.5 5M10 13h2M14.5 9.5v5"/>',
   sparkle: '<path d="M11 3l1.9 5.1L18 10l-5.1 1.9L11 17l-1.9-5.1L4 10l5.1-1.9zM19 15v5M16.5 17.5h5"/>',
   download: '<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
   upload: '<path d="M12 15V3M7 8l5-5 5 5M4 21h16"/>',
@@ -153,14 +154,17 @@ export function toast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
+/** Затемнение со спиннером на время fn; fn(setMessage) может менять подпись. */
 export async function busy(msg, fn) {
   const el = document.createElement('div');
   el.className = 'busy';
   el.innerHTML = String(html`<div class="spinner"></div><p>${msg}</p>`);
   document.body.append(el);
+  const p = el.querySelector('p');
+  const setMessage = (m) => { p.textContent = m; };
   await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 30)));
   try {
-    return await fn();
+    return await fn(setMessage);
   } finally {
     el.remove();
   }

@@ -3,7 +3,9 @@
  * дальше отдаётся из кэша и тихо обновляется в фоне (stale-while-revalidate).
  * Данные пользователя живут в IndexedDB и сюда не попадают.
  */
-const CACHE = 'fits-v1';
+const CACHE = 'fits-v2';
+// Модель нейросети — отдельный кэш: он не чистится при обновлении приложения.
+const AI_CACHE = 'ai-models-1.4.5';
 const SHELL = [
   './',
   'index.html',
@@ -13,6 +15,7 @@ const SHELL = [
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/apple-touch-icon.png',
+  'js/ai-bg.js',
   'js/app.js',
   'js/constants.js',
   'js/db.js',
@@ -31,6 +34,7 @@ const SHELL = [
   'js/views/outfits.js',
   'js/views/settings.js',
   'js/views/stats.js',
+  'vendor/bg-removal.js',
 ];
 
 self.addEventListener('install', (e) => {
@@ -45,9 +49,26 @@ self.addEventListener('activate', (e) => {
   );
 });
 
+const isModelFile = (url) => url.pathname.includes('/background-removal-data') && /(^|\.)(staticimgly\.com|unpkg\.com)$/.test(url.hostname);
+
 self.addEventListener('fetch', (e) => {
   const req = e.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (isModelFile(url)) {
+    // Файлы модели неизменны для версии: из кэша, а при первом разе — из сети с сохранением.
+    e.respondWith(
+      caches.open(AI_CACHE).then(async (cache) => {
+        const hit = await cache.match(req);
+        if (hit) return hit;
+        const res = await fetch(req);
+        if (res.ok) cache.put(req, res.clone());
+        return res;
+      }),
+    );
+    return;
+  }
+  if (url.origin !== location.origin) return;
   e.respondWith(
     caches.open(CACHE).then(async (cache) => {
       const cached = await cache.match(req, { ignoreSearch: true });

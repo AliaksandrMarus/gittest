@@ -3,6 +3,7 @@ import { state, saveSettings, exportBackup, importBackup, wipeAll } from '../sto
 import { icon, toast, confirmDialog, busy } from '../ui.js';
 import { goBack } from '../router.js';
 import { applyTheme } from '../theme.js';
+import { AI_MODELS, aiPreload } from '../ai-bg.js';
 
 export async function settingsView(root) {
   const est = await navigator.storage?.estimate?.().catch(() => null);
@@ -31,6 +32,23 @@ export async function settingsView(root) {
           <input class="input" name="currency" value="${state.settings.currency}" maxlength="8"></label>
       </div>
 
+      <h3 class="section-title">Удаление фона</h3>
+      <div class="card-box">
+        <div class="segmented">
+          <button class="${!state.settings.aiBg ? 'on' : ''}" data-ai="off">Обычное</button>
+          <button class="${state.settings.aiBg ? 'on' : ''}" data-ai="on">Нейросеть</button>
+        </div>
+        <p class="muted small">${state.settings.aiBg
+          ? 'Каждое новое фото обрабатывает нейросеть: вещь вырезается аккуратно даже на пёстром фоне. Считается прямо на телефоне, фото никуда не отправляются. Одно фото — от нескольких секунд до полуминуты.'
+          : 'Обычный способ мгновенный, но хорошо работает только на ровном однотонном фоне. Кнопка «Нейросеть» в редакторе доступна всегда.'}</p>
+        <span class="label">Модель</span>
+        <div class="segmented">${Object.entries(AI_MODELS).map(([k, m]) => html`<button class="${(state.settings.aiModel || 'small') === k ? 'on' : ''}" data-model="${k}">${m.name} · ${m.size}</button>`)}</div>
+        ${state.settings.aiReady === (state.settings.aiModel || 'small')
+          ? html`<p class="muted small">${icon('check', 'sm')} Модель скачана и работает без интернета.</p>`
+          : html`<button class="btn" data-act="ai-preload">${icon('download')} Скачать модель сейчас</button>
+            <p class="muted small">Скачивается один раз, лучше по Wi-Fi. Без этого загрузка начнётся при первом использовании.</p>`}
+      </div>
+
       <h3 class="section-title">Данные</h3>
       <div class="card-box">
         <p class="muted">Всё хранится только на этом устройстве, в браузере. Делайте резервную копию — при очистке данных сайта или смене телефона её можно восстановить.</p>
@@ -55,8 +73,20 @@ export async function settingsView(root) {
       applyTheme(theme);
       return;
     }
+    const ai = e.target.closest('[data-ai]')?.dataset.ai;
+    if (ai) return saveSettings({ aiBg: ai === 'on' });
+    const model = e.target.closest('[data-model]')?.dataset.model;
+    if (model) return saveSettings({ aiModel: model });
     const act = e.target.closest('[data-act]')?.dataset.act;
     if (act === 'back') goBack('/closet');
+    else if (act === 'ai-preload') {
+      try {
+        await busy('Готовлю нейросеть…', (setMsg) => aiPreload(setMsg));
+        toast('Нейросеть скачана');
+      } catch (err) {
+        toast(err.message);
+      }
+    }
     else if (act === 'export') {
       const data = await busy('Собираю копию…', exportBackup);
       const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });

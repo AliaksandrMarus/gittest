@@ -1,7 +1,8 @@
 import { html, uid, isoDate, blobToImage, scaledCanvas, makeCanvas, encodeCanvas, clamp, pickFiles, $ } from '../util.js';
 import { CATEGORIES, catById, COLORS, SEASONS, currentSeason } from '../constants.js';
-import { state, saveItem, imgURL } from '../store.js';
+import { state, saveItem, saveSettings, imgURL } from '../store.js';
 import { icon, toast, confirmDialog, busy } from '../ui.js';
+import { aiRemoveBackground, AI_MODELS } from '../ai-bg.js';
 import { autoBackgroundMask, floodRegion, opaqueBounds, suggestColors, feather } from '../image-tools.js';
 
 const WORK_MAX = 1024;
@@ -121,6 +122,20 @@ class Cutout {
       }
     }
     this.render(Math.min(x0, x1) - r - 1, Math.min(y0, y1) - r - 1, Math.max(x0, x1) + r + 2, Math.max(y0, y1) + r + 2);
+  }
+
+  /** Маска от нейросети (альфа-канал её результата того же размера). */
+  applyAlpha(rgba) {
+    this.pushUndo();
+    this.beforeAuto = null;
+    for (let p = 0; p < this.mask.length; p++) this.mask[p] = Math.min(this.initial[p], rgba[p * 4 + 3]);
+    this.render();
+  }
+
+  sourceBlob() {
+    const c = makeCanvas(this.W, this.H);
+    c.getContext('2d').putImageData(this.orig, 0, 0);
+    return new Promise((resolve) => c.toBlob(resolve, 'image/png'));
   }
 
   reset() {
@@ -247,6 +262,7 @@ export function editItem({ item = null, file = null, index = 0, total = 1, prese
         <div class="cut-area"><div class="checker cut-frame"><canvas class="cut-canvas"></canvas></div></div>
         <div class="cut-tools">
           <div class="toolbar">
+            <button class="tool" data-tool="ai">${icon('ai')}<span>Нейросеть</span></button>
             <button class="tool" data-tool="auto">${icon('sparkle')}<span>Авто-фон</span></button>
             <button class="tool" data-tool="wand">${icon('wand')}<span>Палочка</span></button>
             <button class="tool" data-tool="erase">${icon('eraser')}<span>Ластик</span></button>
@@ -277,12 +293,46 @@ export function editItem({ item = null, file = null, index = 0, total = 1, prese
         if (isNew) return finish('skip');
         return showFormStep();
       }
+      bindCanvas(canvas);
+      if (isNew && state.settings.aiBg) {
+        setTool('ai');
+        if (await runAI({ quiet: true })) return;
+        tool = 'auto';
+      }
+      setTool(tool);
       if (isNew) {
         const ok = await busy('Убираю фон…', async () => cut.auto(tol));
-        setHint(ok ? 'Фон убран. Поправьте палочкой или ластиком, если нужно.' : 'Фон не распознан — сфотографируйте вещь на ровном фоне или сотрите его палочкой и ластиком.');
+        setHint(ok ? 'Фон убран. Поправьте палочкой или ластиком, если нужно.' : 'Фон не распознан — попробуйте «Нейросеть» или сотрите фон палочкой и ластиком.');
       } else setHint('Выберите инструмент');
-      setTool(tool);
-      bindCanvas(canvas);
+    }
+
+    async function runAI({ quiet = false } = {}) {
+      const model = AI_MODELS[state.settings.aiModel] ? state.settings.aiModel : 'small';
+      if (!quiet && state.settings.aiReady !== model) {
+        const ok = await confirmDialog(`Нейросеть скачается один раз (${AI_MODELS[model].size}) и дальше будет работать без интернета. Фото никуда не отправляются. Скачать?`, { ok: 'Скачать', danger: false });
+        if (!ok) return false;
+      }
+      try {
+        const rgba = await busy('Запускаю нейросеть…', async (setMsg) => {
+          const out = await aiRemoveBackground(await cut.sourceBlob(), setMsg);
+          const img = await blobToImage(out);
+          const c = makeCanvas(cut.W, cut.H);
+          const ctx = c.getContext('2d', { willReadFrequently: true });
+          ctx.drawImage(img, 0, 0, cut.W, cut.H);
+          return ctx.getImageData(0, 0, cut.W, cut.H).data;
+        });
+        cut.applyAlpha(rgba);
+        const first = state.settings.aiReady !== model;
+        if (first) await saveSettings({ aiReady: model });
+        setHint('Фон убран нейросетью. Поправьте ластиком или кистью, если нужно.');
+        if (first && !state.settings.aiBg) toast('Нейросеть скачана. Включить её для всех новых фото можно в настройках');
+        return true;
+      } catch (e) {
+        console.error(e);
+        toast(e.message || 'Нейросеть не сработала');
+        setHint(quiet ? 'Нейросеть недоступна — фон убран обычным способом.' : 'Нейросеть не сработала. Попробуйте «Авто-фон» или палочку.');
+        return false;
+      }
     }
 
     function setHint(t) {
@@ -294,12 +344,15 @@ export function editItem({ item = null, file = null, index = 0, total = 1, prese
       tool = t;
       ov.querySelectorAll('[data-tool]').forEach((b) => b.classList.toggle('on', b.dataset.tool === t));
       const opt = $('.tool-opt', ov);
-      if (t === 'auto' || t === 'wand') {
+      if (t === 'ai') {
+        opt.innerHTML = String(html`<p class="hint">Модель: ${AI_MODELS[state.settings.aiModel]?.name ?? 'Быстрая'} · меняется в настройках</p>`);
+      } else if (t === 'auto' || t === 'wand') {
         opt.innerHTML = String(html`<label class="slider"><span>Чувствительность</span><input type="range" min="5" max="110" value="${tol}" data-opt="tol"></label>`);
       } else {
         opt.innerHTML = String(html`<label class="slider"><span>Размер кисти</span><input type="range" min="6" max="90" value="${brush}" data-opt="brush"></label>`);
       }
       const hints = {
+        ai: 'Нажмите «Нейросеть» ещё раз, чтобы убрать фон заново.',
         auto: 'Двигайте ползунок, если фон убран не полностью или задета вещь.',
         wand: 'Нажмите на участок фона, чтобы убрать его.',
         erase: 'Проведите пальцем по тому, что нужно стереть.',
@@ -441,6 +494,10 @@ export function editItem({ item = null, file = null, index = 0, total = 1, prese
       if (toolBtn) {
         const t = toolBtn.dataset.tool;
         setTool(t);
+        if (t === 'ai') {
+          await runAI();
+          return;
+        }
         if (t === 'auto') {
           const ok = await busy('Убираю фон…', async () => cut.auto(tol));
           if (!ok) setHint('Фон не распознан. Попробуйте палочку: нажмите на фон.');
@@ -486,7 +543,7 @@ export function editItem({ item = null, file = null, index = 0, total = 1, prese
         if (f) {
           file = f;
           await showImageStep(f);
-          if (!cut.auto(tol)) setHint('Фон не распознан. Попробуйте палочку: нажмите на фон.');
+          if (!(state.settings.aiBg && (await runAI({ quiet: true }))) && !cut.auto(tol)) setHint('Фон не распознан. Попробуйте палочку: нажмите на фон.');
         }
       }
     });
