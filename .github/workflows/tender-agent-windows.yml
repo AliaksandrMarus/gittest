@@ -1,0 +1,84 @@
+name: ТендерАгент — сборка для Windows
+
+# Собирает программу ТендерАгент.exe на Windows-машине GitHub и выкладывает
+# её в раздел Releases репозитория: оттуда её скачивают одним щелчком.
+
+on:
+  push:
+    branches:
+      - main
+      - claude/vibrant-sagan-nuy8fz
+    paths:
+      - "tender-agent/**"
+      - ".github/workflows/tender-agent-windows.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Сборка .exe
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: tender-agent
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: tender-agent/requirements.txt
+
+      - name: Зависимости
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller pytest
+
+      - name: Тесты
+        run: python -m pytest -q
+
+      - name: Сборка (один файл)
+        env:
+          TA_ONEFILE: "1"
+        run: pyinstaller --noconfirm --clean TenderAgent.spec
+
+      - name: Сборка (папка, запускается быстрее)
+        env:
+          TA_ONEFILE: "0"
+        run: |
+          pyinstaller --noconfirm --distpath dist-folder TenderAgent.spec
+          Compress-Archive -Path "dist-folder/ТендерАгент" -DestinationPath "dist/TenderAgent-folder.zip"
+        shell: pwsh
+
+      - name: Переименовать .exe латиницей для скачивания
+        shell: pwsh
+        run: Copy-Item "dist/ТендерАгент.exe" "dist/TenderAgent.exe"
+
+      - name: Артефакт сборки
+        uses: actions/upload-artifact@v4
+        with:
+          name: TenderAgent-windows
+          path: |
+            tender-agent/dist/TenderAgent.exe
+            tender-agent/dist/TenderAgent-folder.zip
+
+      - name: Выпуск в Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: tender-agent-v1.0.${{ github.run_number }}
+          name: ТендерАгент 1.0.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          body: |
+            ТендерАгент — мониторинг тендеров Беларуси и подготовка ценовых предложений.
+
+            **Скачать:** `TenderAgent.exe` — один файл, запускается двойным щелчком.
+            Если Windows покажет «Windows защитила ваш компьютер» — «Подробнее» → «Выполнить в любом случае».
+
+            `TenderAgent-folder.zip` — тот же вариант в виде папки (запускается быстрее): распакуйте и запустите `ТендерАгент.exe`.
+          files: |
+            tender-agent/dist/TenderAgent.exe
+            tender-agent/dist/TenderAgent-folder.zip

@@ -12,3 +12,9 @@ public/api/leads.log
 # Промежуточные выгрузки фото — в репозиторий не идут
 src/assets/yandex/
 src/assets/wp/
+
+# ТендерАгент: сборка и кэш Python
+__pycache__/
+.pytest_cache/
+tender-agent/build/
+tender-agent/dist-folder/

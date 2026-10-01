@@ -1,0 +1,50 @@
+{
+  "_comment": "Адреса площадок. Копию этого файла можно положить в Документы/ТендерАгент/sites.json и поправить там — программа возьмёт ваши значения поверх этих. Подстановки: {query} — ключевое слово, {okrb} — код ОКРБ, {page} — номер страницы, {today} — сегодняшняя дата ДД.ММ.ГГГГ.",
+  "icetrade": {
+    "title": "icetrade.by",
+    "base_url": "https://icetrade.by/",
+    "search_urls": [
+      "https://icetrade.by/search/auctions?search_text={query}&zakup_type%5B1%5D=1&zakup_type%5B2%5D=1&auc_num=&okrb=&company_title=&establishment=0&industries=&period=&created_from=&created_to=&request_end_from={today}&request_end_to=&t%5BTrade%5D=1&t%5BeTrade%5D=1&t%5BsocialOrder%5D=1&t%5BsingleSource%5D=1&t%5BAuction%5D=1&t%5BRequest%5D=1&t%5BcontractingTrades%5D=1&t%5Bnegotiations%5D=1&t%5BOther%5D=1&sort=num%3Adesc&sbm=1&onPage=100&p={page}",
+      "https://icetrade.by/search/auctions?search_text=&zakup_type%5B1%5D=1&zakup_type%5B2%5D=1&auc_num=&okrb={okrb}&company_title=&establishment=0&industries=&period=&created_from=&created_to=&request_end_from={today}&request_end_to=&t%5BTrade%5D=1&t%5BeTrade%5D=1&t%5BsocialOrder%5D=1&t%5BsingleSource%5D=1&t%5BAuction%5D=1&t%5BRequest%5D=1&t%5BcontractingTrades%5D=1&t%5Bnegotiations%5D=1&t%5BOther%5D=1&sort=num%3Adesc&sbm=1&onPage=100&p={page}"
+    ],
+    "latest_urls": [
+      "https://icetrade.by/search/auctions?search_text=&request_end_from={today}&sort=num%3Adesc&sbm=1&onPage=100&p={page}"
+    ],
+    "detail_link_regex": "icetrade\\.by/tenders/[a-z]+/view/\\d+",
+    "id_regex": "/view/(\\d+)",
+    "encoding": "",
+    "page_start": 1,
+    "delay_seconds": 1.5
+  },
+  "goszakupki": {
+    "title": "goszakupki.by",
+    "base_url": "https://goszakupki.by/",
+    "search_urls": [
+      "https://goszakupki.by/tenders/posted?TendersSearch%5Btext%5D={query}&page={page}",
+      "https://goszakupki.by/tenders/posted?TendersSearch%5Btext%5D={okrb}&page={page}"
+    ],
+    "latest_urls": [
+      "https://goszakupki.by/tenders/posted?page={page}"
+    ],
+    "detail_link_regex": "goszakupki\\.by/(tender|marketing|request|auction|single-source|purchase|contracting)/view/\\d+",
+    "id_regex": "/((?:tender|marketing|request|auction|single-source|purchase|contracting)/view/\\d+)",
+    "encoding": "",
+    "page_start": 1,
+    "delay_seconds": 1.5
+  },
+  "butb": {
+    "title": "zakupki.butb.by",
+    "base_url": "https://zakupki.butb.by/",
+    "search_urls": [
+      "https://zakupki.butb.by/auctions/reestrauctions.html?page={page}"
+    ],
+    "latest_urls": [
+      "https://zakupki.butb.by/auctions/reestrauctions.html?page={page}"
+    ],
+    "detail_link_regex": "zakupki\\.butb\\.by/.*(view|show|card)[^?#]*\\?[^#]*id=\\d+",
+    "id_regex": "[?&][A-Za-z]*[iI]d=(\\d+)",
+    "encoding": "",
+    "page_start": 1,
+    "delay_seconds": 1.5
+  }
+}
