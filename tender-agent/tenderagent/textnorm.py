@@ -67,8 +67,31 @@ def key(text: str) -> str:
     return " ".join(tokens(text))
 
 
+_ABBR = {
+    "канцтовар": ["канцелярские товары", "канцелярские принадлежности"],
+    "хозтовар": ["хозяйственные товары"],
+    "стройматериал": ["строительные материалы"],
+    "спецодежд": ["специальная одежда"],
+    "электротовар": ["электротехническая продукция", "электротехнические товары"],
+    "оргтехник": ["организационная техника"],
+    "сантехник": ["санитарно-техническ"],
+}
+
+
 def contains_keyword(text: str, keyword: str) -> bool:
-    """Все слова ключевой фразы встречаются в тексте (с учётом окончаний)."""
+    """Все слова ключевой фразы встречаются в тексте (с учётом окончаний и сокращений)."""
+    if _contains(text, keyword):
+        return True
+    low = normalize(keyword)
+    for abbr, full in _ABBR.items():
+        if abbr in low:
+            if any(_contains(text, low.replace(m, f) if (m := next(
+                    (w for w in low.split() if w.startswith(abbr)), "")) else f) for f in full):
+                return True
+    return False
+
+
+def _contains(text: str, keyword: str) -> bool:
     kw = tokens(keyword)
     if not kw:
         return False
