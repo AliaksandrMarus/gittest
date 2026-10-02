@@ -5,10 +5,13 @@ from urllib.parse import urlparse
 
 from .base import GenericSite, Http, SiteConfig, load_site_configs, tender_matches  # noqa: F401
 from ..models import Tender
+from .butb import ButbSite
+
+_CLASSES = {"butb": ButbSite}
 
 
 def make_sites(http: Http, log=print) -> dict[str, GenericSite]:
-    return {k: GenericSite(cfg, http, log) for k, cfg in load_site_configs().items()}
+    return {k: _CLASSES.get(k, GenericSite)(cfg, http, log) for k, cfg in load_site_configs().items()}
 
 
 def tender_from_url(url: str, sites: dict[str, GenericSite]) -> Tender:

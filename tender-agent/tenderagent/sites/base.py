@@ -17,7 +17,12 @@ from pathlib import Path
 from urllib.parse import quote_plus, urljoin, urlparse
 
 import requests
-from bs4 import BeautifulSoup
+import warnings
+
+from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
+
+# butb отдаёт XHTML с заголовком <?xml?> — разбираем как HTML, это нормально.
+warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
 from .. import textnorm
 from ..config import data_dir, resource_path
@@ -259,9 +264,13 @@ class GenericSite:
         return m.group(1) if m else ""
 
     # --- карточка -------------------------------------------------------
-    def fetch_details(self, t: Tender) -> Tender:
+    def fetch_html(self, t: Tender) -> tuple[str, str]:
         r = self.http.get(t.url, self.cfg.encoding)
-        self.parse_details(t, r.text, r.url)
+        return r.text, r.url
+
+    def fetch_details(self, t: Tender) -> Tender:
+        html, url = self.fetch_html(t)
+        self.parse_details(t, html, url)
         return t
 
     def parse_details(self, t: Tender, html: str, url: str) -> None:

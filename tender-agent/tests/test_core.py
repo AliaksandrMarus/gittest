@@ -200,3 +200,24 @@ def test_full_prepare(tmp_path):
     assert {"Сопроводительное письмо.docx", "Опись документов.docx", "Сведения об участнике.docx"} <= names
     assert (out / "Для проверки" / "ЧЕК-ЛИСТ перед подачей.docx").exists()
     assert db.get(t.uid)["status"] == STATUS_READY
+
+
+def test_butb_registry():
+    """Реестр zakupki.butb.by (JSF): закупки без ссылок, разбираем таблицу."""
+    from tenderagent.sites import Http, make_sites
+
+    site = make_sites(Http())["butb"]
+    html = (Path(__file__).parent / "fixtures" / "butb_reestr.html").read_text("utf-8")
+    ts = site.parse_list(html, "https://zakupki.butb.by/auctions/reestrauctions.html;jsessionid=X")
+    assert len(ts) >= 15
+    t = ts[0]
+    assert t.ext_id == "AU20261001394578"
+    assert "Маска кислородная" in t.title
+    assert t.estimate == 990.0
+    assert t.deadline == "2026-10-13T23:59"
+    assert "Медтехника" in t.customer
+    assert t.fields["_butb_link"] == "fra:reestrAu:0:_t347"
+    assert t.url == "https://zakupki.butb.by/auctions/reestrauctions.html"
+    chesnok = [x for x in ts if "Чеснок" in x.title]
+    assert chesnok and chesnok[0].estimate is None  # у запроса цен стоимость не указана
+    assert chesnok[0].procedure == "заявка о ценах (тарифах)"

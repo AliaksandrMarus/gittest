@@ -36,10 +36,10 @@
     "title": "zakupki.butb.by",
     "base_url": "https://zakupki.butb.by/",
     "search_urls": [
-      "https://zakupki.butb.by/auctions/reestrauctions.html?page={page}"
+      "https://zakupki.butb.by/auctions/reestrauctions.html"
     ],
     "latest_urls": [
-      "https://zakupki.butb.by/auctions/reestrauctions.html?page={page}"
+      "https://zakupki.butb.by/auctions/reestrauctions.html"
     ],
     "detail_link_regex": "zakupki\\.butb\\.by/.*(view|show|card)[^?#]*\\?[^#]*id=\\d+",
     "id_regex": "[?&][A-Za-z]*[iI]d=(\\d+)",

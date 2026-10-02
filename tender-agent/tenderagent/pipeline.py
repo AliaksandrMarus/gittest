@@ -108,9 +108,16 @@ class Engine:
             try:
                 self.sites[t.site].fetch_details(t)
             except Exception as e:
-                self.log(f"Не открылась карточка {t.url}: {e}")
-                self.db.save_tender(t, STATUS_ERROR)
-                continue
+                if not t.title:
+                    self.log(f"Не открылась карточка {t.url}: {e}")
+                    self.db.save_tender(t, STATUS_ERROR)
+                    continue
+                # Данных из списка (название, заказчик, срок, стоимость) достаточно,
+                # чтобы показать тендер; документы пользователь скачает с сайта сам.
+                self.log(f"{t.number or t.ext_id}: карточка не открылась ({e}), беру данные из реестра")
+                if not t.positions:
+                    from .models import Position
+                    t.positions = [Position(name=t.title, source="реестр")]
             if is_expired(t):
                 self.db.save_tender(t, STATUS_EXPIRED)
                 continue

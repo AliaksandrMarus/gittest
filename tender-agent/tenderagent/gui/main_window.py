@@ -447,9 +447,9 @@ class MainWindow(QMainWindow):
                     if found:
                         t = found[0]
                         try:
-                            rr = self.engine.http.get(t.url, site.cfg.encoding, retries=1)
-                            (snap / f"{key}_карточка.html").write_text(rr.text, "utf-8")
-                            site.parse_details(t, rr.text, rr.url)
+                            html, page_url = site.fetch_html(t)
+                            (snap / f"{key}_карточка.html").write_text(html, "utf-8")
+                            site.parse_details(t, html, page_url)
                             msg += (f"; карточка: «{t.title[:50]}», позиций {len(t.positions)}, "
                                     f"документов {len(t.documents)}, срок {t.deadline or '?'}")
                         except Exception as e:  # noqa: BLE001
