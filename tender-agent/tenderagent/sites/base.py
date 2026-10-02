@@ -64,8 +64,32 @@ def load_site_configs() -> dict[str, SiteConfig]:
     return {k: SiteConfig(key=k, **v) for k, v in defaults.items() if not k.startswith("_")}
 
 
+_system_certs = False
+
+
+def use_system_certificates() -> None:
+    """Проверять сертификаты сайтов через хранилище Windows, как браузер.
+
+    Встроенный в Python список не знает сертификатов, которые Windows
+    подгружает сама (промежуточные у белорусских сайтов) или которые
+    ставит антивирус, проверяющий HTTPS. Из-за этого были ошибки
+    CERTIFICATE_VERIFY_FAILED, хотя в браузере сайты открывались.
+    """
+    global _system_certs
+    if _system_certs:
+        return
+    try:
+        import truststore
+
+        truststore.inject_into_ssl()
+        _system_certs = True
+    except Exception:  # noqa: BLE001 — без truststore работаем со встроенным списком
+        pass
+
+
 class Http:
     def __init__(self, log=print):
+        use_system_certificates()
         self.s = requests.Session()
         self.s.headers.update({"User-Agent": UA, "Accept-Language": "ru-RU,ru;q=0.9,be;q=0.8"})
         self.log = log
@@ -84,6 +108,11 @@ class Http:
                 elif not r.encoding or r.encoding.lower() == "iso-8859-1":
                     r.encoding = r.apparent_encoding
                 return r
+            except requests.exceptions.SSLError as e:
+                raise SiteError(
+                    f"Не удалось проверить сертификат сайта {urlparse(url).netloc}. Если сайт открывается "
+                    f"в браузере, проверьте дату и время на компьютере и пришлите разработчику эту ошибку: {e}"
+                ) from e
             except (requests.RequestException, SiteError) as e:
                 last = e
                 time.sleep(2 * (attempt + 1))
