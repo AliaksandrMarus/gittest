@@ -175,11 +175,14 @@ def clean(text: str) -> str:
     return re.sub(r"\s+", " ", text or "").strip()
 
 
-def parse_date(text: str) -> str:
+def parse_date(text: str, end_of_day: bool = False) -> str:
+    """ДД.ММ.ГГГГ [ЧЧ:ММ] → ISO. Без времени: 00:00 или 23:59 (для сроков подачи)."""
     m = DATE_RE.search(text or "")
     if not m:
         return ""
     d, mo, y, h, mi = m.groups()
+    if h is None and end_of_day:
+        h, mi = 23, 59
     try:
         dt = datetime(int(y), int(mo), int(d), int(h or 0), int(mi or 0))
     except ValueError:
@@ -248,7 +251,7 @@ class GenericSite:
                 t.title = title
             t.fields.setdefault("_row", row_text)
             if not t.deadline:
-                dates = [parse_date(m.group(0)) for m in DATE_RE.finditer(row_text)]
+                dates = [parse_date(m.group(0), end_of_day=True) for m in DATE_RE.finditer(row_text)]
                 dates = [d for d in dates if d]
                 if dates:
                     t.deadline = max(dates)
@@ -286,7 +289,13 @@ class GenericSite:
             t.title = title
         elif h1 and len(clean(h1.get_text())) > 10 and not t.title:
             t.title = clean(h1.get_text())
-        t.number = _pick(kv, ["номер процедуры", "номер закупки", "номер", "№"]) or t.number or t.ext_id
+        heading_num = None
+        for h in soup.find_all(["h1", "h2", "h3", "title"]):
+            heading_num = re.search(r"№\s*([A-Za-zА-Яа-я]*\d[\w\-/]*)", h.get_text(" "))
+            if heading_num:
+                break
+        t.number = (_pick(kv, ["номер процедуры", "номер закупки", "номер", "№"])
+                    or (heading_num.group(1) if heading_num else "") or t.number or t.ext_id)
         t.customer = _pick(kv, ["наименование организации", "заказчик", "организатор", "организация"]) or t.customer
         unp = re.search(r"\b\d{9}\b", _pick(kv, ["унп"]) or "")
         t.customer_unp = unp.group(0) if unp else t.customer_unp
@@ -296,6 +305,8 @@ class GenericSite:
                         "дата и время окончания", "дата окончания"])
         if dl and parse_date(dl):
             t.deadline = parse_date(dl)
+            if not re.search(r"\d{1,2}[:.]\d{2}\s*$|\d{4}\D{1,5}\d{1,2}[:.]\d{2}", dl):
+                t.deadline = t.deadline[:-5] + "23:59"  # указана только дата — до конца дня
         pub = _pick(kv, ["дата размещения", "дата публикации", "размещено"])
         if pub:
             t.published = parse_date(pub)
@@ -314,7 +325,9 @@ class GenericSite:
 
 
 def _money_in(text: str) -> float | None:
-    m = re.search(r"(\d[\d\s\xa0]*[.,]\d{2}|\d[\d\s\xa0]{3,})\s*(?:BYN|бел|руб|Br|р\.)", text or "", re.I)
+    # (?<![\d.]) — не захватывать год из стоящей рядом даты «05.10.2026 1 620.00 BYN»
+    m = re.search(r"(?<![\d.,])(\d{1,3}(?:[ \xa0]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*"
+                  r"(?:BYN|бел|руб|Br|р\.)", text or "", re.I)
     if not m:
         m = re.fullmatch(r"\s*(\d[\d\s\xa0]*(?:[.,]\d+)?)\s*", text or "")
     return parse_number(m.group(1)) if m else None
@@ -381,6 +394,9 @@ def map_columns(headers: list[str]) -> dict[str, int]:
     return roles
 
 
+_QTY_CELL = re.compile(r"^\s*(\d[\d\s\xa0]*(?:[.,]\d+)?)\s+([^\d,;][^,;]*?)\s*(?:[,;]\s*(.+))?$")
+
+
 def positions_from_rows(rows: list[list[str]], source: str) -> list[Position]:
     """rows[0] — шапка (может быть найдена ниже первой строки)."""
     for hi, header in enumerate(rows[:8]):
@@ -405,12 +421,20 @@ def positions_from_rows(rows: list[list[str]], source: str) -> list[Position]:
             return cells[j] if j is not None and j < len(cells) else ""
 
         okrb = OKRB_RE.search(g("okrb") or "")
+        qty, unit, limit = parse_number(g("qty")), g("unit"), parse_number(g("price")) if g("price") else None
+        # goszakupki: «150 пачка(пач.), 1 620.00 BYN» — количество, единица и стоимость в одной ячейке
+        m = _QTY_CELL.match(g("qty"))
+        if m:
+            qty = parse_number(m.group(1))
+            unit = unit or re.sub(r"\(.*?\)", "", m.group(2)).strip()
+            if m.group(3) and limit is None:
+                limit = _money_in(m.group(3)) or parse_number(m.group(3))
         out.append(Position(
             name=name,
-            qty=parse_number(g("qty")),
-            unit=g("unit"),
+            qty=qty,
+            unit=unit,
             okrb=okrb.group(0) if okrb else "",
-            price_limit=parse_number(g("price")) if g("price") else None,
+            price_limit=limit,
             lot=g("lot") if "lot" in cols and cols["lot"] != cols["name"] else "",
             source=source,
         ))
@@ -429,6 +453,10 @@ def extract_positions_from_tables(tables, source: str) -> list[Position]:
     return best
 
 
+_SITE_DOCS = re.compile(r"(reglament|personal_data|регламент|политика обработки|инструкци\w* пользовател|"
+                        r"руководств\w* пользовател|/help/|/faq)", re.I)
+
+
 def extract_documents(soup, base_url: str) -> list[Document]:
     docs: dict[str, Document] = {}
     for a in soup.find_all("a", href=True):
@@ -443,6 +471,8 @@ def extract_documents(soup, base_url: str) -> list[Document]:
         )
         if not is_doc or href.startswith("mailto:"):
             continue
+        if _SITE_DOCS.search(low_href) or _SITE_DOCS.search(low_text):
+            continue  # регламент площадки, политика данных и т.п. — не документация закупки
         name = text if low_text.endswith(DOC_EXT) else (text or Path(path).name)
         docs.setdefault(href, Document(name=name[:150], url=href))
     return list(docs.values())

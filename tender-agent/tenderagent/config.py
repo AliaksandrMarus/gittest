@@ -13,7 +13,7 @@ from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 
 APP_NAME = "ТендерАгент"
-APP_VERSION = "1.0.2"
+APP_VERSION = "1.0.3"
 
 
 def _documents_dir() -> Path:

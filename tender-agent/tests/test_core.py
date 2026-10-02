@@ -221,3 +221,28 @@ def test_butb_registry():
     chesnok = [x for x in ts if "Чеснок" in x.title]
     assert chesnok and chesnok[0].estimate is None  # у запроса цен стоимость не указана
     assert chesnok[0].procedure == "заявка о ценах (тарифах)"
+
+
+def test_goszakupki_real_pages():
+    """Настоящие страницы goszakupki.by (сохранены программой в «Диагностика»)."""
+    from tenderagent.models import Tender
+    from tenderagent.sites import Http, make_sites
+
+    site = make_sites(Http())["goszakupki"]
+    fx = Path(__file__).parent / "fixtures"
+    ts = site.parse_list((fx / "goszakupki_list.html").read_text("utf-8"), "https://goszakupki.by/tenders/posted")
+    assert len(ts) == 20
+    first = ts[0]
+    assert first.ext_id == "single-source/view/3717571"
+    assert first.estimate == 1620.0          # не «20261620» — год из даты не прилипает
+    assert first.deadline == "2026-10-05T23:59"
+
+    t = Tender("goszakupki", first.ext_id, "https://goszakupki.by/single-source/view/3717571")
+    site.parse_details(t, (fx / "goszakupki_card.html").read_text("utf-8"), t.url)
+    assert t.number == "auc0003717571"
+    assert t.customer == "Докшицкий районный исполнительный комитет" and t.customer_unp == "300013863"
+    assert t.deadline == "2026-10-05T23:59"
+    p = t.positions[0]
+    assert (p.name, p.qty, p.unit, p.price_limit) == ("Бумага офисная А4", 150.0, "пачка", 1620.0)
+    names = [d.name for d in t.documents]
+    assert len(names) == 3 and not any("Регламент" in n for n in names)
