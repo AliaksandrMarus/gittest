@@ -1,0 +1,358 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420mm" height="297mm" viewBox="0 0 420 297">
+<title>АР-4 — Фасады. План кровли</title>
+<defs>
+ <pattern id="hBlock" width="1.6" height="1.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="1.6" stroke="#000" stroke-width="0.13"/></pattern>
+ <pattern id="hBlockGray" width="1.6" height="1.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="1.6" stroke="#9a9a9a" stroke-width="0.13"/></pattern>
+ <pattern id="hPart" width="1.2" height="1.2" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+  <line x1="0" y1="0" x2="0" y2="1.2" stroke="#000" stroke-width="0.1"/></pattern>
+ <pattern id="hConcrete" width="4" height="4" patternUnits="userSpaceOnUse">
+  <rect width="4" height="4" fill="#f2f2f2"/>
+  <circle cx="0.8" cy="0.9" r="0.22" fill="#000"/><circle cx="2.9" cy="2.6" r="0.18" fill="#000"/>
+  <path d="M2.2 0.6 l0.7 0.2 l-0.5 0.5 z" fill="none" stroke="#000" stroke-width="0.12"/>
+  <path d="M0.6 2.8 l0.8 0.1 l-0.4 0.6 z" fill="none" stroke="#000" stroke-width="0.12"/></pattern>
+ <pattern id="hSand" width="2" height="2" patternUnits="userSpaceOnUse">
+  <circle cx="0.5" cy="0.5" r="0.14" fill="#555"/><circle cx="1.5" cy="1.4" r="0.12" fill="#555"/></pattern>
+ <pattern id="hSoil" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="3" stroke="#000" stroke-width="0.15"/>
+  <line x1="1" y1="0" x2="1" y2="3" stroke="#000" stroke-width="0.15"/></pattern>
+ <pattern id="hInsul" width="2.4" height="2.4" patternUnits="userSpaceOnUse">
+  <rect width="2.4" height="2.4" fill="#fff8d6"/>
+  <path d="M0 2.0 L0.6 0.4 L1.2 2.0 L1.8 0.4 L2.4 2.0" fill="none" stroke="#8a7a2a" stroke-width="0.12"/></pattern>
+ <pattern id="hWood" width="2" height="2" patternUnits="userSpaceOnUse">
+  <rect width="2" height="2" fill="#f3e2c3"/>
+  <path d="M0 1 Q0.5 0.5 1 1 T2 1" fill="none" stroke="#9b7a46" stroke-width="0.12"/></pattern>
+ <pattern id="hGravel" width="3" height="3" patternUnits="userSpaceOnUse">
+  <rect width="3" height="3" fill="#ececec"/>
+  <circle cx="0.8" cy="0.8" r="0.5" fill="none" stroke="#333" stroke-width="0.12"/>
+  <circle cx="2.2" cy="2.1" r="0.6" fill="none" stroke="#333" stroke-width="0.12"/></pattern>
+ <pattern id="hPlaster" width="1" height="1" patternUnits="userSpaceOnUse">
+  <rect width="1" height="1" fill="#e9e9e9"/><circle cx="0.5" cy="0.5" r="0.1" fill="#777"/></pattern>
+ <pattern id="hRoof" width="1.4" height="1.4" patternUnits="userSpaceOnUse" patternTransform="rotate(90)">
+  <line x1="0" y1="0" x2="0" y2="1.4" stroke="#7b3b30" stroke-width="0.12"/></pattern>
+ <pattern id="hBoard" width="1.6" height="10" patternUnits="userSpaceOnUse">
+  <rect width="1.6" height="10" fill="#f6efe2"/>
+  <line x1="0" y1="0" x2="0" y2="10" stroke="#a08560" stroke-width="0.12"/></pattern>
+ <pattern id="hTile" width="3" height="1.6" patternUnits="userSpaceOnUse">
+  <rect width="3" height="1.6" fill="#c9cdd2"/>
+  <path d="M0 1.6 L3 1.6 M0 0 L0 1.6" stroke="#6c737b" stroke-width="0.12"/></pattern>
+ <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+  <path d="M0 0 L10 5 L0 10 z" fill="#000"/></marker>
+ <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+  <path d="M0 0 L10 5 L0 10 z" fill="#1f5fbf"/></marker>
+ <marker id="arrK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+  <path d="M0 0 L10 5 L0 10 z" fill="#7a4a12"/></marker>
+</defs>
+
+<rect width="420" height="297" fill="#fff"/>
+<text x="25" y="13" font-family="DejaVu Sans, Arial, sans-serif" font-size="3.5" text-anchor="start" font-weight="bold" fill="#000">Фасады  М 1:100</text>
+<line x1="25" y1="14" x2="56.5" y2="14" stroke="#000" stroke-width="0.35" fill="none"/>
+<line x1="25" y1="92" x2="175" y2="92" stroke="#000" stroke-width="0.7" fill="none"/>
+<rect x="39.4" y="86.5" width="121.2" height="5.5" stroke="#000" stroke-width="0.4" fill="#8d9196"/>
+<rect x="40" y="59.5" width="120" height="27" stroke="#000" stroke-width="0.5" fill="#f5f2ec"/>
+<rect x="36" y="26.98" width="128" height="28.87" stroke="#000" stroke-width="0.45" fill="#6d737a"/>
+<line x1="36" y1="52.34" x2="164" y2="52.34" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<line x1="36" y1="48.84" x2="164" y2="48.84" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<line x1="36" y1="45.34" x2="164" y2="45.34" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<line x1="36" y1="41.84" x2="164" y2="41.84" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<line x1="36" y1="38.34" x2="164" y2="38.34" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<line x1="36" y1="34.84" x2="164" y2="34.84" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<line x1="36" y1="31.34" x2="164" y2="31.34" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<rect x="36" y="55.84" width="128" height="3.66" stroke="#000" stroke-width="0.35" fill="#fff"/>
+<line x1="36" y1="53.94" x2="164" y2="53.94" stroke="#ddd" stroke-width="0.3" fill="none"/>
+<rect x="35.5" y="59.5" width="129" height="0.9" stroke="#000" stroke-width="0.3" fill="#6d737a"/>
+<rect x="38" y="60.4" width="1" height="30.1" stroke="#000" stroke-width="0.25" fill="#6d737a"/>
+<rect x="161" y="60.4" width="1" height="30.1" stroke="#000" stroke-width="0.25" fill="#6d737a"/>
+<rect x="79.6" y="40.4" width="1.4" height="5.6" stroke="#000" stroke-width="0.3" fill="#ccc"/>
+<rect x="79.1" y="22" width="1.4" height="24" stroke="#000" stroke-width="0.3" fill="#ccc"/>
+<rect x="58.1" y="22" width="1.4" height="24" stroke="#000" stroke-width="0.3" fill="#ccc"/>
+<rect x="110.1" y="22" width="1.4" height="24" stroke="#000" stroke-width="0.3" fill="#ccc"/>
+<rect x="49" y="64.5" width="6" height="9" stroke="#000" stroke-width="0.4" fill="#fff"/>
+<rect x="48.6" y="73.5" width="6.8" height="0.6" stroke="#000" stroke-width="0.3" fill="#6d737a"/>
+<rect x="49.6" y="65.1" width="4.8" height="7.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<rect x="68" y="64.5" width="6" height="9" stroke="#000" stroke-width="0.4" fill="#fff"/>
+<rect x="67.6" y="73.5" width="6.8" height="0.6" stroke="#000" stroke-width="0.3" fill="#6d737a"/>
+<rect x="68.6" y="65.1" width="4.8" height="7.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<rect x="87" y="64.5" width="10" height="21.5" stroke="#000" stroke-width="0.4" fill="#6b4f3a"/>
+<rect x="88.2" y="66.5" width="7.6" height="17.5" stroke="#3d2c1e" stroke-width="0.2" fill="none"/>
+<circle cx="88.5" cy="75.5" r="0.5" stroke="#000" stroke-width="0.2" fill="#ddd"/>
+<rect x="112" y="64.5" width="15" height="14" stroke="#000" stroke-width="0.4" fill="#fff"/>
+<rect x="111.6" y="78.5" width="15.8" height="0.6" stroke="#000" stroke-width="0.3" fill="#6d737a"/>
+<rect x="112.6" y="65.1" width="6.3" height="12.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<rect x="120.1" y="65.1" width="6.3" height="12.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<polyline points="112.6,65.1 118.9,71.5 112.6,77.9" stroke="#777" stroke-width="0.12" fill="none" stroke-dasharray="0.8 0.5"/>
+<rect x="137" y="64.5" width="15" height="14" stroke="#000" stroke-width="0.4" fill="#fff"/>
+<rect x="136.6" y="78.5" width="15.8" height="0.6" stroke="#000" stroke-width="0.3" fill="#6d737a"/>
+<rect x="137.6" y="65.1" width="6.3" height="12.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<rect x="145.1" y="65.1" width="6.3" height="12.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<polyline points="137.6,65.1 143.9,71.5 137.6,77.9" stroke="#777" stroke-width="0.12" fill="none" stroke-dasharray="0.8 0.5"/>
+<rect x="85" y="86.2" width="14" height="1.45" stroke="#000" stroke-width="0.3" fill="#c9c9c9"/>
+<rect x="85" y="87.65" width="14" height="1.45" stroke="#000" stroke-width="0.3" fill="#c9c9c9"/>
+<rect x="85" y="89.1" width="14" height="1.45" stroke="#000" stroke-width="0.3" fill="#c9c9c9"/>
+<rect x="85" y="90.55" width="14" height="1.45" stroke="#000" stroke-width="0.3" fill="#c9c9c9"/>
+<circle cx="57.75" cy="65.5" r="0.9" stroke="#000" stroke-width="0.3" fill="#ddd"/>
+<text x="57.75" y="62.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.5" text-anchor="middle" font-weight="normal" fill="#000">дымоход</text>
+<rect x="91.5" y="62" width="1" height="1.5" stroke="#000" stroke-width="0.25" fill="#333"/>
+<text x="100" y="101" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="bold" fill="#000">Фасад А-А (главный, вход)</text>
+<polyline points="167.6,90.4 169,92 170.4,90.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="167.6" y1="90.4" x2="170.4" y2="90.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="169" y1="92" x2="169" y2="88.2" stroke="#000" stroke-width="0.2" fill="none"/>
+<line x1="169" y1="88.2" x2="179" y2="88.2" stroke="#000" stroke-width="0.2" fill="none"/>
+<text x="169.8" y="87.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">−0.600</text>
+<polyline points="167.6,84.4 169,86 170.4,84.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="167.6" y1="84.4" x2="170.4" y2="84.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="169" y1="86" x2="169" y2="82.2" stroke="#000" stroke-width="0.2" fill="none"/>
+<line x1="169" y1="82.2" x2="179" y2="82.2" stroke="#000" stroke-width="0.2" fill="none"/>
+<text x="169.8" y="81.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">±0.000</text>
+<polyline points="167.6,62.9 169,64.5 170.4,62.9" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="167.6" y1="62.9" x2="170.4" y2="62.9" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="169" y1="64.5" x2="169" y2="60.7" stroke="#000" stroke-width="0.2" fill="none"/>
+<line x1="169" y1="60.7" x2="179" y2="60.7" stroke="#000" stroke-width="0.2" fill="none"/>
+<text x="169.8" y="60.1" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">+2.150</text>
+<polyline points="167.6,25.38 169,26.98 170.4,25.38" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="167.6" y1="25.38" x2="170.4" y2="25.38" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="169" y1="26.98" x2="169" y2="23.18" stroke="#000" stroke-width="0.2" fill="none"/>
+<line x1="169" y1="23.18" x2="179" y2="23.18" stroke="#000" stroke-width="0.2" fill="none"/>
+<text x="169.8" y="22.58" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">+5.902</text>
+<line x1="40" y1="96" x2="40" y2="96.1" stroke="#000" stroke-width="0.18" fill="none" stroke-dasharray="6 1.2 1 1.2"/>
+<circle cx="40" cy="98.5" r="2.4" stroke="#000" stroke-width="0.3" fill="#fff"/>
+<text x="40" y="99.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="3" text-anchor="middle" font-weight="normal" fill="#000">1</text>
+<line x1="160" y1="96" x2="160" y2="96.1" stroke="#000" stroke-width="0.18" fill="none" stroke-dasharray="6 1.2 1 1.2"/>
+<circle cx="160" cy="98.5" r="2.4" stroke="#000" stroke-width="0.3" fill="#fff"/>
+<text x="160" y="99.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="3" text-anchor="middle" font-weight="normal" fill="#000">2</text>
+<line x1="207" y1="92" x2="357" y2="92" stroke="#000" stroke-width="0.7" fill="none"/>
+<rect x="221.4" y="86.5" width="121.2" height="5.5" stroke="#000" stroke-width="0.4" fill="#8d9196"/>
+<rect x="222" y="59.5" width="120" height="27" stroke="#000" stroke-width="0.5" fill="#f5f2ec"/>
+<rect x="218" y="26.98" width="128" height="28.87" stroke="#000" stroke-width="0.45" fill="#6d737a"/>
+<line x1="218" y1="52.34" x2="346" y2="52.34" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<line x1="218" y1="48.84" x2="346" y2="48.84" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<line x1="218" y1="45.34" x2="346" y2="45.34" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<line x1="218" y1="41.84" x2="346" y2="41.84" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<line x1="218" y1="38.34" x2="346" y2="38.34" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<line x1="218" y1="34.84" x2="346" y2="34.84" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<line x1="218" y1="31.34" x2="346" y2="31.34" stroke="#b9bec4" stroke-width="0.12" fill="none"/>
+<rect x="218" y="55.84" width="128" height="3.66" stroke="#000" stroke-width="0.35" fill="#fff"/>
+<line x1="218" y1="53.94" x2="346" y2="53.94" stroke="#ddd" stroke-width="0.3" fill="none"/>
+<rect x="217.5" y="59.5" width="129" height="0.9" stroke="#000" stroke-width="0.3" fill="#6d737a"/>
+<rect x="220" y="60.4" width="1" height="30.1" stroke="#000" stroke-width="0.25" fill="#6d737a"/>
+<rect x="343" y="60.4" width="1" height="30.1" stroke="#000" stroke-width="0.25" fill="#6d737a"/>
+<rect x="301" y="40.4" width="1.4" height="5.6" stroke="#000" stroke-width="0.3" fill="#ccc"/>
+<rect x="301.5" y="22" width="1.4" height="24" stroke="#000" stroke-width="0.3" fill="#ccc"/>
+<rect x="322.5" y="22" width="1.4" height="24" stroke="#000" stroke-width="0.3" fill="#ccc"/>
+<rect x="270.5" y="22" width="1.4" height="24" stroke="#000" stroke-width="0.3" fill="#ccc"/>
+<rect x="313.5" y="64.5" width="15" height="14" stroke="#000" stroke-width="0.4" fill="#fff"/>
+<rect x="313.1" y="78.5" width="15.8" height="0.6" stroke="#000" stroke-width="0.3" fill="#6d737a"/>
+<rect x="314.1" y="65.1" width="6.3" height="12.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<rect x="321.6" y="65.1" width="6.3" height="12.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<polyline points="314.1,65.1 320.4,71.5 314.1,77.9" stroke="#777" stroke-width="0.12" fill="none" stroke-dasharray="0.8 0.5"/>
+<rect x="278.5" y="64.5" width="15" height="14" stroke="#000" stroke-width="0.4" fill="#fff"/>
+<rect x="278.1" y="78.5" width="15.8" height="0.6" stroke="#000" stroke-width="0.3" fill="#6d737a"/>
+<rect x="279.1" y="65.1" width="6.3" height="12.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<rect x="286.6" y="65.1" width="6.3" height="12.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<polyline points="279.1,65.1 285.4,71.5 279.1,77.9" stroke="#777" stroke-width="0.12" fill="none" stroke-dasharray="0.8 0.5"/>
+<text x="282" y="101" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="bold" fill="#000">Фасад В-В (к правой границе участка)</text>
+<line x1="222" y1="96" x2="222" y2="96.1" stroke="#000" stroke-width="0.18" fill="none" stroke-dasharray="6 1.2 1 1.2"/>
+<circle cx="222" cy="98.5" r="2.4" stroke="#000" stroke-width="0.3" fill="#fff"/>
+<text x="222" y="99.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="3" text-anchor="middle" font-weight="normal" fill="#000">2</text>
+<line x1="342" y1="96" x2="342" y2="96.1" stroke="#000" stroke-width="0.18" fill="none" stroke-dasharray="6 1.2 1 1.2"/>
+<circle cx="342" cy="98.5" r="2.4" stroke="#000" stroke-width="0.3" fill="#fff"/>
+<text x="342" y="99.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="3" text-anchor="middle" font-weight="normal" fill="#000">1</text>
+<line x1="30" y1="196" x2="150" y2="196" stroke="#000" stroke-width="0.7" fill="none"/>
+<rect x="44.4" y="190.5" width="91.2" height="5.5" stroke="#000" stroke-width="0.4" fill="#8d9196"/>
+<rect x="45" y="163" width="90" height="27.5" stroke="#000" stroke-width="0.5" fill="#f5f2ec"/>
+<polygon points="45,163 45,160.37 90,134.39 135,160.37 135,163" stroke="#000" stroke-width="0.5" fill="url(#hBoard)"/>
+<polygon points="40,163.25 90,134.39 140,163.25 140,159.84 90,130.98 40,159.84" stroke="#000" stroke-width="0.45" fill="#6d737a"/>
+<rect x="87" y="143" width="6" height="4" stroke="#000" stroke-width="0.3" fill="#fff"/>
+<line x1="87.4" y1="146.5" x2="92.6" y2="146.5" stroke="#000" stroke-width="0.15" fill="none"/>
+<line x1="87.4" y1="145.7" x2="92.6" y2="145.7" stroke="#000" stroke-width="0.15" fill="none"/>
+<line x1="87.4" y1="144.9" x2="92.6" y2="144.9" stroke="#000" stroke-width="0.15" fill="none"/>
+<line x1="87.4" y1="144.1" x2="92.6" y2="144.1" stroke="#000" stroke-width="0.15" fill="none"/>
+<line x1="87.4" y1="143.3" x2="92.6" y2="143.3" stroke="#000" stroke-width="0.15" fill="none"/>
+<rect x="60" y="191.5" width="45" height="4.5" stroke="#000" stroke-width="0.35" fill="url(#hWood)"/>
+<rect x="59.6" y="181.5" width="0.8" height="10" stroke="#000" stroke-width="0.25" fill="#8a6a4a"/>
+<rect x="74.6" y="181.5" width="0.8" height="10" stroke="#000" stroke-width="0.25" fill="#8a6a4a"/>
+<rect x="89.6" y="181.5" width="0.8" height="10" stroke="#000" stroke-width="0.25" fill="#8a6a4a"/>
+<rect x="104.6" y="181.5" width="0.8" height="10" stroke="#000" stroke-width="0.25" fill="#8a6a4a"/>
+<line x1="60" y1="181.5" x2="105" y2="181.5" stroke="#8a6a4a" stroke-width="0.5" fill="none"/>
+<rect x="56" y="168.5" width="12" height="14" stroke="#000" stroke-width="0.4" fill="#fff"/>
+<rect x="55.6" y="182.5" width="12.8" height="0.6" stroke="#000" stroke-width="0.3" fill="#6d737a"/>
+<rect x="56.6" y="169.1" width="4.8" height="12.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<rect x="62.6" y="169.1" width="4.8" height="12.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<rect x="74" y="168.5" width="9" height="21.5" stroke="#000" stroke-width="0.4" fill="#cfe0ee"/>
+<rect x="74.6" y="169.1" width="7.8" height="20.3" stroke="#000" stroke-width="0.2" fill="none"/>
+<rect x="103.75" y="168.5" width="15" height="14" stroke="#000" stroke-width="0.4" fill="#fff"/>
+<rect x="103.35" y="182.5" width="15.8" height="0.6" stroke="#000" stroke-width="0.3" fill="#6d737a"/>
+<rect x="104.35" y="169.1" width="6.3" height="12.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<rect x="111.85" y="169.1" width="6.3" height="12.8" stroke="#000" stroke-width="0.2" fill="#cfe0ee"/>
+<rect x="77.9" y="166" width="1.2" height="1.5" stroke="#000" stroke-width="0.25" fill="#333"/>
+<text x="90" y="205" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="bold" fill="#000">Фасад 2 (торец к улице, терраса)</text>
+<line x1="45" y1="200" x2="45" y2="200.1" stroke="#000" stroke-width="0.18" fill="none" stroke-dasharray="6 1.2 1 1.2"/>
+<circle cx="45" cy="202.5" r="2.4" stroke="#000" stroke-width="0.3" fill="#fff"/>
+<text x="45" y="203.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="3" text-anchor="middle" font-weight="normal" fill="#000">А</text>
+<line x1="135" y1="200" x2="135" y2="200.1" stroke="#000" stroke-width="0.18" fill="none" stroke-dasharray="6 1.2 1 1.2"/>
+<circle cx="135" cy="202.5" r="2.4" stroke="#000" stroke-width="0.3" fill="#fff"/>
+<text x="135" y="203.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="3" text-anchor="middle" font-weight="normal" fill="#000">В</text>
+<polyline points="150.6,194.4 152,196 153.4,194.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="150.6" y1="194.4" x2="153.4" y2="194.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="152" y1="196" x2="152" y2="192.2" stroke="#000" stroke-width="0.2" fill="none"/>
+<line x1="152" y1="192.2" x2="162" y2="192.2" stroke="#000" stroke-width="0.2" fill="none"/>
+<text x="152.8" y="191.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">−0.600</text>
+<polyline points="150.6,188.4 152,190 153.4,188.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="150.6" y1="188.4" x2="153.4" y2="188.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="152" y1="190" x2="152" y2="186.2" stroke="#000" stroke-width="0.2" fill="none"/>
+<line x1="152" y1="186.2" x2="162" y2="186.2" stroke="#000" stroke-width="0.2" fill="none"/>
+<text x="152.8" y="185.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">±0.000</text>
+<polyline points="150.6,161.4 152,163 153.4,161.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="150.6" y1="161.4" x2="153.4" y2="161.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="152" y1="163" x2="152" y2="159.2" stroke="#000" stroke-width="0.2" fill="none"/>
+<line x1="152" y1="159.2" x2="162" y2="159.2" stroke="#000" stroke-width="0.2" fill="none"/>
+<text x="152.8" y="158.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">+2.700</text>
+<polyline points="150.6,129.38 152,130.98 153.4,129.38" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="150.6" y1="129.38" x2="153.4" y2="129.38" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="152" y1="130.98" x2="152" y2="127.18" stroke="#000" stroke-width="0.2" fill="none"/>
+<line x1="152" y1="127.18" x2="162" y2="127.18" stroke="#000" stroke-width="0.2" fill="none"/>
+<text x="152.8" y="126.58" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">+5.902</text>
+<text x="222" y="113" font-family="DejaVu Sans, Arial, sans-serif" font-size="3" text-anchor="start" font-weight="bold" fill="#000">План кровли  М 1:100</text>
+<line x1="222" y1="114" x2="258" y2="114" stroke="#000" stroke-width="0.35" fill="none"/>
+<rect x="218" y="119" width="128" height="100" stroke="#000" stroke-width="0.5" fill="#e7e9ec"/>
+<line x1="218" y1="169" x2="346" y2="169" stroke="#000" stroke-width="0.6" fill="none"/>
+<line x1="220" y1="212" x2="344" y2="212" stroke="#000" stroke-width="0.3" fill="none" stroke-dasharray="2 0.8"/>
+<line x1="220" y1="126" x2="344" y2="126" stroke="#000" stroke-width="0.3" fill="none" stroke-dasharray="2 0.8"/>
+<circle cx="220" cy="217" r="1.2" stroke="#000" stroke-width="0.3" fill="#fff"/>
+<circle cx="344" cy="217" r="1.2" stroke="#000" stroke-width="0.3" fill="#fff"/>
+<circle cx="220" cy="121" r="1.2" stroke="#000" stroke-width="0.3" fill="#fff"/>
+<circle cx="344" cy="121" r="1.2" stroke="#000" stroke-width="0.3" fill="#fff"/>
+<circle cx="262.3" cy="201" r="0.9" stroke="#000" stroke-width="0.3" fill="#999"/>
+<circle cx="261.8" cy="184.7" r="0.9" stroke="#000" stroke-width="0.3" fill="#999"/>
+<circle cx="240.8" cy="184.7" r="0.9" stroke="#000" stroke-width="0.3" fill="#999"/>
+<circle cx="292.8" cy="183.2" r="0.9" stroke="#000" stroke-width="0.3" fill="#999"/>
+<line x1="282" y1="191" x2="282" y2="206" stroke="#000" stroke-width="0.3" fill="none" marker-end="url(#arr)"/>
+<text x="285" y="198" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="start" font-weight="normal" fill="#000">i = 30°</text>
+<line x1="282" y1="147" x2="282" y2="132" stroke="#000" stroke-width="0.3" fill="none" marker-end="url(#arr)"/>
+<text x="285" y="140" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="start" font-weight="normal" fill="#000">i = 30°</text>
+<text x="282" y="166.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">конёк, аэратор</text>
+<text x="317" y="204" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">снегозадержатели</text>
+<line x1="216.5" y1="115" x2="347.5" y2="115" stroke="#000" stroke-width="0.2" fill="none"/>
+<line x1="218" y1="119" x2="218" y2="113.5" stroke="#000" stroke-width="0.15" fill="none"/>
+<line x1="217.1" y1="115.9" x2="218.9" y2="114.1" stroke="#000" stroke-width="0.45" fill="none"/>
+<line x1="222" y1="119" x2="222" y2="113.5" stroke="#000" stroke-width="0.15" fill="none"/>
+<line x1="221.1" y1="115.9" x2="222.9" y2="114.1" stroke="#000" stroke-width="0.45" fill="none"/>
+<line x1="342" y1="119" x2="342" y2="113.5" stroke="#000" stroke-width="0.15" fill="none"/>
+<line x1="341.1" y1="115.9" x2="342.9" y2="114.1" stroke="#000" stroke-width="0.45" fill="none"/>
+<line x1="346" y1="119" x2="346" y2="113.5" stroke="#000" stroke-width="0.15" fill="none"/>
+<line x1="345.1" y1="115.9" x2="346.9" y2="114.1" stroke="#000" stroke-width="0.45" fill="none"/>
+<text x="220" y="114.3" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">400</text>
+<text x="282" y="114.3" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">12000</text>
+<text x="344" y="114.3" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">400</text>
+<line x1="351" y1="117.5" x2="351" y2="220.5" stroke="#000" stroke-width="0.2" fill="none"/>
+<line x1="346" y1="219" x2="352.5" y2="219" stroke="#000" stroke-width="0.15" fill="none"/>
+<line x1="350.1" y1="219.9" x2="351.9" y2="218.1" stroke="#000" stroke-width="0.45" fill="none"/>
+<line x1="346" y1="214" x2="352.5" y2="214" stroke="#000" stroke-width="0.15" fill="none"/>
+<line x1="350.1" y1="214.9" x2="351.9" y2="213.1" stroke="#000" stroke-width="0.45" fill="none"/>
+<line x1="346" y1="169" x2="352.5" y2="169" stroke="#000" stroke-width="0.15" fill="none"/>
+<line x1="350.1" y1="169.9" x2="351.9" y2="168.1" stroke="#000" stroke-width="0.45" fill="none"/>
+<line x1="346" y1="124" x2="352.5" y2="124" stroke="#000" stroke-width="0.15" fill="none"/>
+<line x1="350.1" y1="124.9" x2="351.9" y2="123.1" stroke="#000" stroke-width="0.45" fill="none"/>
+<line x1="346" y1="119" x2="352.5" y2="119" stroke="#000" stroke-width="0.15" fill="none"/>
+<line x1="350.1" y1="119.9" x2="351.9" y2="118.1" stroke="#000" stroke-width="0.45" fill="none"/>
+<text x="350.3" y="216.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000" transform="rotate(-90 350.3 216.5)">500</text>
+<text x="350.3" y="191.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000" transform="rotate(-90 350.3 191.5)">4500</text>
+<text x="350.3" y="146.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000" transform="rotate(-90 350.3 146.5)">4500</text>
+<text x="350.3" y="121.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000" transform="rotate(-90 350.3 121.5)">500</text>
+<text x="372" y="14" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="start" font-weight="bold" fill="#000">Отделка фасадов</text>
+<rect x="372" y="17.4" width="6" height="3.6" stroke="#000" stroke-width="0.3" fill="#f5f2ec"/>
+<text x="380" y="20" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Стены — минеральная</text>
+<text x="380" y="22.55" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">штукатурка «короед» 2 мм</text>
+<text x="380" y="25.1" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">по армирующему слою,</text>
+<text x="380" y="27.65" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">силиконовая краска,</text>
+<text x="380" y="30.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">светлый беж</text>
+<rect x="372" y="32.65" width="6" height="3.6" stroke="#000" stroke-width="0.3" fill="#8d9196"/>
+<text x="380" y="35.25" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Цоколь — мозаичная</text>
+<text x="380" y="37.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">штукатурка по ЭППС, графит</text>
+<rect x="372" y="40.25" width="6" height="3.6" stroke="#000" stroke-width="0.3" fill="#6d737a"/>
+<text x="380" y="42.85" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Кровля, водосток, отливы —</text>
+<text x="380" y="45.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">металл RAL 7024</text>
+<rect x="372" y="47.85" width="6" height="3.6" stroke="#000" stroke-width="0.3" fill="url(#hBoard)"/>
+<text x="380" y="50.45" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Фронтоны — каркас,</text>
+<text x="380" y="53" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">ветрозащита, планкен /</text>
+<text x="380" y="55.55" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">имитация бруса</text>
+<rect x="372" y="58" width="6" height="3.6" stroke="#000" stroke-width="0.3" fill="#cfe0ee"/>
+<text x="380" y="60.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Окна, двери — ПВХ,</text>
+<text x="380" y="63.15" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">ламинация «антрацит»</text>
+<text x="380" y="65.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">снаружи</text>
+<rect x="372" y="68.15" width="6" height="3.6" stroke="#000" stroke-width="0.3" fill="#fff"/>
+<text x="380" y="70.75" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Подшивка карниза — софиты</text>
+<text x="380" y="73.3" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">ПВХ с перфорацией</text>
+<text x="372" y="80.35" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="start" font-weight="bold" fill="#000">Примечания</text>
+<text x="372" y="84.35" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">1. Фасад к правому забору (В-В)</text>
+<text x="372" y="86.9" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">— окна спален 1 и 2.</text>
+<text x="372" y="90.65" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">2. Фасад по оси 1 (север) —</text>
+<text x="372" y="93.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">глухой, с фронтоном и</text>
+<text x="372" y="95.75" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">вентрешёткой.</text>
+<text x="372" y="99.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">3. Вентканалы и стояк — выше</text>
+<text x="372" y="102.05" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">конька на 0,5 м.</text>
+<text x="372" y="105.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">4. Водосток Ø125/90, по углам</text>
+<text x="372" y="108.35" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">здания.</text>
+<rect x="0.2" y="0.2" width="419.6" height="296.6" stroke="#bbb" stroke-width="0.15" fill="none"/>
+<rect x="20" y="5" width="395" height="287" stroke="#000" stroke-width="0.7" fill="none"/>
+<rect x="230" y="237" width="185" height="55" stroke="#000" stroke-width="0.7" fill="#fff"/>
+<line x1="230" y1="242" x2="295" y2="242" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="247" x2="295" y2="247" stroke="#000" stroke-width="0.5" fill="none"/>
+<line x1="230" y1="252" x2="295" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="257" x2="295" y2="257" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="262" x2="295" y2="262" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="267" x2="295" y2="267" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="272" x2="295" y2="272" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="277" x2="295" y2="277" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="282" x2="295" y2="282" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="287" x2="295" y2="287" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="237" y1="237" x2="237" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="247" y1="237" x2="247" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="257" y1="237" x2="257" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="272" y1="237" x2="272" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="285" y1="237" x2="285" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="247" y1="252" x2="247" y2="292" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="272" y1="252" x2="272" y2="292" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="285" y1="252" x2="285" y2="292" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="233.5" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Изм.</text>
+<text x="242" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Кол.</text>
+<text x="252" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Лист</text>
+<text x="264.5" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">№док</text>
+<text x="278.5" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Подп.</text>
+<text x="290" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Дата</text>
+<text x="231" y="255.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Разраб.</text>
+<text x="248" y="255.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Claude</text>
+<text x="285.6" y="255.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="start" font-weight="normal" fill="#000">10.26</text>
+<text x="231" y="260.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Пров.</text>
+<text x="248" y="260.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000"></text>
+<text x="231" y="265.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">ГИП</text>
+<text x="248" y="265.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000"></text>
+<text x="231" y="270.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Н.контр.</text>
+<text x="248" y="270.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000"></text>
+<text x="231" y="275.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Утв.</text>
+<text x="248" y="275.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000"></text>
+<line x1="295" y1="237" x2="295" y2="292" stroke="#000" stroke-width="0.7" fill="none"/>
+<line x1="295" y1="252" x2="415" y2="252" stroke="#000" stroke-width="0.7" fill="none"/>
+<line x1="295" y1="277" x2="415" y2="277" stroke="#000" stroke-width="0.7" fill="none"/>
+<line x1="365" y1="252" x2="365" y2="292" stroke="#000" stroke-width="0.7" fill="none"/>
+<text x="355" y="246.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="4.5" text-anchor="middle" font-weight="bold" fill="#000">ДОМ-9х12-АР</text>
+<text x="330" y="262" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">Одноэтажный жилой дом 9×12 м</text>
+<text x="330" y="265.51" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">г. Бобруйск, Могилёвская обл.</text>
+<line x1="365" y1="257" x2="415" y2="257" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="365" y1="264" x2="415" y2="264" stroke="#000" stroke-width="0.5" fill="none"/>
+<line x1="380" y1="252" x2="380" y2="264" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="397" y1="252" x2="397" y2="264" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="372.5" y="255.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Стадия</text>
+<text x="388.5" y="255.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Лист</text>
+<text x="406" y="255.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Листов</text>
+<text x="372.5" y="262" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">ЭП</text>
+<text x="388.5" y="262" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">6</text>
+<text x="406" y="262" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">11</text>
+<text x="390" y="268.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">Эскизный проект.</text>
+<text x="390" y="271.06" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">Строительство — после</text>
+<text x="390" y="273.63" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">привязки и экспертизы</text>
+<text x="330" y="284.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="bold" fill="#000">Фасады. План кровли</text>
+<text x="390" y="283" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">Лист АР-4</text>
+<text x="390" y="285.97" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">М 1:100</text>
+</svg>

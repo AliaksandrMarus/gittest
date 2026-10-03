@@ -1,0 +1,638 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420mm" height="297mm" viewBox="0 0 420 297">
+<title>ЭО-2 — Однолинейная схема ЩР. Заземление</title>
+<defs>
+ <pattern id="hBlock" width="1.6" height="1.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="1.6" stroke="#000" stroke-width="0.13"/></pattern>
+ <pattern id="hBlockGray" width="1.6" height="1.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="1.6" stroke="#9a9a9a" stroke-width="0.13"/></pattern>
+ <pattern id="hPart" width="1.2" height="1.2" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+  <line x1="0" y1="0" x2="0" y2="1.2" stroke="#000" stroke-width="0.1"/></pattern>
+ <pattern id="hConcrete" width="4" height="4" patternUnits="userSpaceOnUse">
+  <rect width="4" height="4" fill="#f2f2f2"/>
+  <circle cx="0.8" cy="0.9" r="0.22" fill="#000"/><circle cx="2.9" cy="2.6" r="0.18" fill="#000"/>
+  <path d="M2.2 0.6 l0.7 0.2 l-0.5 0.5 z" fill="none" stroke="#000" stroke-width="0.12"/>
+  <path d="M0.6 2.8 l0.8 0.1 l-0.4 0.6 z" fill="none" stroke="#000" stroke-width="0.12"/></pattern>
+ <pattern id="hSand" width="2" height="2" patternUnits="userSpaceOnUse">
+  <circle cx="0.5" cy="0.5" r="0.14" fill="#555"/><circle cx="1.5" cy="1.4" r="0.12" fill="#555"/></pattern>
+ <pattern id="hSoil" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="3" stroke="#000" stroke-width="0.15"/>
+  <line x1="1" y1="0" x2="1" y2="3" stroke="#000" stroke-width="0.15"/></pattern>
+ <pattern id="hInsul" width="2.4" height="2.4" patternUnits="userSpaceOnUse">
+  <rect width="2.4" height="2.4" fill="#fff8d6"/>
+  <path d="M0 2.0 L0.6 0.4 L1.2 2.0 L1.8 0.4 L2.4 2.0" fill="none" stroke="#8a7a2a" stroke-width="0.12"/></pattern>
+ <pattern id="hWood" width="2" height="2" patternUnits="userSpaceOnUse">
+  <rect width="2" height="2" fill="#f3e2c3"/>
+  <path d="M0 1 Q0.5 0.5 1 1 T2 1" fill="none" stroke="#9b7a46" stroke-width="0.12"/></pattern>
+ <pattern id="hGravel" width="3" height="3" patternUnits="userSpaceOnUse">
+  <rect width="3" height="3" fill="#ececec"/>
+  <circle cx="0.8" cy="0.8" r="0.5" fill="none" stroke="#333" stroke-width="0.12"/>
+  <circle cx="2.2" cy="2.1" r="0.6" fill="none" stroke="#333" stroke-width="0.12"/></pattern>
+ <pattern id="hPlaster" width="1" height="1" patternUnits="userSpaceOnUse">
+  <rect width="1" height="1" fill="#e9e9e9"/><circle cx="0.5" cy="0.5" r="0.1" fill="#777"/></pattern>
+ <pattern id="hRoof" width="1.4" height="1.4" patternUnits="userSpaceOnUse" patternTransform="rotate(90)">
+  <line x1="0" y1="0" x2="0" y2="1.4" stroke="#7b3b30" stroke-width="0.12"/></pattern>
+ <pattern id="hBoard" width="1.6" height="10" patternUnits="userSpaceOnUse">
+  <rect width="1.6" height="10" fill="#f6efe2"/>
+  <line x1="0" y1="0" x2="0" y2="10" stroke="#a08560" stroke-width="0.12"/></pattern>
+ <pattern id="hTile" width="3" height="1.6" patternUnits="userSpaceOnUse">
+  <rect width="3" height="1.6" fill="#c9cdd2"/>
+  <path d="M0 1.6 L3 1.6 M0 0 L0 1.6" stroke="#6c737b" stroke-width="0.12"/></pattern>
+ <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+  <path d="M0 0 L10 5 L0 10 z" fill="#000"/></marker>
+ <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+  <path d="M0 0 L10 5 L0 10 z" fill="#1f5fbf"/></marker>
+ <marker id="arrK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+  <path d="M0 0 L10 5 L0 10 z" fill="#7a4a12"/></marker>
+</defs>
+
+<rect width="420" height="297" fill="#fff"/>
+<text x="25" y="13" font-family="DejaVu Sans, Arial, sans-serif" font-size="3.2" text-anchor="start" font-weight="bold" fill="#000">Однолинейная схема. Ввод, щит учёта ЩУ, распределительный щит ЩР</text>
+<line x1="25" y1="14" x2="147.88" y2="14" stroke="#000" stroke-width="0.35" fill="none"/>
+<rect x="25" y="28" width="32" height="12.4" stroke="#000" stroke-width="0.4" fill="#fafafa"/>
+<text x="26.2" y="31.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.1" text-anchor="start" font-weight="bold" fill="#000">Опора ВЛ-0,4 кВ</text>
+<text x="26.2" y="35.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">РУП «Могилевэнерго»</text>
+<text x="26.2" y="37.9" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">(по ТУ)</text>
+<rect x="62" y="28" width="54" height="20.5" stroke="#000" stroke-width="0.4" fill="#fafafa"/>
+<text x="63.2" y="31.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.1" text-anchor="start" font-weight="bold" fill="#000">ЩУ на границе участка, IP54</text>
+<text x="63.2" y="35.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">QF0 ВА 3P C25 (пломба)</text>
+<text x="63.2" y="37.9" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">PI счётчик 3ф 5(60) А,</text>
+<text x="63.2" y="40.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">кл. 1, многотарифный</text>
+<text x="63.2" y="43.3" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">PEN → PE + N, ГЗШ,</text>
+<text x="63.2" y="46" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">повторное заземление</text>
+<rect x="122" y="28" width="42" height="12.4" stroke="#000" stroke-width="0.4" fill="#fafafa"/>
+<text x="123.2" y="31.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.1" text-anchor="start" font-weight="bold" fill="#000">Кабель в траншее</text>
+<text x="123.2" y="35.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">ВБбШв 5×10, L ≈ 40 м,</text>
+<text x="123.2" y="37.9" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">глубина 0,7 м, ΔU ≈ 0,8 %</text>
+<rect x="170" y="28" width="54" height="17.8" stroke="#000" stroke-width="0.4" fill="#fafafa"/>
+<text x="171.2" y="31.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.1" text-anchor="start" font-weight="bold" fill="#000">ЩР в прихожей, IP31, 36 мод.</text>
+<text x="171.2" y="35.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">QS 3P 40 А — вводной</text>
+<text x="171.2" y="37.9" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">FV УЗИП тип 1+2, 3P+N</text>
+<text x="171.2" y="40.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">KV реле напряжения 3ф</text>
+<text x="171.2" y="43.3" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">QD0 УЗО 4P 40 А 100 мА (S)</text>
+<line x1="57" y1="34" x2="62" y2="34" stroke="#000" stroke-width="0.5" fill="none" marker-end="url(#arr)"/>
+<line x1="116" y1="34" x2="122" y2="34" stroke="#000" stroke-width="0.5" fill="none" marker-end="url(#arr)"/>
+<line x1="164" y1="34" x2="170" y2="34" stroke="#000" stroke-width="0.5" fill="none" marker-end="url(#arr)"/>
+<text x="59.5" y="38" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.6" text-anchor="middle" font-weight="normal" fill="#000">СИП-4</text>
+<line x1="197" y1="46" x2="197" y2="72" stroke="#000" stroke-width="0.5" fill="none"/>
+<line x1="60" y1="72" x2="410" y2="72" stroke="#000" stroke-width="0.9" fill="none"/>
+<text x="60" y="70.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="start" font-weight="bold" fill="#000">Шины ЩР: L1, L2, L3, N, PE  ~380/220 В, 50 Гц</text>
+<text x="250" y="22" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="start" font-weight="bold" fill="#000">Расчётная нагрузка</text>
+<rect x="250" y="25" width="160" height="5" stroke="#000" stroke-width="0.4" fill="none"/>
+<text x="290" y="28.22" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="middle" font-weight="bold" fill="#000">Показатель</text>
+<line x1="330" y1="25" x2="330" y2="30" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="370" y="28.22" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="middle" font-weight="bold" fill="#000">Значение</text>
+<rect x="250" y="30" width="160" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="251" y="33.22" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="start" font-weight="normal" fill="#000">Установленная мощность Руст</text>
+<line x1="330" y1="30" x2="330" y2="35" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="331" y="33.22" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="start" font-weight="normal" fill="#000">25,8 кВт</text>
+<rect x="250" y="35" width="160" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="251" y="38.22" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="start" font-weight="normal" fill="#000">Коэффициент спроса Кс</text>
+<line x1="330" y1="35" x2="330" y2="40" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="331" y="38.22" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="start" font-weight="normal" fill="#000">0,55</text>
+<rect x="250" y="40" width="160" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="251" y="43.22" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="start" font-weight="normal" fill="#000">Расчётная мощность Рр</text>
+<line x1="330" y1="40" x2="330" y2="45" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="331" y="43.22" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="start" font-weight="normal" fill="#000">14,2 кВт (разрешено 15)</text>
+<rect x="250" y="45" width="160" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="251" y="48.22" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="start" font-weight="normal" fill="#000">Расчётный ток Iр, cos φ = 0,95</text>
+<line x1="330" y1="45" x2="330" y2="50" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="331" y="48.22" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="start" font-weight="normal" fill="#000">22,7 А → QF0 C25</text>
+<rect x="250" y="50" width="160" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="251" y="53.22" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="start" font-weight="normal" fill="#000">По фазам L1 / L2 / L3, кВт</text>
+<line x1="330" y1="50" x2="330" y2="55" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="331" y="53.22" font-family="DejaVu Sans, Arial, sans-serif" font-size="2" text-anchor="start" font-weight="normal" fill="#000">9,4 / 7,7 / 8,8</text>
+<rect x="22" y="96" width="44" height="5" stroke="#000" stroke-width="0.3" fill="none"/>
+<text x="23" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="bold" fill="#000">Группа</text>
+<rect x="22" y="101" width="44" height="5" stroke="#000" stroke-width="0.3" fill="none"/>
+<text x="23" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="bold" fill="#000">Аппарат</text>
+<rect x="22" y="106" width="44" height="6" stroke="#000" stroke-width="0.3" fill="none"/>
+<text x="23" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="bold" fill="#000">Ток, Iдн</text>
+<rect x="22" y="112" width="44" height="5" stroke="#000" stroke-width="0.3" fill="none"/>
+<text x="23" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="bold" fill="#000">Фаза</text>
+<rect x="22" y="117" width="44" height="5" stroke="#000" stroke-width="0.3" fill="none"/>
+<text x="23" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="bold" fill="#000">Руст, кВт</text>
+<rect x="22" y="122" width="44" height="9" stroke="#000" stroke-width="0.3" fill="none"/>
+<text x="23" y="127.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="bold" fill="#000">Кабель</text>
+<rect x="22" y="131" width="44" height="5" stroke="#000" stroke-width="0.3" fill="none"/>
+<text x="23" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="bold" fill="#000">L, м</text>
+<rect x="22" y="136" width="44" height="21" stroke="#000" stroke-width="0.3" fill="none"/>
+<text x="23" y="147.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="bold" fill="#000">Потребители</text>
+<line x1="78.29" y1="72" x2="78.29" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="78.29" y1="86.3" x2="78.29" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="78.29" y1="86.3" x2="76.09" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="77.59" y1="79" x2="78.99" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="77.59" y1="80.4" x2="78.99" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<circle cx="78.29" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="66" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="78.29" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 1</text>
+<rect x="66" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="78.29" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QF1</text>
+<rect x="66" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="78.29" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C10</text>
+<rect x="66" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="78.29" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L1</text>
+<rect x="66" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="78.29" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">0,40</text>
+<rect x="66" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="78.29" y="125.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ВВГнг-LS</text>
+<text x="78.29" y="127.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">3×1,5</text>
+<rect x="66" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="78.29" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">35</text>
+<rect x="66" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="78.29" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Освещение:</text>
+<text x="78.29" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">прихожая,</text>
+<text x="78.29" y="143" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">коридор,</text>
+<text x="78.29" y="145.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">санузел,</text>
+<text x="78.29" y="147.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">котельная,</text>
+<text x="78.29" y="149.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">вход</text>
+<line x1="102.86" y1="72" x2="102.86" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="102.86" y1="86.3" x2="102.86" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="102.86" y1="86.3" x2="100.66" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="102.16" y1="79" x2="103.56" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="102.16" y1="80.4" x2="103.56" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<circle cx="102.86" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="90.57" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="102.86" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 2</text>
+<rect x="90.57" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="102.86" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QF2</text>
+<rect x="90.57" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="102.86" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C10</text>
+<rect x="90.57" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="102.86" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L2</text>
+<rect x="90.57" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="102.86" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">0,45</text>
+<rect x="90.57" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="102.86" y="125.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ВВГнг-LS</text>
+<text x="102.86" y="127.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">3×1,5</text>
+<rect x="90.57" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="102.86" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">45</text>
+<rect x="90.57" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="102.86" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Освещение:</text>
+<text x="102.86" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">кухня-гостиная,</text>
+<text x="102.86" y="143" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">спальни,</text>
+<text x="102.86" y="145.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">терраса</text>
+<line x1="127.43" y1="72" x2="127.43" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="127.43" y1="86.3" x2="127.43" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="127.43" y1="86.3" x2="125.23" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="126.73" y1="79" x2="128.13" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="126.73" y1="80.4" x2="128.13" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<ellipse cx="126.53" cy="83" rx="2.4" ry="1.0" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="124.13" y1="83" x2="122.43" y2="83" stroke="#000" stroke-width="0.25" fill="none" stroke-dasharray="0.6 0.4"/>
+<rect x="120.83" y="82.2" width="1.6" height="1.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<circle cx="127.43" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="115.14" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="127.43" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 3</text>
+<rect x="115.14" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="127.43" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QD3</text>
+<rect x="115.14" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="127.43" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C16 30мА</text>
+<rect x="115.14" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="127.43" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L3</text>
+<rect x="115.14" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="127.43" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">2,00</text>
+<rect x="115.14" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="127.43" y="125.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ВВГнг-LS</text>
+<text x="127.43" y="127.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">3×2,5</text>
+<rect x="115.14" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="127.43" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">50</text>
+<rect x="115.14" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="127.43" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Розетки</text>
+<text x="127.43" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">спален 1,</text>
+<text x="127.43" y="143" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">2, 3</text>
+<line x1="152" y1="72" x2="152" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="152" y1="86.3" x2="152" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="152" y1="86.3" x2="149.8" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="151.3" y1="79" x2="152.7" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="151.3" y1="80.4" x2="152.7" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<ellipse cx="151.1" cy="83" rx="2.4" ry="1.0" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="148.7" y1="83" x2="147" y2="83" stroke="#000" stroke-width="0.25" fill="none" stroke-dasharray="0.6 0.4"/>
+<rect x="145.4" y="82.2" width="1.6" height="1.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<circle cx="152" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="139.71" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="152" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 4</text>
+<rect x="139.71" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="152" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QD4</text>
+<rect x="139.71" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="152" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C16 30мА</text>
+<rect x="139.71" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="152" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L1</text>
+<rect x="139.71" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="152" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">2,00</text>
+<rect x="139.71" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="152" y="125.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ВВГнг-LS</text>
+<text x="152" y="127.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">3×2,5</text>
+<rect x="139.71" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="152" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">40</text>
+<rect x="139.71" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="152" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Розетки</text>
+<text x="152" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">прихожая,</text>
+<text x="152" y="143" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">коридор,</text>
+<text x="152" y="145.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">гостиная</text>
+<line x1="176.57" y1="72" x2="176.57" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="176.57" y1="86.3" x2="176.57" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="176.57" y1="86.3" x2="174.37" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="175.87" y1="79" x2="177.27" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="175.87" y1="80.4" x2="177.27" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<ellipse cx="175.67" cy="83" rx="2.4" ry="1.0" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="173.27" y1="83" x2="171.57" y2="83" stroke="#000" stroke-width="0.25" fill="none" stroke-dasharray="0.6 0.4"/>
+<rect x="169.97" y="82.2" width="1.6" height="1.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<circle cx="176.57" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="164.29" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="176.57" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 5</text>
+<rect x="164.29" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="176.57" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QD5</text>
+<rect x="164.29" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="176.57" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C16 30мА</text>
+<rect x="164.29" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="176.57" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L2</text>
+<rect x="164.29" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="176.57" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">2,50</text>
+<rect x="164.29" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="176.57" y="125.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ВВГнг-LS</text>
+<text x="176.57" y="127.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">3×2,5</text>
+<rect x="164.29" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="176.57" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">20</text>
+<rect x="164.29" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="176.57" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Розетки</text>
+<text x="176.57" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">кухни над</text>
+<text x="176.57" y="143" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">столешницей</text>
+<line x1="201.14" y1="72" x2="201.14" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="201.14" y1="86.3" x2="201.14" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="201.14" y1="86.3" x2="198.94" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="200.44" y1="79" x2="201.84" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="200.44" y1="80.4" x2="201.84" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<ellipse cx="200.24" cy="83" rx="2.4" ry="1.0" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="197.84" y1="83" x2="196.14" y2="83" stroke="#000" stroke-width="0.25" fill="none" stroke-dasharray="0.6 0.4"/>
+<rect x="194.54" y="82.2" width="1.6" height="1.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<circle cx="201.14" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="188.86" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="201.14" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 6</text>
+<rect x="188.86" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="201.14" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QD6</text>
+<rect x="188.86" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="201.14" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C16 30мА</text>
+<rect x="188.86" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="201.14" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L3</text>
+<rect x="188.86" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="201.14" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">0,60</text>
+<rect x="188.86" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="201.14" y="125.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ВВГнг-LS</text>
+<text x="201.14" y="127.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">3×2,5</text>
+<rect x="188.86" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="201.14" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">18</text>
+<rect x="188.86" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="201.14" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Холодильник,</text>
+<text x="201.14" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">вытяжка</text>
+<line x1="225.71" y1="72" x2="225.71" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="225.71" y1="86.3" x2="225.71" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="225.71" y1="86.3" x2="223.51" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="225.01" y1="79" x2="226.41" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="225.01" y1="80.4" x2="226.41" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<ellipse cx="224.81" cy="83" rx="2.4" ry="1.0" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="222.41" y1="83" x2="220.71" y2="83" stroke="#000" stroke-width="0.25" fill="none" stroke-dasharray="0.6 0.4"/>
+<rect x="219.11" y="82.2" width="1.6" height="1.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<circle cx="225.71" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="213.43" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="225.71" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 7</text>
+<rect x="213.43" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="225.71" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QD7</text>
+<rect x="213.43" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="225.71" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C16 30мА</text>
+<rect x="213.43" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="225.71" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L1–L3</text>
+<rect x="213.43" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="225.71" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">7,50</text>
+<rect x="213.43" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="225.71" y="125.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ВВГнг-LS</text>
+<text x="225.71" y="127.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">5×2,5</text>
+<rect x="213.43" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="225.71" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">18</text>
+<rect x="213.43" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="225.71" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Варочная</text>
+<text x="225.71" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">панель</text>
+<text x="225.71" y="143" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">(индукция)</text>
+<line x1="250.29" y1="72" x2="250.29" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="250.29" y1="86.3" x2="250.29" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="250.29" y1="86.3" x2="248.09" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="249.59" y1="79" x2="250.99" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="249.59" y1="80.4" x2="250.99" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<ellipse cx="249.39" cy="83" rx="2.4" ry="1.0" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="246.99" y1="83" x2="245.29" y2="83" stroke="#000" stroke-width="0.25" fill="none" stroke-dasharray="0.6 0.4"/>
+<rect x="243.69" y="82.2" width="1.6" height="1.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<circle cx="250.29" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="238" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="250.29" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 8</text>
+<rect x="238" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="250.29" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QD8</text>
+<rect x="238" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="250.29" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C16 30мА</text>
+<rect x="238" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="250.29" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L1</text>
+<rect x="238" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="250.29" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">3,50</text>
+<rect x="238" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="250.29" y="125.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ВВГнг-LS</text>
+<text x="250.29" y="127.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">3×2,5</text>
+<rect x="238" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="250.29" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">18</text>
+<rect x="238" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="250.29" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Духовой</text>
+<text x="250.29" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">шкаф</text>
+<line x1="274.86" y1="72" x2="274.86" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="274.86" y1="86.3" x2="274.86" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="274.86" y1="86.3" x2="272.66" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="274.16" y1="79" x2="275.56" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="274.16" y1="80.4" x2="275.56" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<ellipse cx="273.96" cy="83" rx="2.4" ry="1.0" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="271.56" y1="83" x2="269.86" y2="83" stroke="#000" stroke-width="0.25" fill="none" stroke-dasharray="0.6 0.4"/>
+<rect x="268.26" y="82.2" width="1.6" height="1.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<circle cx="274.86" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="262.57" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="274.86" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 9</text>
+<rect x="262.57" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="274.86" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QD9</text>
+<rect x="262.57" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="274.86" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C16 30мА</text>
+<rect x="262.57" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="274.86" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L2</text>
+<rect x="262.57" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="274.86" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">2,00</text>
+<rect x="262.57" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="274.86" y="125.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ВВГнг-LS</text>
+<text x="274.86" y="127.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">3×2,5</text>
+<rect x="262.57" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="274.86" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">20</text>
+<rect x="262.57" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="274.86" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Посудомоечная</text>
+<text x="274.86" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">машина</text>
+<line x1="299.43" y1="72" x2="299.43" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="299.43" y1="86.3" x2="299.43" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="299.43" y1="86.3" x2="297.23" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="298.73" y1="79" x2="300.13" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="298.73" y1="80.4" x2="300.13" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<ellipse cx="298.53" cy="83" rx="2.4" ry="1.0" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="296.13" y1="83" x2="294.43" y2="83" stroke="#000" stroke-width="0.25" fill="none" stroke-dasharray="0.6 0.4"/>
+<rect x="292.83" y="82.2" width="1.6" height="1.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<circle cx="299.43" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="287.14" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="299.43" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 10</text>
+<rect x="287.14" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="299.43" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QD10</text>
+<rect x="287.14" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="299.43" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C16 30мА</text>
+<rect x="287.14" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="299.43" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L3</text>
+<rect x="287.14" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="299.43" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">2,20</text>
+<rect x="287.14" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="299.43" y="125.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ВВГнг-LS</text>
+<text x="299.43" y="127.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">3×2,5</text>
+<rect x="287.14" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="299.43" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">12</text>
+<rect x="287.14" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="299.43" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Стиральная</text>
+<text x="299.43" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">машина</text>
+<line x1="324" y1="72" x2="324" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="324" y1="86.3" x2="324" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="324" y1="86.3" x2="321.8" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="323.3" y1="79" x2="324.7" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="323.3" y1="80.4" x2="324.7" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<ellipse cx="323.1" cy="83" rx="2.4" ry="1.0" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="320.7" y1="83" x2="319" y2="83" stroke="#000" stroke-width="0.25" fill="none" stroke-dasharray="0.6 0.4"/>
+<rect x="317.4" y="82.2" width="1.6" height="1.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<circle cx="324" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="311.71" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="324" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 11</text>
+<rect x="311.71" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="324" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QD11</text>
+<rect x="311.71" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="324" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C16 10мА</text>
+<rect x="311.71" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="324" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L1</text>
+<rect x="311.71" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="324" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">1,00</text>
+<rect x="311.71" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="324" y="125.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ВВГнг-LS</text>
+<text x="324" y="127.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">3×2,5</text>
+<rect x="311.71" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="324" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">12</text>
+<rect x="311.71" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="324" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Санузел:</text>
+<text x="324" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">розетка</text>
+<text x="324" y="143" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">IP44,</text>
+<text x="324" y="145.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">полотенцесушитель</text>
+<line x1="348.57" y1="72" x2="348.57" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="348.57" y1="86.3" x2="348.57" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="348.57" y1="86.3" x2="346.37" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="347.87" y1="79" x2="349.27" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="347.87" y1="80.4" x2="349.27" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<ellipse cx="347.67" cy="83" rx="2.4" ry="1.0" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="345.27" y1="83" x2="343.57" y2="83" stroke="#000" stroke-width="0.25" fill="none" stroke-dasharray="0.6 0.4"/>
+<rect x="341.97" y="82.2" width="1.6" height="1.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<circle cx="348.57" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="336.29" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="348.57" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 12</text>
+<rect x="336.29" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="348.57" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QD12</text>
+<rect x="336.29" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="348.57" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C10 30мА</text>
+<rect x="336.29" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="348.57" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L2</text>
+<rect x="336.29" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="348.57" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">0,20</text>
+<rect x="336.29" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="348.57" y="125.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ВВГнг-LS</text>
+<text x="348.57" y="127.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">3×1,5</text>
+<rect x="336.29" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="348.57" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">14</text>
+<rect x="336.29" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="348.57" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Газовый</text>
+<text x="348.57" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">котёл,</text>
+<text x="348.57" y="143" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">насосы</text>
+<text x="348.57" y="145.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">(через</text>
+<text x="348.57" y="147.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">стабилизатор)</text>
+<line x1="373.14" y1="72" x2="373.14" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="373.14" y1="86.3" x2="373.14" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="373.14" y1="86.3" x2="370.94" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="372.44" y1="79" x2="373.84" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="372.44" y1="80.4" x2="373.84" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<ellipse cx="372.24" cy="83" rx="2.4" ry="1.0" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="369.84" y1="83" x2="368.14" y2="83" stroke="#000" stroke-width="0.25" fill="none" stroke-dasharray="0.6 0.4"/>
+<rect x="366.54" y="82.2" width="1.6" height="1.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<circle cx="373.14" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="360.86" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="373.14" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 13</text>
+<rect x="360.86" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="373.14" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QD13</text>
+<rect x="360.86" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="373.14" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C16 30мА</text>
+<rect x="360.86" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="373.14" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L3</text>
+<rect x="360.86" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="373.14" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">1,50</text>
+<rect x="360.86" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="373.14" y="125.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ВВГнг-LS</text>
+<text x="373.14" y="127.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">3×2,5</text>
+<rect x="360.86" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="373.14" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">30</text>
+<rect x="360.86" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="373.14" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Наружные</text>
+<text x="373.14" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">розетки</text>
+<text x="373.14" y="143" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">IP54</text>
+<line x1="397.71" y1="72" x2="397.71" y2="79.7" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="397.71" y1="86.3" x2="397.71" y2="94" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="397.71" y1="86.3" x2="395.51" y2="80.3" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="397.01" y1="79" x2="398.41" y2="80.4" stroke="#000" stroke-width="0.3" fill="none"/>
+<line x1="397.01" y1="80.4" x2="398.41" y2="79" stroke="#000" stroke-width="0.3" fill="none"/>
+<circle cx="397.71" cy="72" r="0.5" stroke="#000" stroke-width="0" fill="#000"/>
+<rect x="385.43" y="96" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="397.71" y="99.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">гр. 14</text>
+<rect x="385.43" y="101" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="397.71" y="104.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">QF14</text>
+<rect x="385.43" y="106" width="24.57" height="6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="397.71" y="109.7" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">C16</text>
+<rect x="385.43" y="112" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="397.71" y="115.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">L1</text>
+<rect x="385.43" y="117" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="397.71" y="120.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">—</text>
+<rect x="385.43" y="122" width="24.57" height="9" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="397.71" y="127.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">—</text>
+<rect x="385.43" y="131" width="24.57" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="397.71" y="134.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">—</text>
+<rect x="385.43" y="136" width="24.57" height="21" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="397.71" y="138.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">Резерв</text>
+<text x="397.71" y="140.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">(насос</text>
+<text x="397.71" y="143" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">скважины,</text>
+<text x="397.71" y="145.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">ворота)</text>
+<text x="25" y="172" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="start" font-weight="bold" fill="#000">Повторное заземление и уравнивание потенциалов</text>
+<line x1="30" y1="184" x2="90" y2="184" stroke="#777" stroke-width="0.25" fill="none"/>
+<text x="65" y="183" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="start" font-weight="normal" fill="#777">уровень земли</text>
+<line x1="35" y1="190" x2="85" y2="190" stroke="#2e7d32" stroke-width="0.7" fill="none"/>
+<line x1="35" y1="190" x2="35" y2="210" stroke="#2e7d32" stroke-width="0.9" fill="none"/>
+<line x1="60" y1="190" x2="60" y2="210" stroke="#2e7d32" stroke-width="0.9" fill="none"/>
+<line x1="85" y1="190" x2="85" y2="210" stroke="#2e7d32" stroke-width="0.9" fill="none"/>
+<text x="47" y="189" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">полоса 40×4, гл. 0,5–0,7 м</text>
+<text x="72" y="202" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">3 электрода L = 3 м,</text>
+<text x="72" y="204.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="middle" font-weight="normal" fill="#000">шаг 3 м</text>
+<line x1="35" y1="190" x2="35" y2="180" stroke="#2e7d32" stroke-width="0.5" fill="none"/>
+<rect x="29" y="175" width="12" height="5" stroke="#000" stroke-width="0.35" fill="#fff"/>
+<text x="35" y="178.3" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">ГЗШ</text>
+<text x="100" y="176" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.95" text-anchor="start" font-weight="normal" fill="#000">• Контур у ЩУ (на границе участка): уголок 50×50×5 или омеднённые стержни Ø16; сопротивление</text>
+<text x="100" y="178.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.95" text-anchor="start" font-weight="normal" fill="#000">повторного заземления ≤ 30 Ом, замер при приёмке.</text>
+<text x="100" y="182" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.95" text-anchor="start" font-weight="normal" fill="#000">• Система TN-C-S: разделение PEN на PE и N — в ЩУ; далее PE и N не объединять.</text>
+<text x="100" y="185.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.95" text-anchor="start" font-weight="normal" fill="#000">• К ГЗШ дома (в ЩР) подключить: ввод водопровода, газопровод после изолирующего соединения, корпус</text>
+<text x="100" y="188" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.95" text-anchor="start" font-weight="normal" fill="#000">котла, ДУП санузла (провод ПуВ 1×4 / 1×6).</text>
+<text x="100" y="191.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.95" text-anchor="start" font-weight="normal" fill="#000">• Розеточные группы — через АВДТ 30 мА (санузел — 10 мА); противопожарное УЗО 100 мА селективное — на</text>
+<text x="100" y="194" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.95" text-anchor="start" font-weight="normal" fill="#000">вводе ЩР.</text>
+<text x="232" y="172" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="start" font-weight="bold" fill="#000">Состав ЩР (модули DIN)</text>
+<rect x="232" y="175" width="178" height="4.6" stroke="#000" stroke-width="0.4" fill="none"/>
+<text x="297" y="177.98" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="bold" fill="#000">Аппарат</text>
+<line x1="362" y1="175" x2="362" y2="179.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="371" y="177.98" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="bold" fill="#000">Кол.</text>
+<line x1="380" y1="175" x2="380" y2="179.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="395" y="177.98" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="bold" fill="#000">Мод.</text>
+<rect x="232" y="179.6" width="178" height="4.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="233" y="182.58" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">QS выключатель нагрузки 3P 40 А</text>
+<line x1="362" y1="179.6" x2="362" y2="184.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="371" y="182.58" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">1</text>
+<line x1="380" y1="179.6" x2="380" y2="184.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="395" y="182.58" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">3</text>
+<rect x="232" y="184.2" width="178" height="4.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="233" y="187.18" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">FV УЗИП тип 1+2, 3P+N</text>
+<line x1="362" y1="184.2" x2="362" y2="188.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="371" y="187.18" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">1</text>
+<line x1="380" y1="184.2" x2="380" y2="188.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="395" y="187.18" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">4</text>
+<rect x="232" y="188.8" width="178" height="4.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="233" y="191.78" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">KV реле напряжения 3ф, 63 А</text>
+<line x1="362" y1="188.8" x2="362" y2="193.4" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="371" y="191.78" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">1</text>
+<line x1="380" y1="188.8" x2="380" y2="193.4" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="395" y="191.78" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">3</text>
+<rect x="232" y="193.4" width="178" height="4.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="233" y="196.38" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">QD0 УЗО 4P 40 А 100 мА тип S</text>
+<line x1="362" y1="193.4" x2="362" y2="198" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="371" y="196.38" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">1</text>
+<line x1="380" y1="193.4" x2="380" y2="198" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="395" y="196.38" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">4</text>
+<rect x="232" y="198" width="178" height="4.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="233" y="200.98" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">АВДТ 1P+N C16/C10 30 мА / 10 мА</text>
+<line x1="362" y1="198" x2="362" y2="202.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="371" y="200.98" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">11</text>
+<line x1="380" y1="198" x2="380" y2="202.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="395" y="200.98" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">22</text>
+<rect x="232" y="202.6" width="178" height="4.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="233" y="205.58" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">АВДТ 3P+N C16 30 мА</text>
+<line x1="362" y1="202.6" x2="362" y2="207.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="371" y="205.58" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">1</text>
+<line x1="380" y1="202.6" x2="380" y2="207.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="395" y="205.58" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">4</text>
+<rect x="232" y="207.2" width="178" height="4.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="233" y="210.18" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Автомат 1P C10 / C16</text>
+<line x1="362" y1="207.2" x2="362" y2="211.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="371" y="210.18" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">3</text>
+<line x1="380" y1="207.2" x2="380" y2="211.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="395" y="210.18" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">3</text>
+<rect x="0.2" y="0.2" width="419.6" height="296.6" stroke="#bbb" stroke-width="0.15" fill="none"/>
+<rect x="20" y="5" width="395" height="287" stroke="#000" stroke-width="0.7" fill="none"/>
+<rect x="230" y="237" width="185" height="55" stroke="#000" stroke-width="0.7" fill="#fff"/>
+<line x1="230" y1="242" x2="295" y2="242" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="247" x2="295" y2="247" stroke="#000" stroke-width="0.5" fill="none"/>
+<line x1="230" y1="252" x2="295" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="257" x2="295" y2="257" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="262" x2="295" y2="262" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="267" x2="295" y2="267" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="272" x2="295" y2="272" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="277" x2="295" y2="277" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="282" x2="295" y2="282" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="287" x2="295" y2="287" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="237" y1="237" x2="237" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="247" y1="237" x2="247" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="257" y1="237" x2="257" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="272" y1="237" x2="272" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="285" y1="237" x2="285" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="247" y1="252" x2="247" y2="292" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="272" y1="252" x2="272" y2="292" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="285" y1="252" x2="285" y2="292" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="233.5" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Изм.</text>
+<text x="242" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Кол.</text>
+<text x="252" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Лист</text>
+<text x="264.5" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">№док</text>
+<text x="278.5" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Подп.</text>
+<text x="290" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Дата</text>
+<text x="231" y="255.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Разраб.</text>
+<text x="248" y="255.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Claude</text>
+<text x="285.6" y="255.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="start" font-weight="normal" fill="#000">10.26</text>
+<text x="231" y="260.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Пров.</text>
+<text x="248" y="260.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000"></text>
+<text x="231" y="265.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">ГИП</text>
+<text x="248" y="265.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000"></text>
+<text x="231" y="270.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Н.контр.</text>
+<text x="248" y="270.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000"></text>
+<text x="231" y="275.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Утв.</text>
+<text x="248" y="275.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000"></text>
+<line x1="295" y1="237" x2="295" y2="292" stroke="#000" stroke-width="0.7" fill="none"/>
+<line x1="295" y1="252" x2="415" y2="252" stroke="#000" stroke-width="0.7" fill="none"/>
+<line x1="295" y1="277" x2="415" y2="277" stroke="#000" stroke-width="0.7" fill="none"/>
+<line x1="365" y1="252" x2="365" y2="292" stroke="#000" stroke-width="0.7" fill="none"/>
+<text x="355" y="246.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="4.5" text-anchor="middle" font-weight="bold" fill="#000">ДОМ-9х12-ЭО</text>
+<text x="330" y="262" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">Одноэтажный жилой дом 9×12 м</text>
+<text x="330" y="265.51" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">г. Бобруйск, Могилёвская обл.</text>
+<line x1="365" y1="257" x2="415" y2="257" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="365" y1="264" x2="415" y2="264" stroke="#000" stroke-width="0.5" fill="none"/>
+<line x1="380" y1="252" x2="380" y2="264" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="397" y1="252" x2="397" y2="264" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="372.5" y="255.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Стадия</text>
+<text x="388.5" y="255.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Лист</text>
+<text x="406" y="255.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Листов</text>
+<text x="372.5" y="262" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">ЭП</text>
+<text x="388.5" y="262" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">9</text>
+<text x="406" y="262" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">11</text>
+<text x="390" y="268.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">Эскизный проект.</text>
+<text x="390" y="271.06" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">Строительство — после</text>
+<text x="390" y="273.63" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">привязки и экспертизы</text>
+<text x="330" y="282.9" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="bold" fill="#000">Однолинейная схема ЩР.</text>
+<text x="330" y="286.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="bold" fill="#000">Заземление</text>
+<text x="390" y="283" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">Лист ЭО-2</text>
+<text x="390" y="285.97" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">М —</text>
+</svg>

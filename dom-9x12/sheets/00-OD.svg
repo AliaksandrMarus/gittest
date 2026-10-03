@@ -1,0 +1,328 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420mm" height="297mm" viewBox="0 0 420 297">
+<title>ОД — Общие данные</title>
+<defs>
+ <pattern id="hBlock" width="1.6" height="1.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="1.6" stroke="#000" stroke-width="0.13"/></pattern>
+ <pattern id="hBlockGray" width="1.6" height="1.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="1.6" stroke="#9a9a9a" stroke-width="0.13"/></pattern>
+ <pattern id="hPart" width="1.2" height="1.2" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+  <line x1="0" y1="0" x2="0" y2="1.2" stroke="#000" stroke-width="0.1"/></pattern>
+ <pattern id="hConcrete" width="4" height="4" patternUnits="userSpaceOnUse">
+  <rect width="4" height="4" fill="#f2f2f2"/>
+  <circle cx="0.8" cy="0.9" r="0.22" fill="#000"/><circle cx="2.9" cy="2.6" r="0.18" fill="#000"/>
+  <path d="M2.2 0.6 l0.7 0.2 l-0.5 0.5 z" fill="none" stroke="#000" stroke-width="0.12"/>
+  <path d="M0.6 2.8 l0.8 0.1 l-0.4 0.6 z" fill="none" stroke="#000" stroke-width="0.12"/></pattern>
+ <pattern id="hSand" width="2" height="2" patternUnits="userSpaceOnUse">
+  <circle cx="0.5" cy="0.5" r="0.14" fill="#555"/><circle cx="1.5" cy="1.4" r="0.12" fill="#555"/></pattern>
+ <pattern id="hSoil" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="3" stroke="#000" stroke-width="0.15"/>
+  <line x1="1" y1="0" x2="1" y2="3" stroke="#000" stroke-width="0.15"/></pattern>
+ <pattern id="hInsul" width="2.4" height="2.4" patternUnits="userSpaceOnUse">
+  <rect width="2.4" height="2.4" fill="#fff8d6"/>
+  <path d="M0 2.0 L0.6 0.4 L1.2 2.0 L1.8 0.4 L2.4 2.0" fill="none" stroke="#8a7a2a" stroke-width="0.12"/></pattern>
+ <pattern id="hWood" width="2" height="2" patternUnits="userSpaceOnUse">
+  <rect width="2" height="2" fill="#f3e2c3"/>
+  <path d="M0 1 Q0.5 0.5 1 1 T2 1" fill="none" stroke="#9b7a46" stroke-width="0.12"/></pattern>
+ <pattern id="hGravel" width="3" height="3" patternUnits="userSpaceOnUse">
+  <rect width="3" height="3" fill="#ececec"/>
+  <circle cx="0.8" cy="0.8" r="0.5" fill="none" stroke="#333" stroke-width="0.12"/>
+  <circle cx="2.2" cy="2.1" r="0.6" fill="none" stroke="#333" stroke-width="0.12"/></pattern>
+ <pattern id="hPlaster" width="1" height="1" patternUnits="userSpaceOnUse">
+  <rect width="1" height="1" fill="#e9e9e9"/><circle cx="0.5" cy="0.5" r="0.1" fill="#777"/></pattern>
+ <pattern id="hRoof" width="1.4" height="1.4" patternUnits="userSpaceOnUse" patternTransform="rotate(90)">
+  <line x1="0" y1="0" x2="0" y2="1.4" stroke="#7b3b30" stroke-width="0.12"/></pattern>
+ <pattern id="hBoard" width="1.6" height="10" patternUnits="userSpaceOnUse">
+  <rect width="1.6" height="10" fill="#f6efe2"/>
+  <line x1="0" y1="0" x2="0" y2="10" stroke="#a08560" stroke-width="0.12"/></pattern>
+ <pattern id="hTile" width="3" height="1.6" patternUnits="userSpaceOnUse">
+  <rect width="3" height="1.6" fill="#c9cdd2"/>
+  <path d="M0 1.6 L3 1.6 M0 0 L0 1.6" stroke="#6c737b" stroke-width="0.12"/></pattern>
+ <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+  <path d="M0 0 L10 5 L0 10 z" fill="#000"/></marker>
+ <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+  <path d="M0 0 L10 5 L0 10 z" fill="#1f5fbf"/></marker>
+ <marker id="arrK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+  <path d="M0 0 L10 5 L0 10 z" fill="#7a4a12"/></marker>
+</defs>
+
+<rect width="420" height="297" fill="#fff"/>
+<rect x="0.2" y="0.2" width="419.6" height="296.6" stroke="#bbb" stroke-width="0.15" fill="none"/>
+<rect x="20" y="5" width="395" height="287" stroke="#000" stroke-width="0.7" fill="none"/>
+<rect x="230" y="237" width="185" height="55" stroke="#000" stroke-width="0.7" fill="#fff"/>
+<line x1="230" y1="242" x2="295" y2="242" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="247" x2="295" y2="247" stroke="#000" stroke-width="0.5" fill="none"/>
+<line x1="230" y1="252" x2="295" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="257" x2="295" y2="257" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="262" x2="295" y2="262" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="267" x2="295" y2="267" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="272" x2="295" y2="272" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="277" x2="295" y2="277" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="282" x2="295" y2="282" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="230" y1="287" x2="295" y2="287" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="237" y1="237" x2="237" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="247" y1="237" x2="247" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="257" y1="237" x2="257" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="272" y1="237" x2="272" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="285" y1="237" x2="285" y2="252" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="247" y1="252" x2="247" y2="292" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="272" y1="252" x2="272" y2="292" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="285" y1="252" x2="285" y2="292" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="233.5" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Изм.</text>
+<text x="242" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Кол.</text>
+<text x="252" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Лист</text>
+<text x="264.5" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">№док</text>
+<text x="278.5" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Подп.</text>
+<text x="290" y="250.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Дата</text>
+<text x="231" y="255.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Разраб.</text>
+<text x="248" y="255.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Claude</text>
+<text x="285.6" y="255.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.7" text-anchor="start" font-weight="normal" fill="#000">10.26</text>
+<text x="231" y="260.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Пров.</text>
+<text x="248" y="260.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000"></text>
+<text x="231" y="265.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">ГИП</text>
+<text x="248" y="265.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000"></text>
+<text x="231" y="270.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Н.контр.</text>
+<text x="248" y="270.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000"></text>
+<text x="231" y="275.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000">Утв.</text>
+<text x="248" y="275.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="start" font-weight="normal" fill="#000"></text>
+<line x1="295" y1="237" x2="295" y2="292" stroke="#000" stroke-width="0.7" fill="none"/>
+<line x1="295" y1="252" x2="415" y2="252" stroke="#000" stroke-width="0.7" fill="none"/>
+<line x1="295" y1="277" x2="415" y2="277" stroke="#000" stroke-width="0.7" fill="none"/>
+<line x1="365" y1="252" x2="365" y2="292" stroke="#000" stroke-width="0.7" fill="none"/>
+<text x="355" y="246.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="4.5" text-anchor="middle" font-weight="bold" fill="#000">ДОМ-9х12-ОД</text>
+<text x="330" y="262" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">Одноэтажный жилой дом 9×12 м</text>
+<text x="330" y="265.51" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">г. Бобруйск, Могилёвская обл.</text>
+<line x1="365" y1="257" x2="415" y2="257" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="365" y1="264" x2="415" y2="264" stroke="#000" stroke-width="0.5" fill="none"/>
+<line x1="380" y1="252" x2="380" y2="264" stroke="#000" stroke-width="0.25" fill="none"/>
+<line x1="397" y1="252" x2="397" y2="264" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="372.5" y="255.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Стадия</text>
+<text x="388.5" y="255.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Лист</text>
+<text x="406" y="255.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.8" text-anchor="middle" font-weight="normal" fill="#000">Листов</text>
+<text x="372.5" y="262" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">ЭП</text>
+<text x="388.5" y="262" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">1</text>
+<text x="406" y="262" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="normal" fill="#000">11</text>
+<text x="390" y="268.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">Эскизный проект.</text>
+<text x="390" y="271.06" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">Строительство — после</text>
+<text x="390" y="273.63" font-family="DejaVu Sans, Arial, sans-serif" font-size="1.9" text-anchor="middle" font-weight="normal" fill="#000">привязки и экспертизы</text>
+<text x="330" y="284.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.6" text-anchor="middle" font-weight="bold" fill="#000">Общие данные</text>
+<text x="390" y="283" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">Лист ОД</text>
+<text x="390" y="285.97" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000"></text>
+<text x="25" y="16" font-family="DejaVu Sans, Arial, sans-serif" font-size="5" text-anchor="start" font-weight="bold" fill="#000">Одноэтажный жилой дом 9×12 м с газовой котельной — г. Бобруйск</text>
+<text x="25" y="22.5" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.8" text-anchor="start" font-weight="normal" fill="#333">Эскизный проект: архитектура, фундаменты, стены, электроснабжение, водопровод и канализация</text>
+<text x="25" y="33" font-family="DejaVu Sans, Arial, sans-serif" font-size="3.5" text-anchor="start" font-weight="bold" fill="#000">Ведомость листов</text>
+<line x1="25" y1="34" x2="58.6" y2="34" stroke="#000" stroke-width="0.35" fill="none"/>
+<rect x="25" y="36" width="150" height="5.2" stroke="#000" stroke-width="0.4" fill="none"/>
+<text x="31" y="39.43" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="bold" fill="#000">Лист</text>
+<line x1="37" y1="36" x2="37" y2="41.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="46" y="39.43" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="bold" fill="#000">Обозначение</text>
+<line x1="55" y1="36" x2="55" y2="41.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="115" y="39.43" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="bold" fill="#000">Наименование</text>
+<rect x="25" y="41.2" width="150" height="5.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="31" y="44.63" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">1</text>
+<line x1="37" y1="41.2" x2="37" y2="46.4" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="46" y="44.63" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">ОД</text>
+<line x1="55" y1="41.2" x2="55" y2="46.4" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="56" y="44.63" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="start" font-weight="normal" fill="#000">Общие данные</text>
+<rect x="25" y="46.4" width="150" height="5.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="31" y="49.83" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">2</text>
+<line x1="37" y1="46.4" x2="37" y2="51.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="46" y="49.83" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">ГП</text>
+<line x1="55" y1="46.4" x2="55" y2="51.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="56" y="49.83" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="start" font-weight="normal" fill="#000">Схема планировочной организации участка</text>
+<rect x="25" y="51.6" width="150" height="5.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="31" y="55.03" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">3</text>
+<line x1="37" y1="51.6" x2="37" y2="56.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="46" y="55.03" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">АР-1</text>
+<line x1="55" y1="51.6" x2="55" y2="56.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="56" y="55.03" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="start" font-weight="normal" fill="#000">План этажа. Экспликация помещений</text>
+<rect x="25" y="56.8" width="150" height="5.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="31" y="60.23" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">4</text>
+<line x1="37" y1="56.8" x2="37" y2="62" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="46" y="60.23" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">АР-2</text>
+<line x1="55" y1="56.8" x2="55" y2="62" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="56" y="60.23" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="start" font-weight="normal" fill="#000">План стен. Ведомости проёмов и перемычек</text>
+<rect x="25" y="62" width="150" height="5.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="31" y="65.43" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">5</text>
+<line x1="37" y1="62" x2="37" y2="67.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="46" y="65.43" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">АР-3</text>
+<line x1="55" y1="62" x2="55" y2="67.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="56" y="65.43" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="start" font-weight="normal" fill="#000">Разрез 1-1. Составы конструкций. Ведомость отделки</text>
+<rect x="25" y="67.2" width="150" height="5.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="31" y="70.63" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">6</text>
+<line x1="37" y1="67.2" x2="37" y2="72.4" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="46" y="70.63" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">АР-4</text>
+<line x1="55" y1="67.2" x2="55" y2="72.4" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="56" y="70.63" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="start" font-weight="normal" fill="#000">Фасады. План кровли</text>
+<rect x="25" y="72.4" width="150" height="5.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="31" y="75.83" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">7</text>
+<line x1="37" y1="72.4" x2="37" y2="77.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="46" y="75.83" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">КЖ-1</text>
+<line x1="55" y1="72.4" x2="55" y2="77.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="56" y="75.83" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="start" font-weight="normal" fill="#000">Фундаменты. План, сечения, спецификация</text>
+<rect x="25" y="77.6" width="150" height="5.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="31" y="81.03" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">8</text>
+<line x1="37" y1="77.6" x2="37" y2="82.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="46" y="81.03" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">ЭО-1</text>
+<line x1="55" y1="77.6" x2="55" y2="82.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="56" y="81.03" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="start" font-weight="normal" fill="#000">План электрооборудования и освещения</text>
+<rect x="25" y="82.8" width="150" height="5.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="31" y="86.23" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">9</text>
+<line x1="37" y1="82.8" x2="37" y2="88" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="46" y="86.23" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">ЭО-2</text>
+<line x1="55" y1="82.8" x2="55" y2="88" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="56" y="86.23" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="start" font-weight="normal" fill="#000">Однолинейная схема ЩР. Заземление</text>
+<rect x="25" y="88" width="150" height="5.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="31" y="91.43" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">10</text>
+<line x1="37" y1="88" x2="37" y2="93.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="46" y="91.43" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">ВК-1</text>
+<line x1="55" y1="88" x2="55" y2="93.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="56" y="91.43" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="start" font-weight="normal" fill="#000">План сетей водопровода и канализации</text>
+<rect x="25" y="93.2" width="150" height="5.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="31" y="96.63" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">11</text>
+<line x1="37" y1="93.2" x2="37" y2="98.4" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="46" y="96.63" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="normal" fill="#000">ВК-2</text>
+<line x1="55" y1="93.2" x2="55" y2="98.4" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="56" y="96.63" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="start" font-weight="normal" fill="#000">Схемы водопровода и канализации. Септик</text>
+<text x="25" y="107.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="3.5" text-anchor="start" font-weight="bold" fill="#000">Прилагаемые документы</text>
+<line x1="25" y1="108.4" x2="69.1" y2="108.4" stroke="#000" stroke-width="0.35" fill="none"/>
+<rect x="25" y="110.4" width="150" height="5.2" stroke="#000" stroke-width="0.4" fill="none"/>
+<text x="40" y="113.83" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="bold" fill="#000">Обозначение</text>
+<line x1="55" y1="110.4" x2="55" y2="115.6" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="115" y="113.83" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="middle" font-weight="bold" fill="#000">Наименование</text>
+<rect x="25" y="115.6" width="150" height="5.2" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="26" y="119.03" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="start" font-weight="normal" fill="#000">README.md</text>
+<line x1="55" y1="115.6" x2="55" y2="120.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="56" y="119.03" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.3" text-anchor="start" font-weight="normal" fill="#000">Пояснительная записка: решения, расчёты, ведомости материалов, этапы работ</text>
+<text x="25" y="129.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="3.5" text-anchor="start" font-weight="bold" fill="#000">Технико-экономические показатели</text>
+<line x1="25" y1="130.8" x2="92.2" y2="130.8" stroke="#000" stroke-width="0.35" fill="none"/>
+<rect x="25" y="132.8" width="150" height="5" stroke="#000" stroke-width="0.4" fill="none"/>
+<text x="75" y="136.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="bold" fill="#000">Показатель</text>
+<line x1="125" y1="132.8" x2="125" y2="137.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="132" y="136.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="bold" fill="#000">Ед.</text>
+<line x1="139" y1="132.8" x2="139" y2="137.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="157" y="136.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="bold" fill="#000">Значение</text>
+<rect x="25" y="137.8" width="150" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="26" y="141.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Габариты в осях / по наружным граням</text>
+<line x1="125" y1="137.8" x2="125" y2="142.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="132" y="141.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">м</text>
+<line x1="139" y1="137.8" x2="139" y2="142.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="157" y="141.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">11,6×8,6 / 12,0×9,0</text>
+<rect x="25" y="142.8" width="150" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="26" y="146.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Площадь застройки</text>
+<line x1="125" y1="142.8" x2="125" y2="147.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="132" y="146.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">м²</text>
+<line x1="139" y1="142.8" x2="139" y2="147.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="157" y="146.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">108,0</text>
+<rect x="25" y="147.8" width="150" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="26" y="151.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Общая площадь</text>
+<line x1="125" y1="147.8" x2="125" y2="152.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="132" y="151.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">м²</text>
+<line x1="139" y1="147.8" x2="139" y2="152.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="157" y="151.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">86,4</text>
+<rect x="25" y="152.8" width="150" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="26" y="156.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">  в т.ч. спальни (3 шт.)</text>
+<line x1="125" y1="152.8" x2="125" y2="157.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="132" y="156.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">м²</text>
+<line x1="139" y1="152.8" x2="139" y2="157.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="157" y="156.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">43,5</text>
+<rect x="25" y="157.8" width="150" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="26" y="161.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">  в т.ч. кухня-гостиная</text>
+<line x1="125" y1="157.8" x2="125" y2="162.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="132" y="161.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">м²</text>
+<line x1="139" y1="157.8" x2="139" y2="162.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="157" y="161.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">20,9</text>
+<rect x="25" y="162.8" width="150" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="26" y="166.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Строительный объём (до верха утеплителя перекрытия)</text>
+<line x1="125" y1="162.8" x2="125" y2="167.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="132" y="166.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">м³</text>
+<line x1="139" y1="162.8" x2="139" y2="167.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="157" y="166.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">335</text>
+<rect x="25" y="167.8" width="150" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="26" y="171.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Этажность / высота помещений (в чистоте)</text>
+<line x1="125" y1="167.8" x2="125" y2="172.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="132" y="171.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">—</text>
+<line x1="139" y1="167.8" x2="139" y2="172.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="157" y="171.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">1 / 2,80 м</text>
+<rect x="25" y="172.8" width="150" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="26" y="176.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Расчётная электрическая мощность (3 фазы, 380 В)</text>
+<line x1="125" y1="172.8" x2="125" y2="177.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="132" y="176.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">кВт</text>
+<line x1="139" y1="172.8" x2="139" y2="177.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="157" y="176.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">15</text>
+<rect x="25" y="177.8" width="150" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="26" y="181.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Расчётные теплопотери при −24 °C</text>
+<line x1="125" y1="177.8" x2="125" y2="182.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="132" y="181.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">кВт</text>
+<line x1="139" y1="177.8" x2="139" y2="182.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="157" y="181.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">≈ 7</text>
+<rect x="25" y="182.8" width="150" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="26" y="186.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Газовый котёл (одноконтурный, закрытая камера)</text>
+<line x1="125" y1="182.8" x2="125" y2="187.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="132" y="186.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">кВт</text>
+<line x1="139" y1="182.8" x2="139" y2="187.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="157" y="186.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">12–15</text>
+<rect x="25" y="187.8" width="150" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="26" y="191.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Водопотребление (4 чел. × 180 л/сут)</text>
+<line x1="125" y1="187.8" x2="125" y2="192.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="132" y="191.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">м³/сут</text>
+<line x1="139" y1="187.8" x2="139" y2="192.8" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="157" y="191.09" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">0,72</text>
+<text x="190" y="33" font-family="DejaVu Sans, Arial, sans-serif" font-size="3.5" text-anchor="start" font-weight="bold" fill="#000">Климатические и инженерно-геологические данные (г. Бобруйск)</text>
+<line x1="190" y1="34" x2="316" y2="34" stroke="#000" stroke-width="0.35" fill="none"/>
+<rect x="190" y="36" width="222" height="5" stroke="#000" stroke-width="0.4" fill="none"/>
+<text x="265" y="39.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="bold" fill="#000">Параметр</text>
+<line x1="340" y1="36" x2="340" y2="41" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="376" y="39.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="bold" fill="#000">Значение</text>
+<rect x="190" y="41" width="222" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="191" y="44.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Температура наиболее холодной пятидневки (обесп. 0,92)</text>
+<line x1="340" y1="41" x2="340" y2="46" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="376" y="44.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">≈ −24 °C</text>
+<rect x="190" y="46" width="222" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="191" y="49.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Продолжительность / ср. температура отопит. периода</text>
+<line x1="340" y1="46" x2="340" y2="51" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="376" y="49.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">≈ 195 сут / ≈ −1,0 °C</text>
+<rect x="190" y="51" width="222" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="191" y="54.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Нормативная глубина промерзания: суглинки / супеси / пески</text>
+<line x1="340" y1="51" x2="340" y2="56" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="376" y="54.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">≈ 0,9 / 1,1 / 1,2 м</text>
+<rect x="190" y="56" width="222" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="191" y="59.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Снеговая нагрузка (характеристическое значение)</text>
+<line x1="340" y1="56" x2="340" y2="61" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="376" y="59.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">≈ 1,2 кПа</text>
+<rect x="190" y="61" width="222" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="191" y="64.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Ветровое давление (базовое)</text>
+<line x1="340" y1="61" x2="340" y2="66" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="376" y="64.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">≈ 0,23 кПа</text>
+<rect x="190" y="66" width="222" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="191" y="69.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Требуемое Rт, м²·°С/Вт: стены / перекрытие / окна</text>
+<line x1="340" y1="66" x2="340" y2="71" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="376" y="69.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">3,2 / 6,0 / 1,0</text>
+<rect x="190" y="71" width="222" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="191" y="74.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Расчётное сопротивление основания (принято условно)</text>
+<line x1="340" y1="71" x2="340" y2="76" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="376" y="74.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">R ≥ 150 кПа</text>
+<rect x="190" y="76" width="222" height="5" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="191" y="79.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">Уровень грунтовых вод (принято условно)</text>
+<line x1="340" y1="76" x2="340" y2="81" stroke="#000" stroke-width="0.25" fill="none"/>
+<text x="376" y="79.29" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="middle" font-weight="normal" fill="#000">ниже −2,5 м от земли</text>
+<text x="190" y="90" font-family="DejaVu Sans, Arial, sans-serif" font-size="3.5" text-anchor="start" font-weight="bold" fill="#000">Общие указания</text>
+<line x1="190" y1="91" x2="219.4" y2="91" stroke="#000" stroke-width="0.35" fill="none"/>
+<text x="190" y="95" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">1. За отметку ±0.000 принят уровень чистого пола, что соответствует абс. отметке по генплану участка (+0,60 м от планировочной отметки земли). Размеры — в мм,</text>
+<text x="190" y="98" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">отметки — в м.</text>
+<text x="190" y="102.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">2. Проект эскизный. Для строительства в Республике Беларусь необходимы: решение местного исполкома о предоставлении участка, архитектурно-планировочное задание,</text>
+<text x="190" y="105.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">технические условия (электросети, газ, вода), инженерно-геологические изыскания и строительный проект, выполненный аттестованной организацией.</text>
+<text x="190" y="109.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">3. Фундаменты рассчитаны на условное основание R ≥ 150 кПа без подземных вод. По результатам изысканий ширину и глубину ленты уточнить; при пучинистых глинах и</text>
+<text x="190" y="112.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">высоком УГВ — заменить на утеплённую плиту.</text>
+<text x="190" y="116.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">4. Наружные стены — газосиликатные блоки D400 толщиной 400 мм на клею, Rт ≈ 3,5 ≥ 3,2. Перекрытие — деревянные балки, минвата 300 мм, Rт ≈ 7,0 ≥ 6,0. Кровля</text>
+<text x="190" y="119.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">двускатная 30°, металлочерепица.</text>
+<text x="190" y="123.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">5. Отопление — газовый котёл в отдельной котельной (объём 11,9 м³ ≥ 7,5 м³, окно 0,54 м², приток через решётку двери и наружный клапан, коаксиальный дымоход</text>
+<text x="190" y="126.8" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">через стену). Проект газоснабжения выполняет газоснабжающая организация по своим ТУ.</text>
+<text x="190" y="131" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">6. Электроснабжение — 3 фазы, 380/220 В, 15 кВт, система TN-C-S, повторное заземление ≤ 30 Ом. Электромонтаж — по ПУЭ и ТКП 339; приёмка с замерами</text>
+<text x="190" y="134" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">сопротивления изоляции и заземления.</text>
+<text x="190" y="138.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">7. Водоснабжение — от городской сети или скважины; канализация — в городскую сеть или в септик с фильтрующим колодцем (ВК-2). Ввод воды и выпуск канализации</text>
+<text x="190" y="141.2" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">разнесены на 1,5 м.</text>
+<text x="190" y="145.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">7а. Размещение на участке — по присланной схеме (лист ГП): задний фасад параллельно правой границе на расстоянии 3,0 м. Размеры участка приняты ориентировочно —</text>
+<text x="190" y="148.4" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">уточнить по кадастровому плану.</text>
+<text x="190" y="152.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">8. Применяемые нормы (в действующих редакциях): СН 2.04.01-2020 «Теплотехника», СН 2.04.02-2020 «Климатология», СН 3.02.01 «Жилые здания», СН 4.01.03</text>
+<text x="190" y="155.6" font-family="DejaVu Sans, Arial, sans-serif" font-size="2.2" text-anchor="start" font-weight="normal" fill="#000">«Водоснабжение и канализация зданий», СН 4.03.01 «Газоснабжение», ТКП 45-5.01-254 «Основания и фундаменты», ПУЭ, ТКП 339.</text>
+</svg>
