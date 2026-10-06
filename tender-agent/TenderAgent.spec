@@ -12,7 +12,7 @@ a = Analysis(
         ("assets/icon.ico", "assets"),
         ("assets/icon.png", "assets"),
     ],
-    hiddenimports=["win32com.client", "pythoncom", "truststore"],
+    hiddenimports=["win32com.client", "pythoncom", "truststore", "asn1crypto.cms"],
     excludes=["tkinter", "PySide6.QtWebEngineCore", "PySide6.QtWebEngineWidgets", "PySide6.Qt3DCore",
               "PySide6.QtQuick", "PySide6.QtQml", "PySide6.QtMultimedia", "PySide6.QtCharts",
               "PySide6.QtDataVisualization", "PySide6.QtPdf", "matplotlib", "numpy.tests"],

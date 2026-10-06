@@ -199,7 +199,23 @@ _OFFER_TEXT = re.compile(r"(ценовое предложение|предлож
                          r"форма предложения|предложение на участие|конкурсное предложение)", re.I)
 
 
+def repair_signed(folder: Path, log=print) -> None:
+    """Файлы в «конверте» ЭЦП → исходные документы (и правильное расширение)."""
+    from ..sites.base import _fix_extension
+    from .unwrap import SIGNED_DIR, unwrap_file
+
+    for p in list(folder.rglob("*")):
+        if not p.is_file() or SIGNED_DIR in p.parts:
+            continue
+        if unwrap_file(p):
+            fixed = _fix_extension(p.name, p.read_bytes()[:200000])
+            if fixed != p.name and not (p.parent / fixed).exists():
+                p = p.rename(p.parent / fixed)
+            log(f"{p.name}: документ извлечён из подписи ЭЦП")
+
+
 def analyze_folder(folder: Path, log=print) -> list[DocInfo]:
+    repair_signed(folder, log)
     unpack_archives(folder, log)
     convert_legacy(folder, log)
     infos = []

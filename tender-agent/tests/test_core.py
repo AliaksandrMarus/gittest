@@ -376,3 +376,29 @@ def test_number_not_taken_from_contact_name():
     t = Tender("goszakupki", "tender/view/3720000", "https://goszakupki.by/tender/view/3720000")
     site.parse_details(t, html, t.url)
     assert "Ахрамович" not in t.number
+
+
+def test_signed_documents_are_unwrapped(tmp_path):
+    """goszakupki отдаёт документы в «конверте» ЭЦП (CMS) — Word пишет «содержимое не удалось прочитать».
+    Программа достаёт исходный документ, подписанный оригинал кладёт отдельно."""
+    import shutil
+
+    from tenderagent.docs.extract import analyze_folder
+    from tenderagent.docs.unwrap import SIGNED_DIR, unwrap
+
+    signed = (Path(__file__).parent / "fixtures" / "signed_cms.docx").read_bytes()
+    assert signed[:2] == b"\x30\x82"
+    inner = unwrap(signed)
+    assert inner[:4] == b"PK\x03\x04"
+    # PDF в конверте: начало по сигнатуре, хвост подписи отрезается
+    fake = b"\x30\x82\x10\x00" + b"\x06\x09" + b"x" * 40 + b"%PDF-1.4 body %%EOF" + b"\xa0\x82signature"
+    assert unwrap(fake) == b"%PDF-1.4 body %%EOF"
+    assert unwrap(b"%PDF-1.4 plain") == b"%PDF-1.4 plain"
+
+    folder = tmp_path / "docs"
+    folder.mkdir()
+    shutil.copy(Path(__file__).parent / "fixtures" / "signed_cms.docx", folder / "zapros-ceny-avtoshiny-zimnie")
+    infos = analyze_folder(folder, log=lambda *a: None)
+    assert [i.path.name for i in infos] == ["zapros-ceny-avtoshiny-zimnie.docx"]
+    assert infos[0].positions[0].name == "Автошина 215/75 R16C"
+    assert (folder / SIGNED_DIR / "zapros-ceny-avtoshiny-zimnie.p7s").exists()

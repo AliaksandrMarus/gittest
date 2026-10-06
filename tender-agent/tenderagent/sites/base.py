@@ -156,8 +156,16 @@ class Http:
             raise SiteError("сайт вернул веб-страницу вместо файла (копия в папке «Диагностика»). "
                             "Скачайте файл вручную в папку «Документация» тендера и нажмите «Скачать документы "
                             "и сверить» ещё раз")
+        from ..docs.unwrap import SIGNED_DIR, unwrap
+
+        signed = data
+        data = unwrap(data)  # документ, подписанный ЭЦП заказчика, — достаём из конверта
         name = _fix_extension(name, data)
         folder.mkdir(parents=True, exist_ok=True)
+        if data is not signed and data != signed:
+            keep = folder / SIGNED_DIR
+            keep.mkdir(exist_ok=True)
+            (keep / (name + ".p7s")).write_bytes(signed)
         path = folder / name
         if path.exists() and path.read_bytes() == data:
             return path
