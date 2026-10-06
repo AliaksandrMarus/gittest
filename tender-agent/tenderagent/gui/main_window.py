@@ -14,10 +14,11 @@ from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QDoubleS
                                QTableWidget, QTableWidgetItem, QTabWidget, QVBoxLayout, QWidget)
 
 from .. import pricelist
-from ..config import APP_NAME, APP_VERSION, Settings, data_dir, resource_path
+from ..config import APP_NAME, APP_VERSION, Settings, data_dir, resource_path, tenders_dir
 from ..db import DB, STATUSES
 from ..docs.fill import money
 from ..models import Tender
+from ..folders import DOCS, customer_dir_name
 from ..pipeline import Engine, tender_folder
 from ..sites import tender_from_url
 from .common import STATUS_COLORS, LogBus, open_path, open_url, run_task
@@ -96,7 +97,10 @@ class MainWindow(QMainWindow):
         self.b_recheck.setToolTip("Заново скачать документы и сверить с прайсом все найденные тендеры "
                                   "(после загрузки нового прайса или изменения критериев)")
         self.b_recheck.clicked.connect(self.recheck_all)
-        for b in (self.b_monitor, self.b_scan, self.b_recheck, b_url, b_folder):
+        b_dirs = QPushButton("📁 Папки заказчиков")
+        b_dirs.setToolTip("Тендеры разложены по папкам заказчиков: Документы\\ТендерАгент\\Тендеры")
+        b_dirs.clicked.connect(lambda: open_path(tenders_dir()))
+        for b in (self.b_monitor, self.b_scan, self.b_recheck, b_url, b_folder, b_dirs):
             top.addWidget(b)
         top.addStretch(1)
         top.addWidget(QLabel("Статус:"))
@@ -207,7 +211,9 @@ class MainWindow(QMainWindow):
         m.addAction("Открыть карточку", lambda: self.open_tender(row))
         m.addAction("Открыть на сайте", lambda: open_url(rec["tender"].url))
         if rec["folder"] and Path(rec["folder"]).exists():
-            m.addAction("Открыть папку", lambda: open_path(rec["folder"]))
+            m.addAction("Открыть папку тендера", lambda: open_path(rec["folder"]))
+            m.addAction("Открыть папку заказчика (все его тендеры)",
+                        lambda: open_path(Path(rec["folder"]).parent))
         st = m.addMenu("Статус")
         for s in STATUSES:
             st.addAction(s, lambda s=s: (self.db.set_status(uid, s), self.refresh_tenders()))
@@ -244,7 +250,7 @@ class MainWindow(QMainWindow):
         cust, _ = QInputDialog.getText(self, "Тендер", "Заказчик (если известен):")
         t = Tender(site="manual", ext_id=datetime.now().strftime("%Y%m%d%H%M%S"), url="",
                    title=title or Path(folder).name, number=num, customer=cust, matched_query="вручную")
-        dest = tender_folder(t) / "Документация"
+        dest = tender_folder(t) / DOCS
         shutil.copytree(folder, dest, dirs_exist_ok=True)
         self.db.save_tender(t, folder=str(dest.parent))
         self._added(t.uid)

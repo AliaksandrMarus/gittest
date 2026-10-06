@@ -363,8 +363,12 @@ class GenericSite:
             heading_num = re.search(r"№\s*([A-Za-zА-Яа-я]*\d[\w\-/]*)", h.get_text(" "))
             if heading_num:
                 break
-        t.number = (_pick(kv, ["номер процедуры", "номер закупки", "номер", "№"])
-                    or (heading_num.group(1) if heading_num else "") or t.number or t.ext_id)
+        kv_num = _pick(kv, ["номер процедуры", "номер закупки", "номер", "№"])
+        # Номер — это код с цифрами (auc0003717571, 2026-1234567), а не ФИО или текст,
+        # случайно попавший под подпись «№»/«номер» (например, «номер телефона»).
+        if not re.fullmatch(r"[A-Za-zА-Яа-я]{0,6}[\s\-№]*\d[\w\-/.]{2,30}", kv_num or ""):
+            kv_num = ""
+        t.number = ((heading_num.group(1) if heading_num else "") or kv_num or t.number or t.ext_id)
         t.customer = _pick(kv, ["наименование организации", "заказчик", "организатор", "организация"]) or t.customer
         unp = re.search(r"\b\d{9}\b", _pick(kv, ["унп"]) or "")
         t.customer_unp = unp.group(0) if unp else t.customer_unp

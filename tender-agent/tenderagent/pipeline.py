@@ -8,7 +8,8 @@ from datetime import datetime
 from pathlib import Path
 
 from . import textnorm
-from .config import Settings, tenders_dir
+from .config import Settings
+from .folders import CHECK, DOCS, OFFER, tender_folder, write_info  # noqa: F401
 from .db import (DB, STATUS_ERROR, STATUS_EXPIRED, STATUS_FIT, STATUS_NOFIT,
                  STATUS_READY)
 from .docs import extract, generate
@@ -27,16 +28,6 @@ class Analysis:
     conditions: dict[str, str] = field(default_factory=dict)
     fits: bool = False
     reasons: list[str] = field(default_factory=list)
-
-
-def tender_folder(t: Tender, existing: str = "") -> Path:
-    if existing and Path(existing).exists():
-        return Path(existing)
-    short = re.sub(r'[\\/:*?"<>|\r\n\t]+', " ", t.title)[:60].strip(" .")
-    num = re.sub(r"[^\w\-]+", "_", t.number or t.ext_id)[:30]
-    f = tenders_dir() / f"{datetime.now():%Y-%m-%d} {t.site} {num} {short}".strip()
-    f.mkdir(parents=True, exist_ok=True)
-    return f
 
 
 def is_expired(t: Tender) -> bool:
@@ -177,7 +168,7 @@ class Engine:
 
     # --- анализ одного тендера -----------------------------------------------
     def download_docs(self, t: Tender, folder: Path) -> Path:
-        dest = folder / "Документация"
+        dest = folder / DOCS
         dest.mkdir(parents=True, exist_ok=True)
         for d in t.documents:
             if d.local_path and Path(d.local_path).exists():
@@ -198,7 +189,7 @@ class Engine:
         infos = []
         if download and t.documents:
             self.download_docs(t, folder)
-        doc_dir = folder / "Документация"
+        doc_dir = folder / DOCS
         if doc_dir.exists():
             infos = extract.analyze_folder(doc_dir, self.log)
         positions = extract.best_positions(infos, t.positions)
@@ -210,6 +201,7 @@ class Engine:
         a.required = extract.required_documents(infos)
         a.conditions = extract.key_conditions(infos)
         self.db.save_tender(t, folder=str(folder))
+        write_info(t, folder, "подходит" if a.fits else "не подходит: " + "; ".join(a.reasons))
         return a
 
     def match(self, t: Tender, overrides: dict | None = None) -> list[Match]:
@@ -266,16 +258,18 @@ class Engine:
         req, terms = s.requisites, s.terms
         row = self.db.get(t.uid)
         folder = tender_folder(t, row["folder"] if row else "")
-        doc_dir = folder / "Документация"
+        doc_dir = folder / DOCS
         if t.documents and not any(d.local_path for d in t.documents):
             self.download_docs(t, folder)
+        if a.infos and not all(i.path.exists() for i in a.infos):
+            a.infos = []  # папку перенесли (стал известен заказчик) — перечитаем
         if not a.infos and doc_dir.exists():
             a.infos = extract.analyze_folder(doc_dir, self.log)
             a.required = extract.required_documents(a.infos)
             a.conditions = extract.key_conditions(a.infos)
 
-        out = folder / "Для подачи"
-        check = folder / "Для проверки"
+        out = folder / OFFER
+        check = folder / CHECK
         if out.exists():
             shutil.rmtree(out, ignore_errors=True)
         out.mkdir(parents=True, exist_ok=True)
@@ -352,6 +346,7 @@ class Engine:
         generate.comparison_xlsx(check / "Сравнение с прайсом.xlsx", a.matches)
         generate.checklist(check / "ЧЕК-ЛИСТ перед подачей.docx", t, a.matches, a.required,
                            a.conditions, filled, notes)
+        write_info(t, folder, STATUS_READY)
         self.db.save_tender(t, STATUS_READY, folder=str(folder), match_percent=a.summary.percent,
                             our_sum=a.summary.our_sum)
         self.log(f"Пакет готов: {folder}")

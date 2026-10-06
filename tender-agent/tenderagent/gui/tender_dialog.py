@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QHB
 from .. import textnorm
 from ..db import STATUS_FIT, STATUS_NOFIT, STATUS_REJECTED, STATUS_SUBMITTED
 from ..docs.fill import money
+from ..folders import DOCS
 from ..pipeline import Analysis, Engine
 from .common import open_path, open_url, run_task
 
@@ -166,7 +167,7 @@ class TenderDialog(QDialog):
             li = QListWidgetItem(("✔ " if d.local_path else "⬇ ") + d.name)
             li.setData(Qt.ItemDataRole.UserRole, d.local_path or d.url)
             self.docs.addItem(li)
-        folder = Path(self.row["folder"]) / "Документация" if self.row["folder"] else None
+        folder = Path(self.row["folder"]) / DOCS if self.row["folder"] else None
         if folder and folder.exists():
             known = {Path(d.local_path).name for d in t.documents if d.local_path}
             for p in sorted(folder.rglob("*")):
@@ -336,8 +337,10 @@ class TenderDialog(QDialog):
         self._show_verdict()
         box = QMessageBox(self)
         box.setWindowTitle("Пакет готов")
-        box.setText("Документы подготовлены.\n\nПапка «Для подачи» — файлы для загрузки на площадку.\n"
-                    "Папка «Для проверки» — чек-лист и сравнение с прайсом.\n\n"
+        box.setText("Документы подготовлены. Всё по тендеру — в одной папке (внутри папки заказчика):\n\n"
+                    "«1. Документы заказчика» — документация с площадки.\n"
+                    "«2. Наше предложение (для подачи)» — файлы для загрузки на площадку.\n"
+                    "«3. Для проверки» — чек-лист и сравнение с прайсом.\n\n"
                     "Проверьте документы, подпишите ЭЦП и подайте на площадке.")
         open_btn = box.addButton("Открыть папку", QMessageBox.ButtonRole.AcceptRole)
         box.addButton("Закрыть", QMessageBox.ButtonRole.RejectRole)

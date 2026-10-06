@@ -188,17 +188,18 @@ def test_full_prepare(tmp_path):
                positions=[Position("Канцтовары", 1)])
     folder = tender_folder(t)
     db.save_tender(t, folder=str(folder))
-    (folder / "Документация").mkdir()
-    make_offer_form(folder / "Документация" / "Приложение 2 Форма предложения.docx")
+    (folder / "1. Документы заказчика").mkdir()
+    make_offer_form(folder / "1. Документы заказчика" / "Приложение 2 Форма предложения.docx")
     a = eng.analyze(t, download=False)
     assert a.summary.total == 3 and a.summary.found == 2
     s.monitor.min_match_percent = 60
     assert eng.evaluate(t, a.matches).fits
     out = eng.prepare(t, a)
-    names = {x.name for x in (out / "Для подачи").iterdir()}
+    names = {x.name for x in (out / "2. Наше предложение (для подачи)").iterdir()}
     assert "Приложение 2 Форма предложения (заполнено).docx" in names
     assert {"Сопроводительное письмо.docx", "Опись документов.docx", "Сведения об участнике.docx"} <= names
-    assert (out / "Для проверки" / "ЧЕК-ЛИСТ перед подачей.docx").exists()
+    assert (out / "3. Для проверки" / "ЧЕК-ЛИСТ перед подачей.docx").exists()
+    assert (out / "Сведения о закупке.txt").exists()
     assert db.get(t.uid)["status"] == STATUS_READY
 
 
@@ -329,3 +330,49 @@ def test_download_rejects_html_and_fixes_extension(tmp_path):
     assert _fix_extension("прейскуранту", b"\xd0\xcf\x11\xe0" + b"\x00" * 100) == "прейскуранту.doc"
     assert _fix_extension("tz.pdf", b"%PDF-1.4") == "tz.pdf"
     assert _fix_extension("dogovor", b"PK\x03\x04....word/document.xml") == "dogovor.docx"
+
+
+def test_folders_by_customer(tmp_path):
+    """Тендеры / <Заказчик> / <дата № номер — предмет>; старые папки переносятся."""
+    from tenderagent.config import tenders_dir
+    from tenderagent.folders import DOCS, OFFER, customer_dir_name, tender_folder
+    from tenderagent.models import Document, Tender
+
+    assert customer_dir_name('Республиканское дочернее торговое унитарное предприятие "Медтехника" г.Гомель') \
+        == "РДТУП Медтехника г.Гомель"
+    assert customer_dir_name("Докшицкий районный исполнительный комитет") == "Докшицкий райисполком"
+    assert customer_dir_name("") == "Заказчик не указан"
+
+    t = Tender("goszakupki", "single-source/view/1", "u", title="Бумага офисная А4", number="auc0003717571",
+               customer="Докшицкий районный исполнительный комитет", published="2026-10-02T00:00")
+    f = tender_folder(t)
+    assert f.parent == tenders_dir() / "Докшицкий райисполком"
+    assert f.name == "2026-10-02 № auc0003717571 — Бумага офисная А4"
+    # второй тендер того же заказчика — в той же папке заказчика
+    t2 = Tender("icetrade", "2", "u", title="Ручки", number="auc2", customer=t.customer)
+    assert tender_folder(t2).parent == f.parent
+
+    # папка старого формата (1.0.x): Тендеры/<дата площадка номер предмет>/Документация
+    old = tenders_dir() / "2026-10-06 goszakupki 123 Шины"
+    (old / "Документация").mkdir(parents=True)
+    (old / "Документация" / "tz.pdf").write_bytes(b"%PDF")
+    (old / "Для подачи").mkdir()
+    t3 = Tender("goszakupki", "3", "u", title="Шины", number="123", customer="ОАО «Завод»",
+                documents=[Document("tz.pdf", "u", str(old / "Документация" / "tz.pdf"))])
+    new = tender_folder(t3, str(old))
+    assert not old.exists() and new.parent.name == "ОАО Завод"
+    assert (new / DOCS / "tz.pdf").exists() and (new / OFFER).exists()
+    assert t3.documents[0].local_path == str(new / DOCS / "tz.pdf")
+
+
+def test_number_not_taken_from_contact_name():
+    from tenderagent.models import Tender
+    from tenderagent.sites import Http, make_sites
+
+    html = """<html><body><h1>Процедура закупки</h1><table>
+    <tr><td>Номер телефона / контактное лицо №</td><td>Ахрамович Василина Анатольевна</td></tr>
+    <tr><td>Предмет закупки</td><td>Закупка автошин</td></tr></table></body></html>"""
+    site = make_sites(Http())["goszakupki"]
+    t = Tender("goszakupki", "tender/view/3720000", "https://goszakupki.by/tender/view/3720000")
+    site.parse_details(t, html, t.url)
+    assert "Ахрамович" not in t.number

@@ -334,5 +334,5 @@ def checklist(path: Path, t: Tender, matches: list[Match], required: list[str],
             d.add_paragraph(f"• {n}")
     d.add_paragraph()
     d.add_paragraph("Подача: откройте страницу процедуры на площадке, загрузите файлы из папки "
-                    "«Для подачи», подпишите ЭЦП (ключ Авест) и отправьте.")
+                    "«2. Наше предложение (для подачи)», подпишите ЭЦП (ключ Авест) и отправьте.")
     d.save(str(path))
