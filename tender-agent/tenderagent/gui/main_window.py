@@ -92,12 +92,17 @@ class MainWindow(QMainWindow):
         b_folder = QPushButton("+ Из папки с документами")
         b_folder.setToolTip("Если документацию скачали сами — программа сверит её с прайсом и заполнит формы")
         b_folder.clicked.connect(self.add_from_folder)
-        for b in (self.b_monitor, self.b_scan, b_url, b_folder):
+        self.b_recheck = QPushButton("⟳ Пересверить с прайсом")
+        self.b_recheck.setToolTip("Заново скачать документы и сверить с прайсом все найденные тендеры "
+                                  "(после загрузки нового прайса или изменения критериев)")
+        self.b_recheck.clicked.connect(self.recheck_all)
+        for b in (self.b_monitor, self.b_scan, self.b_recheck, b_url, b_folder):
             top.addWidget(b)
         top.addStretch(1)
         top.addWidget(QLabel("Статус:"))
         self.f_status = QComboBox()
         self.f_status.addItems(["Все активные", "Все"] + STATUSES)
+        self.f_status.setToolTip("«Все активные» — всё, кроме отклонённых и просроченных")
         self.f_status.currentIndexChanged.connect(self.refresh_tenders)
         top.addWidget(self.f_status)
         self.f_text = QLineEdit()
@@ -134,7 +139,10 @@ class MainWindow(QMainWindow):
         flt = self.f_status.currentText()
         text = self.f_text.text().strip().lower()
         if flt == "Все активные":
-            rows = [r for r in rows if r["status"] not in ("Не подходит", "Отклонён", "Срок истёк")]
+            rows = [r for r in rows if r["status"] not in ("Отклонён", "Срок истёк")]
+            # подходящие и готовые — сверху
+            order = {"Подходит": 0, "Пакет готов": 1, "Новый": 2, "Подан": 3}
+            rows.sort(key=lambda r: order.get(r["status"], 5))
         elif flt != "Все":
             rows = [r for r in rows if r["status"] == flt]
         if text:
@@ -292,6 +300,27 @@ class MainWindow(QMainWindow):
         task = run_task(self.engine.run_monitor, progress=self.log.message.emit,
                         on_done=self._scan_done, on_fail=self._scan_failed)
         del task
+
+    def recheck_all(self):
+        if self.scan_in_progress:
+            return
+        if not len(self.engine.index):
+            QMessageBox.information(self, "Прайс", "Сначала загрузите прайс на вкладке «Прайс».")
+            return
+        self.scan_in_progress = True
+        self.b_scan.setEnabled(False)
+        self.b_recheck.setEnabled(False)
+        self.progress.setText("Пересверяю найденные тендеры с прайсом…")
+
+        def done(n):
+            self.b_recheck.setEnabled(True)
+            self._scan_done([None] * int(n or 0))
+
+        def failed(e):
+            self.b_recheck.setEnabled(True)
+            self._scan_failed(e)
+
+        run_task(self.engine.recheck_all, progress=self.log.message.emit, on_done=done, on_fail=failed)
 
     def _scan_done(self, good: list[str]):
         self.scan_in_progress = False

@@ -19,6 +19,19 @@ _STOP = {
     "эквивалент", "аналог", "аналогичный", "аналогичн", "товар", "поставка", "закупка",
 }
 
+_SHORT_WORDS = [
+    (r"\bа/шин", "автошин"),
+    (r"\bа/покрышк", "автошин"),          # покрышка = шина для сравнения
+    (r"\bа/камер", "автокамер"),
+    (r"\bа/м\b", "автомобиль"),
+    (r"\bа/мобил", "автомобил"),
+    (r"\bэ/ламп", "электролампа"),
+    (r"\bэл\.\s?", "электро"),
+    (r"\bхоз\.\s?", "хозяйственн"),
+    (r"\bканц\.\s?", "канцелярск"),
+    (r"\bпокрышк", "шин"),
+]
+
 _TRANSLIT = str.maketrans({"ё": "е", "Ё": "е"})
 _LAT2CYR = str.maketrans("aceopxyk", "асеорхук")  # похожие латинские буквы в марках
 _NUM_RE = re.compile(r"\d+(?:[.,]\d+)?")
@@ -38,6 +51,13 @@ def normalize(text: str) -> str:
     text = (text or "").translate(_TRANSLIT).lower()
     # «3х2,5», «3x2.5», «3*2,5» → «3 x 2.5»
     text = re.sub(r"(\d)\s*[хx*×]\s*(\d)", r"\1 x \2", text)
+    # Сокращения из прайсов 1С: «А/ШИНА», «А/М», «Э/ЛАМПА»…
+    for short, full in _SHORT_WORDS:
+        text = re.sub(short, full, text)
+    # «R16C»/«R16С» — грузовое (C, cargo) исполнение шины: отдельная метка, а не предлог «с»
+    text = re.sub(r"(?<=\d)[сc]\b", " cargo", text)
+    # «75R16C» → «75 r 16 c»: размер шин, марки кабеля и т.п. сравниваются по частям
+    text = re.sub(r"(?<=\d)(?=[a-zа-я])|(?<=[a-zа-я])(?=\d)", " ", text)
     text = re.sub(r"(\d),(\d)", r"\1.\2", text)
     return text
 
@@ -97,6 +117,25 @@ def _contains(text: str, keyword: str) -> bool:
         return False
     tt = tokens(text)
     for k in kw:
-        if not any(t.startswith(k) or k.startswith(t) and len(t) >= 4 for t in tt):
+        if not any(t.startswith(k) or k.startswith(t) and len(t) >= 4
+                   or len(k) >= 3 and t.endswith(k) for t in tt):  # «шины» ⊂ «автошины»
             return False
     return True
+
+
+# Типоразмер шины: 215/75R16, 215/75 R16C, 185/65 R15, 10.00R20, 11.2-20, 12,5/80-15,3
+_TYRE = re.compile(r"(?<![\d.,/])(\d{2,4}(?:[.,]\d{1,2})?)\s*/\s*(\d{2})\s*(?:z?r|р|-)?\s*(\d{2}(?:[.,]\d)?)"
+                   r"|(?<![\d.,/])(\d{1,2}[.,]\d{1,2})\s*(?:r|р|-)\s*(\d{2}(?:[.,]\d)?)(?![\d])", re.I)
+
+
+def tyre_size(text: str) -> str:
+    """Нормализованный типоразмер шины («215/75/16») или пустая строка."""
+    m = _TYRE.search((text or "").replace("Р", "R"))
+    if not m:
+        return ""
+    if m.group(1):
+        parts = [m.group(1), m.group(2), m.group(3)]
+    else:
+        parts = [m.group(4), m.group(5)]
+    return "/".join(p.replace(",", ".").rstrip("0").rstrip(".") if "." in p.replace(",", ".") else p
+                    for p in parts)

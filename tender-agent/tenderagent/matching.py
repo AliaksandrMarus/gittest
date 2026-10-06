@@ -15,6 +15,11 @@ class PriceIndex:
         self.items = items
         self._keys = [textnorm.key(i.name + " " + i.code) for i in items]
         self._nums = [textnorm.numbers(i.name) for i in items]
+        self._sizes = [textnorm.tyre_size(i.name) for i in items]
+        self._by_size: dict[str, list[int]] = {}
+        for n, sz in enumerate(self._sizes):
+            if sz:
+                self._by_size.setdefault(sz, []).append(n)
         self._by_code = {i.code.strip().lower(): n for n, i in enumerate(items) if i.code.strip()}
         self._by_name = {i.name.strip().lower(): n for n, i in enumerate(items)}
 
@@ -34,14 +39,30 @@ class PriceIndex:
         if not q:
             return []
         qnums = textnorm.numbers(text)
+        qsize = textnorm.tyre_size(text)
         raw = process.extract(q, self._keys, scorer=fuzz.token_set_ratio, limit=max(limit * 4, 30),
                               processor=None)
+        seen = {n for _, _, n in raw}
+        for n in self._by_size.get(qsize, []) if qsize else []:
+            if n not in seen:
+                raw.append((None, fuzz.token_set_ratio(q, self._keys[n]), n))
         scored = []
         for _, base, n in raw:
             s = _combine(q, self._keys[n], base, qnums, self._nums[n])
+            s = _size_rule(s, qsize, self._sizes[n])
             scored.append((self.items[n], s))
         scored.sort(key=lambda x: -x[1])
         return scored[:limit]
+
+
+def _size_rule(score: int, qsize: str, isize: str) -> int:
+    """Для шин решает типоразмер: совпал — товар подходит, даже если в тендере
+    лишние слова («для автомобиля ГАЗ 330273»); не совпал — точно не тот товар."""
+    if not qsize or not isize:
+        return score
+    if qsize == isize:
+        return max(score, 85)
+    return min(score, 40)
 
 
 def _combine(q: str, k: str, base: float, qnums: set[str], inums: set[str]) -> int:

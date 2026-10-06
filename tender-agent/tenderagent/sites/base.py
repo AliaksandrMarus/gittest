@@ -129,21 +129,90 @@ class Http:
             self.cache[url] = self.get(url, encoding).text
         return self.cache[url]
 
-    def download(self, url: str, folder: Path, name_hint: str = "") -> Path:
-        r = self.s.get(url, timeout=120, stream=True)
+    def download(self, url: str, folder: Path, name_hint: str = "", referer: str = "") -> Path:
+        """Скачать файл документации. Проверяет, что пришёл файл, а не веб-страница.
+
+        Некоторые площадки вместо файла отдают HTML (нужна сессия, переадресация,
+        проверка браузера). Такой ответ не сохраняем под видом .pdf/.docx — иначе
+        дальше «битый PDF» — а кладём в «Диагностика» и сообщаем.
+        """
+        headers = {"Referer": referer} if referer else {}
+        r = self.s.get(url, timeout=120, headers=headers)
         r.raise_for_status()
+        data = r.content
+        if _looks_like_html(data):
+            # Попробуем пройти по ссылке/переадресации со страницы-заглушки один раз.
+            nxt = _next_link_from_html(data, r.url)
+            if nxt and nxt != url:
+                r2 = self.s.get(nxt, timeout=120, headers={"Referer": r.url})
+                if r2.ok and not _looks_like_html(r2.content):
+                    r, data = r2, r2.content
         name = _filename_from_response(r) or name_hint or Path(urlparse(url).path).name or "file"
         name = _safe_name(name)
+        if _looks_like_html(data):
+            diag = data_dir() / "Диагностика"
+            diag.mkdir(parents=True, exist_ok=True)
+            (diag / f"скачивание_{Path(name).stem[:60]}.html").write_bytes(data)
+            raise SiteError("сайт вернул веб-страницу вместо файла (копия в папке «Диагностика»). "
+                            "Скачайте файл вручную в папку «Документация» тендера и нажмите «Скачать документы "
+                            "и сверить» ещё раз")
+        name = _fix_extension(name, data)
         folder.mkdir(parents=True, exist_ok=True)
         path = folder / name
+        if path.exists() and path.read_bytes() == data:
+            return path
         n = 1
         while path.exists():
             path = folder / f"{Path(name).stem} ({n}){Path(name).suffix}"
             n += 1
-        with open(path, "wb") as f:
-            for chunk in r.iter_content(65536):
-                f.write(chunk)
+        path.write_bytes(data)
         return path
+
+
+def _looks_like_html(data: bytes) -> bool:
+    head = data[:1024].lstrip().lower()
+    return head.startswith((b"<!doctype html", b"<html")) or (head.startswith(b"<") and b"<html" in data[:8000].lower())
+
+
+def _next_link_from_html(data: bytes, base: str) -> str:
+    try:
+        soup = BeautifulSoup(data, "lxml")
+    except Exception:  # noqa: BLE001
+        return ""
+    meta = soup.find("meta", attrs={"http-equiv": re.compile("refresh", re.I)})
+    if meta and "url=" in (meta.get("content") or "").lower():
+        return urljoin(base, meta["content"].split("=", 1)[1].strip(" '\""))
+    for a in soup.find_all("a", href=True):
+        h = a["href"].lower()
+        if re.search(r"(get-file|download|/file)", h) or h.split("?")[0].endswith(DOC_EXT):
+            return urljoin(base, a["href"])
+    return ""
+
+
+_MAGIC = [
+    (b"%PDF", ".pdf", (".pdf",)),
+    (b"PK\x03\x04", ".zip", (".docx", ".xlsx", ".xlsm", ".zip", ".odt", ".ods", ".pptx")),
+    (b"\xd0\xcf\x11\xe0", ".doc", (".doc", ".xls", ".ppt", ".msg")),
+    (b"Rar!", ".rar", (".rar",)),
+    (b"7z\xbc\xaf", ".7z", (".7z",)),
+    (b"{\\rtf", ".rtf", (".rtf", ".doc")),
+]
+
+
+def _fix_extension(name: str, data: bytes) -> str:
+    """Расширение по содержимому: «прейскуранту» → «прейскуранту.xls» и т.п."""
+    ext = Path(name).suffix.lower()
+    for magic, default, allowed in _MAGIC:
+        if data.startswith(magic):
+            if ext in allowed:
+                return name
+            if magic.startswith(b"PK"):
+                low = data[:4000]
+                default = ".docx" if b"word/" in low else ".xlsx" if b"xl/" in low else ".zip"
+            elif magic.startswith(b"\xd0"):
+                default = ".xls" if b"W\x00o\x00r\x00k\x00b\x00o\x00o\x00k" in data[:200000] else ".doc"
+            return name + default if not ext or len(ext) > 5 else Path(name).stem + default
+    return name
 
 
 def _filename_from_response(r: requests.Response) -> str:

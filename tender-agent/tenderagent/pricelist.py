@@ -26,7 +26,7 @@ ROLES = {
 _ROLE_PATTERNS = {
     "name": [r"наименован", r"номенклатур", r"товар", r"название", r"^продукц"],
     "price": [r"цена", r"стоимость.*ед", r"прайс", r"розн", r"опт"],
-    "code": [r"артикул", r"^код", r"код\b", r"арт\.?$"],
+    "code": [r"артикул", r"^код", r"код\b", r"арт\.?$", r"номенклатурн\w*\s+номер", r"^номер\b"],
     "unit": [r"ед\.?\s*изм", r"^ед\b", r"единиц"],
     "vat": [r"ндс.*%", r"ставка\s*ндс", r"^ндс$"],
     "stock": [r"остат", r"наличи", r"кол-?во на складе", r"склад"],
@@ -161,6 +161,10 @@ def guess_columns(headers: list[str]) -> dict[str, str]:
         role = guess_role(h)
         if role and role not in result:
             result[role] = h
+    # «Наименование …» надёжнее «Номенклатуры»/«Товара»: если есть — берём его.
+    named = next((h for h in headers if re.search(r"наименован", h, re.I) and guess_role(h) == "name"), None)
+    if named:
+        result["name"] = named
     return result
 
 

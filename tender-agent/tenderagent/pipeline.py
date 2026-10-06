@@ -62,6 +62,41 @@ class Engine:
         self.index = PriceIndex(items)
 
     # --- мониторинг -----------------------------------------------------------
+    def recheck_all(self, progress=None) -> int:
+        """Заново сверить с прайсом все найденные и ещё не поданные тендеры
+        (после загрузки нового прайса или изменения настроек)."""
+        from .db import STATUS_NEW
+        self.stop_requested = False
+        rows = [r for r in self.db.all()
+                if r["status"] in (STATUS_NEW, STATUS_FIT, STATUS_NOFIT, STATUS_ERROR)]
+        good = 0
+        for i, r in enumerate(rows, 1):
+            if self.stop_requested:
+                break
+            t = r["tender"]
+            if progress:
+                progress(f"Сверяю {i}/{len(rows)}: {t.title[:60]}")
+            if is_expired(t):
+                self.db.save_tender(t, STATUS_EXPIRED)
+                continue
+            try:
+                if t.site in self.sites and not any(d.local_path and Path(d.local_path).exists()
+                                                    for d in t.documents):
+                    try:
+                        self.sites[t.site].fetch_details(t)  # свежие ссылки и cookies для скачивания
+                    except Exception as e:  # noqa: BLE001
+                        self.log(f"{t.number or t.ext_id}: карточка не обновлена ({e})")
+                a = self.analyze(t, download=self.settings.monitor.auto_download_docs)
+            except Exception as e:  # noqa: BLE001
+                self.log(f"Ошибка сверки {t.number or t.ext_id}: {e}")
+                continue
+            status = STATUS_FIT if a.fits else STATUS_NOFIT
+            good += a.fits
+            self.db.save_tender(t, status, match_percent=a.summary.percent, our_sum=a.summary.our_sum,
+                                verdict="; ".join(a.reasons))
+        self.log(f"Пересверка завершена: {len(rows)} тендеров, подходящих {good}.")
+        return good
+
     def run_monitor(self, progress=None) -> list[str]:
         """Один проход по всем площадкам. Возвращает uid новых подходящих тендеров."""
         m = self.settings.monitor
@@ -148,7 +183,7 @@ class Engine:
             if d.local_path and Path(d.local_path).exists():
                 continue
             try:
-                p = self.http.download(d.url, dest, d.name)
+                p = self.http.download(d.url, dest, d.name, referer=t.url)
                 d.local_path = str(p)
                 self.log(f"Скачан {p.name}")
             except Exception as e:

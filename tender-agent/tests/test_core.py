@@ -282,3 +282,50 @@ def test_requisites_from_company_card(tmp_path):
     assert r["acts_on"] == "Устава"
     assert r["email"] == "info@romashka.by"
     assert r["phone"] == "+375 (17) 123-45-67"  # не кусок номера счёта и не GLN
+
+
+def test_tyre_pricelist_like_belshina(tmp_path):
+    """Прайскурант вида «Белшины»: «Номенклатурный номер» — это код, а не наименование;
+    «А/ШИНА 215/75R16C» должна находиться по «Автошина 215/75 R16C»."""
+    import openpyxl
+
+    from tenderagent import pricelist, textnorm
+    from tenderagent.matching import PriceIndex
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(["ПРЕЙСКУРАНТ № 5"])
+    ws.append(["Номенклатурный\nномер", "Код\nбазы ГП", "Наименование продукции", "Дата\nустановления\nцены",
+               "Цена,\nBYN", "Штрихкод"])
+    ws.append(["ШИНЫ"])
+    rows = [("0101", "А/ШИНА 215/75R16C BEL-313 СЕР Л/ГРУЗ", 218.5),
+            ("0102", "А/ШИНА 205/55R16 BEL-262 СЕР ЛЕГК Б/К", 163.02),
+            ("0103", "А/ШИНА 225/65R17 BEL-295 СЕР ЛЕГК Б/К", 224.84),
+            ("0104", "А/ШИНА 185/75R16C BEL-293 СЕР Л/ГР", 180.49)]
+    for code, name, price in rows:
+        ws.append([code, "K1", name, "01.05.2026", price, 4811644000000])
+    p = tmp_path / "price.xlsx"
+    wb.save(p)
+    items, table = pricelist.load_items(p)
+    assert pricelist.guess_columns(table.headers)["name"] == "Наименование продукции"
+    assert items[0].name.startswith("А/ШИНА") and items[0].code == "0101"
+    idx = PriceIndex(items)
+    best = lambda q: idx.candidates(q, 1)[0]  # noqa: E731
+    assert best("Автошина 215/75 R16C")[0].code == "0101" and best("Автошина 215/75 R16C")[1] >= 80
+    assert best("Шина 205/55 R16 зимняя")[0].code == "0102"
+    assert best("Автошины 225/65 R17 (зима)")[0].code == "0103"
+    assert best("Закупка зимних автошин 285/65 R16C")[1] < 70   # такого размера нет
+    # лишние слова не мешают, если типоразмер совпал
+    gaz = best("Автошины на автомобиль ГАЗ 330273, 185/75R16C")
+    assert gaz[0].code == "0104" and gaz[1] >= 85
+    assert textnorm.contains_keyword("Автошины зимние", "шины")
+
+
+def test_download_rejects_html_and_fixes_extension(tmp_path):
+    from tenderagent.sites.base import _fix_extension, _looks_like_html
+
+    assert _looks_like_html(b"<!DOCTYPE html><html><body>login</body></html>")
+    assert not _looks_like_html(b"%PDF-1.7 ...")
+    assert _fix_extension("прейскуранту", b"\xd0\xcf\x11\xe0" + b"\x00" * 100) == "прейскуранту.doc"
+    assert _fix_extension("tz.pdf", b"%PDF-1.4") == "tz.pdf"
+    assert _fix_extension("dogovor", b"PK\x03\x04....word/document.xml") == "dogovor.docx"
