@@ -628,6 +628,10 @@ class MainWindow(QMainWindow):
 
         g1 = QGroupBox("Реквизиты участника — вносятся один раз и подставляются во все документы")
         f1 = QFormLayout(g1)
+        b_card = QPushButton("📄 Заполнить из карточки предприятия…")
+        b_card.setToolTip("Выберите файл с реквизитами (.docx, .pdf, .xlsx, .txt) — поля заполнятся сами")
+        b_card.clicked.connect(self.import_requisites)
+        f1.addRow(b_card)
         self.req_edits: dict[str, QLineEdit] = {}
         fields = [
             ("full_name", "Полное наименование", "Общество с ограниченной ответственностью «…»"),
@@ -702,6 +706,42 @@ class MainWindow(QMainWindow):
         lay.addWidget(g2, 2)
         outer.setWidget(w)
         return outer
+
+    def import_requisites(self):
+        from ..requisites_import import parse_requisites, read_text
+
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Карточка предприятия", str(Path.home()),
+            "Документы (*.docx *.pdf *.xlsx *.xls *.txt *.rtf);;Все файлы (*.*)")
+        if not path:
+            return
+        try:
+            found = parse_requisites(read_text(path))
+        except Exception as e:  # noqa: BLE001
+            QMessageBox.warning(self, "Карточка предприятия", f"Не удалось прочитать файл: {e}")
+            return
+        if not found:
+            QMessageBox.information(self, "Карточка предприятия", "В файле не нашлось реквизитов. Внесите их вручную.")
+            return
+        titles = {"full_name": "Полное наименование", "short_name": "Сокращённое наименование", "unp": "УНП",
+                  "okpo": "ОКПО", "legal_address": "Юридический адрес", "postal_address": "Почтовый адрес",
+                  "bank_account": "Расчётный счёт", "bank_name": "Банк", "bank_bic": "BIC",
+                  "bank_address": "Адрес банка", "director_position": "Должность руководителя",
+                  "director_name": "ФИО руководителя", "director_short": "Подпись", "acts_on": "На основании",
+                  "phone": "Телефон", "email": "E-mail", "website": "Сайт", "registration_info": "Гос. регистрация",
+                  "contact_person": "Контактное лицо"}
+        filled = []
+        for key, val in found.items():
+            if key in self.req_edits and val:
+                self.req_edits[key].setText(val)
+                filled.append(f"• {titles.get(key, key)}: {val}")
+        empty = [titles[k] for k in ("phone", "contact_person", "registration_info", "okpo")
+                 if k in titles and not self.req_edits[k].text().strip()]
+        QMessageBox.information(
+            self, "Карточка предприятия",
+            "Заполнено из файла:\n\n" + "\n".join(filled)
+            + ("\n\nНе найдено в файле, заполните вручную: " + ", ".join(empty) if empty else "")
+            + "\n\nПроверьте поля и нажмите «Сохранить реквизиты и условия».")
 
     def save_requisites(self):
         req, terms = self.settings.requisites, self.settings.terms

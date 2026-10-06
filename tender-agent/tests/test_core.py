@@ -246,3 +246,39 @@ def test_goszakupki_real_pages():
     assert (p.name, p.qty, p.unit, p.price_limit) == ("Бумага офисная А4", 150.0, "пачка", 1620.0)
     names = [d.name for d in t.documents]
     assert len(names) == 3 and not any("Регламент" in n for n in names)
+
+
+def test_requisites_from_company_card(tmp_path):
+    """Карточка предприятия в свободной форме → поля реквизитов."""
+    import docx
+
+    from tenderagent.requisites_import import parse_requisites, read_text
+
+    d = docx.Document()
+    for line in [
+        "Общество с ограниченной ответственностью «Ромашка»",
+        "УНП 190000001",
+        "220000, Минская область, г.Минск, ул.Ленина, 1 «а» пом. 2",
+        "р/сч  №BY00ALFA30120000000000000000 ЗАО «Альфа-Банк», г.Минск, БИК ALFABY2X",
+        "GLN основной 4810000000001 220000, Беларусь, г.Минск, ул. Ленина, д. 1 А",
+        "Директор Иванов Иван Иванович",
+        "На основании Устава",
+        "Электронная почта info@romashka.by",
+        "Тел. +375 (17) 123-45-67",
+    ]:
+        d.add_paragraph(line)
+    p = tmp_path / "card.docx"
+    d.save(p)
+    r = parse_requisites(read_text(p))
+    assert r["full_name"] == "Общество с ограниченной ответственностью «Ромашка»"
+    assert r["short_name"] == "ООО «Ромашка»"
+    assert r["unp"] == "190000001"
+    assert r["legal_address"].startswith("220000, Минская область")
+    assert r["bank_account"] == "BY00ALFA30120000000000000000"
+    assert r["bank_name"] == "ЗАО «Альфа-Банк»" and r["bank_address"] == "г.Минск"
+    assert r["bank_bic"] == "ALFABY2X"
+    assert (r["director_position"], r["director_name"], r["director_short"]) == (
+        "Директор", "Иванов Иван Иванович", "И.И. Иванов")
+    assert r["acts_on"] == "Устава"
+    assert r["email"] == "info@romashka.by"
+    assert r["phone"] == "+375 (17) 123-45-67"  # не кусок номера счёта и не GLN
