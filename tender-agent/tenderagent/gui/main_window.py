@@ -70,6 +70,10 @@ class MainWindow(QMainWindow):
 
         self._setup_tray()
         self._load_price(silent=True)
+        try:
+            self.engine.relocate_folders()
+        except Exception as e:  # noqa: BLE001
+            self.log(f"Перенос папок не выполнен: {e}")
         self.refresh_tenders()
         self._update_status()
         if self.settings.monitor.start_monitoring_on_launch:

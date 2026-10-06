@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import re
 import shutil
-from datetime import datetime
 from pathlib import Path
 
 from .config import tenders_dir
@@ -50,10 +49,23 @@ _ABBR = [
 ]
 
 
+# Windows/Office не открывают файлы с полным путём длиннее 259 символов.
+# Бюджет: «C:\Users\<имя>\Documents\ТендерАгент\Тендеры\» ≈ 50 + заказчик 40 + тендер 55
+# + подпапка 32 + имя файла 70 ≈ 250. Поэтому имена папок короткие.
+CUSTOMER_LIMIT = 40
+TENDER_LIMIT = 55
+
+
 def _safe(text: str, limit: int) -> str:
+    """Без запрещённых символов; длинное — обрезаем по границе слова."""
     text = re.sub(r'[\\/:*?"<>|\r\n\t]+', " ", text or "")
     text = re.sub(r"\s+", " ", text).strip(" .")
-    return text[:limit].rstrip(" .,")
+    if len(text) > limit:
+        cut = text[:limit]
+        if " " in cut[limit // 2:]:
+            cut = cut[: cut.rfind(" ")]
+        text = cut
+    return text.rstrip(" .,—-")
 
 
 def customer_dir_name(customer: str) -> str:
@@ -62,18 +74,21 @@ def customer_dir_name(customer: str) -> str:
     name = (customer or "").strip()
     if not name:
         return NO_CUSTOMER
-    name = name.split(",")[0] if len(name) > 90 else name  # «…, УНП 123» и адреса — отрезаем
+    name = re.split(r",\s*(?:УНП|ИНН|адрес|\d{6})", name, flags=re.I)[0]
     for pat, short in _ABBR:
         name = re.sub(pat, short, name, flags=re.I)
     name = re.sub(r"[«»\"“”„']", "", name)
-    return _safe(name, 80) or NO_CUSTOMER
+    return _safe(name, CUSTOMER_LIMIT) or NO_CUSTOMER
 
 
 def tender_dir_name(t: Tender) -> str:
-    date = (t.published or t.deadline or datetime.now().isoformat())[:10]
-    num = _safe(t.number or t.ext_id.split("/")[-1], 30)
-    title = _safe(t.title, 70)
-    return _safe(f"{date} № {num} — {title}", 140)
+    """«2026-10-02 № auc0003717571 Бумага офисная А4» — не длиннее TENDER_LIMIT."""
+    date = (t.published or t.deadline or "")[:10]
+    num = _safe(t.number or t.ext_id.split("/")[-1], 20)
+    head = " ".join(x for x in (date, f"№ {num}") if x)
+    room = TENDER_LIMIT - len(head) - 1
+    title = _safe(t.title, room) if room > 8 else ""
+    return _safe(f"{head} {title}".strip(), TENDER_LIMIT)
 
 
 def _migrate_subfolders(folder: Path) -> None:
@@ -89,29 +104,30 @@ def _migrate_subfolders(folder: Path) -> None:
 
 
 def tender_folder(t: Tender, existing: str = "") -> Path:
-    """Папка тендера внутри папки заказчика. Старые папки (без заказчика или
-    созданные, пока заказчик не был известен) переносятся на новое место."""
+    """Папка тендера внутри папки заказчика. Папки прежнего формата, слишком
+    длинные или созданные, пока заказчик не был известен, переносятся."""
     root = tenders_dir()
     cust = customer_dir_name(t.customer)
+    target = root / cust / tender_dir_name(t)
     if existing and Path(existing).exists():
         cur = Path(existing)
-        in_new_layout = cur.parent.parent == root and cur.parent.name != NO_CUSTOMER
-        if in_new_layout or (cur.parent.parent == root and cust == NO_CUSTOMER):
+        keep = (
+            cur == target
+            or root not in cur.parents
+            or (cust == NO_CUSTOMER and cur.parent.parent == root)  # заказчик не стал известнее
+            or target.exists()
+        )
+        if keep:
             _migrate_subfolders(cur)
             return cur
-        target = root / cust / tender_dir_name(t)
         target.parent.mkdir(parents=True, exist_ok=True)
-        if not target.exists():
-            shutil.move(str(cur), str(target))
-            old_parent = cur.parent
-            if old_parent != root and old_parent.exists() and not any(old_parent.iterdir()):
-                old_parent.rmdir()  # опустевшая папка «Заказчик не указан»
-            _relink_documents(t, cur, target)
-            _migrate_subfolders(target)
-            return target
-        _migrate_subfolders(cur)
-        return cur
-    target = root / cust / tender_dir_name(t)
+        shutil.move(str(cur), str(target))
+        old_parent = cur.parent
+        if old_parent != root and old_parent.exists() and not any(old_parent.iterdir()):
+            old_parent.rmdir()  # опустевшая папка заказчика
+        _relink_documents(t, cur, target)
+        _migrate_subfolders(target)
+        return target
     target.mkdir(parents=True, exist_ok=True)
     return target
 

@@ -347,7 +347,7 @@ def test_folders_by_customer(tmp_path):
                customer="Докшицкий районный исполнительный комитет", published="2026-10-02T00:00")
     f = tender_folder(t)
     assert f.parent == tenders_dir() / "Докшицкий райисполком"
-    assert f.name == "2026-10-02 № auc0003717571 — Бумага офисная А4"
+    assert f.name == "2026-10-02 № auc0003717571 Бумага офисная А4"
     # второй тендер того же заказчика — в той же папке заказчика
     t2 = Tender("icetrade", "2", "u", title="Ручки", number="auc2", customer=t.customer)
     assert tender_folder(t2).parent == f.parent
@@ -402,3 +402,23 @@ def test_signed_documents_are_unwrapped(tmp_path):
     assert [i.path.name for i in infos] == ["zapros-ceny-avtoshiny-zimnie.docx"]
     assert infos[0].positions[0].name == "Автошина 215/75 R16C"
     assert (folder / SIGNED_DIR / "zapros-ceny-avtoshiny-zimnie.p7s").exists()
+
+
+def test_paths_fit_windows_limit():
+    """Excel/Word не открывают файлы с путём длиннее 259 символов."""
+    from tenderagent.folders import CHECK, OFFER, customer_dir_name, tender_dir_name
+    from tenderagent.models import Tender
+    from tenderagent.sites.base import _safe_name
+
+    t = Tender("goszakupki", "x", "u", number="auc0003799999",
+               title="Закупка зимних автошин 285/65 R16C 131 R M+S для автомобилей филиала " * 3,
+               customer="Государственное учреждение образования «Средняя школа № 1 имени героя "
+                        "Советского Союза И.И. Иванова д.Вельямовичи Брестского района», УНП 200000000",
+               published="2026-10-06T00:00")
+    base = r"C:\Users\user\Documents\ТендерАгент\Тендеры"
+    longest_file = _safe_name("Приложение № 2 к документации о закупке — форма ценового предложения участника "
+                              "(заполнено).xlsx")
+    for sub in (OFFER, CHECK):
+        path = "\\".join([base, customer_dir_name(t.customer), tender_dir_name(t), sub, longest_file])
+        assert len(path) <= 250, (len(path), path)
+    assert longest_file.endswith(".xlsx")

@@ -243,9 +243,15 @@ def _filename_from_response(r: requests.Response) -> str:
     return ""
 
 
-def _safe_name(name: str) -> str:
+def _safe_name(name: str, limit: int = 70) -> str:
+    """Имя файла для Windows: без запрещённых символов и не длиннее limit
+    (Word/Excel не открывают файлы с полным путём длиннее 259 символов)."""
     name = re.sub(r'[\\/:*?"<>|\r\n\t]+', "_", name).strip(" .")
-    return name[:150] or "file"
+    stem, dot, ext = name.rpartition(".")
+    if not dot or len(ext) > 5:
+        stem, ext = name, ""
+    stem = stem[: max(10, limit - len(ext) - 1)].rstrip(" ._")
+    return (f"{stem}.{ext}" if ext else stem) or "file"
 
 
 def clean(text: str) -> str:

@@ -45,7 +45,7 @@ def unpack_archives(folder: Path, log=print) -> None:
         changed = False
         for arc in list(folder.rglob("*")):
             ext = arc.suffix.lower()
-            target = arc.with_name(arc.stem + "_файлы")
+            target = arc.with_name(arc.stem[:30].rstrip(" ._") + "_файлы")
             if ext not in (".zip", ".rar", ".7z") or target.exists():
                 continue
             try:
@@ -55,7 +55,10 @@ def unpack_archives(folder: Path, log=print) -> None:
                             if info.is_dir():
                                 continue
                             name = _fix_zip_name(info)
-                            dest = target / Path(*[p for p in Path(name).parts if p not in ("..", "/")])
+                            parts = [p for p in Path(name).parts if p not in ("..", "/")]
+                            # вложенные папки архива сплющиваем, длинные имена режем — лимит пути Windows
+                            from ..sites.base import _safe_name
+                            dest = target / _safe_name("_".join(parts[-2:]) if len(parts) > 1 else parts[-1], 60)
                             dest.parent.mkdir(parents=True, exist_ok=True)
                             with z.open(info) as src, open(dest, "wb") as out:
                                 shutil.copyfileobj(src, out)

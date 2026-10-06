@@ -53,6 +53,27 @@ class Engine:
         self.index = PriceIndex(items)
 
     # --- мониторинг -----------------------------------------------------------
+    def relocate_folders(self) -> int:
+        """Разложить папки всех тендеров по заказчикам и укоротить длинные имена
+        (нужно один раз после обновления программы). Возвращает число перенесённых."""
+        moved = 0
+        for r in self.db.all():
+            cur = r.get("folder") or ""
+            if not cur or not Path(cur).exists():
+                continue
+            t = r["tender"]
+            try:
+                new = tender_folder(t, cur)
+            except OSError as e:
+                self.log(f"Папка не перенесена (закройте открытые из неё файлы): {cur} — {e}")
+                continue
+            if str(new) != cur:
+                self.db.save_tender(t, folder=str(new))
+                moved += 1
+        if moved:
+            self.log(f"Папки тендеров разложены по заказчикам и укорочены: {moved}")
+        return moved
+
     def recheck_all(self, progress=None) -> int:
         """Заново сверить с прайсом все найденные и ещё не поданные тендеры
         (после загрузки нового прайса или изменения настроек)."""
@@ -285,7 +306,7 @@ class Engine:
         offer_forms = sorted([i for i in fillable if i.offer_form_score >= 4], key=lambda i: -i.offer_form_score)
         used_form = False
         for info in offer_forms[:3]:
-            dst = out / f"{info.path.stem} (заполнено){info.path.suffix}"
+            dst = out / f"{info.path.stem[:50].rstrip(' ._')} (заполнено){info.path.suffix}"
             try:
                 st = fill_form(info.path, dst, lines, req, terms, self.log)
             except Exception as e:
@@ -303,7 +324,7 @@ class Engine:
         for info in fillable:
             if info.path in done or not re.search(r"(форма|приложени|анкет|сведени|заявлени|декларац)", info.path.stem, re.I):
                 continue
-            dst = out / f"{info.path.stem} (заполнено){info.path.suffix}"
+            dst = out / f"{info.path.stem[:50].rstrip(' ._')} (заполнено){info.path.suffix}"
             try:
                 st = fill_form(info.path, dst, lines, req, terms, self.log)
                 if st["fields"] or st["rows"]:
