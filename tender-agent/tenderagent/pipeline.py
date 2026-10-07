@@ -11,7 +11,7 @@ from . import textnorm
 from .config import Settings
 from .folders import CHECK, DOCS, OFFER, tender_folder, write_info  # noqa: F401
 from .db import (DB, STATUS_ERROR, STATUS_EXPIRED, STATUS_FIT, STATUS_NOFIT,
-                 STATUS_READY)
+                 STATUS_READY, STATUS_REJECTED, STATUS_SUBMITTED)
 from .docs import extract, generate
 from .docs.fill import fill_form, offer_lines, totals
 from .matching import MatchSummary, PriceIndex, match_positions, summarize, unit_price
@@ -73,6 +73,53 @@ class Engine:
         if moved:
             self.log(f"Папки тендеров разложены по заказчикам и укорочены: {moved}")
         return moved
+
+    def mark_expired(self) -> int:
+        """Тендеры, у которых прошёл срок подачи, получают статус «Срок истёк»
+        (кроме поданных — по ним ждём итогов)."""
+        n = 0
+        for r in self.db.all():
+            if r["status"] in (STATUS_EXPIRED, STATUS_SUBMITTED):
+                continue
+            if is_expired(r["tender"]):
+                self.db.set_status(r["uid"], STATUS_EXPIRED)
+                n += 1
+        return n
+
+    def cleanup_candidates(self, include_rejected: bool = True, include_nofit: bool = False) -> list[dict]:
+        self.mark_expired()
+        statuses = {STATUS_EXPIRED}
+        if include_rejected:
+            statuses.add(STATUS_REJECTED)
+        if include_nofit:
+            statuses.add(STATUS_NOFIT)
+        return [r for r in self.db.all() if r["status"] in statuses]
+
+    def cleanup(self, rows: list[dict], delete_folders: bool) -> tuple[int, int]:
+        """Убрать тендеры из программы (и, по желанию, их папки). Возвращает (тендеров, папок)."""
+        import shutil
+
+        from .config import tenders_dir
+
+        root = tenders_dir()
+        removed = folders = 0
+        for r in rows:
+            if r["status"] == STATUS_SUBMITTED:
+                continue  # поданные не трогаем
+            folder = Path(r["folder"]) if r.get("folder") else None
+            if delete_folders and folder and folder.exists() and root in folder.parents:
+                try:
+                    shutil.rmtree(folder)
+                    folders += 1
+                    parent = folder.parent
+                    if parent != root and parent.exists() and not any(parent.iterdir()):
+                        parent.rmdir()  # у заказчика больше нет тендеров
+                except OSError as e:
+                    self.log(f"Папка не удалена (закройте открытые из неё файлы): {folder} — {e}")
+            self.db.forget(r["uid"])
+            removed += 1
+        self.log(f"Очищено: тендеров {removed}" + (f", папок {folders}" if delete_folders else ""))
+        return removed, folders
 
     def recheck_all(self, progress=None) -> int:
         """Заново сверить с прайсом все найденные и ещё не поданные тендеры
@@ -166,7 +213,7 @@ class Engine:
                     from .models import Position
                     t.positions = [Position(name=t.title, source="реестр")]
             if is_expired(t):
-                self.db.save_tender(t, STATUS_EXPIRED)
+                self.db.forget(t.uid)  # срок уже истёк — в список не добавляем и больше не проверяем
                 continue
             try:
                 a = self.analyze(t, download=m.auto_download_docs)

@@ -37,13 +37,24 @@ class DB:
                 folder TEXT DEFAULT '', overrides TEXT DEFAULT '{}', seen INTEGER DEFAULT 0
             );
             CREATE TABLE IF NOT EXISTS mappings (key TEXT PRIMARY KEY, item_ref TEXT);
+            CREATE TABLE IF NOT EXISTS forgotten (uid TEXT PRIMARY KEY, at TEXT);
             """
         )
         self.conn.commit()
 
     def has(self, uid: str) -> bool:
+        """Тендер уже известен: есть в списке или был удалён как неактуальный."""
         with self._lock:
-            return self.conn.execute("SELECT 1 FROM tenders WHERE uid=?", (uid,)).fetchone() is not None
+            return (self.conn.execute("SELECT 1 FROM tenders WHERE uid=?", (uid,)).fetchone() is not None
+                    or self.conn.execute("SELECT 1 FROM forgotten WHERE uid=?", (uid,)).fetchone() is not None)
+
+    def forget(self, uid: str) -> None:
+        """Удалить из списка и больше не добавлять при мониторинге."""
+        with self._lock:
+            self.conn.execute("DELETE FROM tenders WHERE uid=?", (uid,))
+            self.conn.execute("INSERT OR REPLACE INTO forgotten(uid, at) VALUES (?, ?)",
+                              (uid, datetime.now().isoformat(timespec="seconds")))
+            self.conn.commit()
 
     def save_tender(self, t: Tender, status: str | None = None, **extra) -> None:
         now = datetime.now().isoformat(timespec="seconds")

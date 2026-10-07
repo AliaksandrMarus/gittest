@@ -104,7 +104,10 @@ class MainWindow(QMainWindow):
         b_dirs = QPushButton("📁 Папки заказчиков")
         b_dirs.setToolTip("Тендеры разложены по папкам заказчиков: Документы\\ТендерАгент\\Тендеры")
         b_dirs.clicked.connect(lambda: open_path(tenders_dir()))
-        for b in (self.b_monitor, self.b_scan, self.b_recheck, b_url, b_folder, b_dirs):
+        b_clean = QPushButton("🧹 Очистить неактуальное")
+        b_clean.setToolTip("Удалить из программы тендеры с истёкшим сроком подачи (поданные не трогаются)")
+        b_clean.clicked.connect(self.cleanup_dialog)
+        for b in (self.b_monitor, self.b_scan, self.b_recheck, b_url, b_folder, b_dirs, b_clean):
             top.addWidget(b)
         top.addStretch(1)
         top.addWidget(QLabel("Статус:"))
@@ -143,6 +146,7 @@ class MainWindow(QMainWindow):
         return w
 
     def refresh_tenders(self):
+        self.engine.mark_expired()
         rows = self.db.all()
         flt = self.f_status.currentText()
         text = self.f_text.text().strip().lower()
@@ -222,8 +226,75 @@ class MainWindow(QMainWindow):
         for s in STATUSES:
             st.addAction(s, lambda s=s: (self.db.set_status(uid, s), self.refresh_tenders()))
         m.addSeparator()
-        m.addAction("Удалить из списка", lambda: (self.db.delete(uid), self.refresh_tenders()))
+        m.addAction("Удалить из списка (больше не показывать)",
+                    lambda: (self.db.forget(uid), self.refresh_tenders()))
         m.exec(self.tbl.viewport().mapToGlobal(pos))
+
+    def cleanup_dialog(self):
+        from PySide6.QtWidgets import QDialog, QDialogButtonBox
+
+        dlg = QDialog(self)
+        dlg.setWindowTitle("Очистить неактуальное")
+        lay = QVBoxLayout(dlg)
+        lay.addWidget(QLabel("<b>Что удалить из программы:</b>"))
+        c_exp = QCheckBox()
+        c_exp.setChecked(True)
+        c_rej = QCheckBox()
+        c_rej.setChecked(True)
+        c_nofit = QCheckBox()
+        c_files = QCheckBox("Удалить также папки с документами этих тендеров на диске")
+        for c in (c_exp, c_rej, c_nofit):
+            lay.addWidget(c)
+        lay.addSpacing(8)
+        lay.addWidget(c_files)
+        note = QLabel("Поданные тендеры не удаляются — по ним ждём итогов.\n"
+                      "Удалённые тендеры не появятся снова при следующих проверках площадок.")
+        note.setProperty("hint", True)
+        lay.addWidget(note)
+        bb = QDialogButtonBox()
+        b_ok = bb.addButton("Очистить", QDialogButtonBox.ButtonRole.AcceptRole)
+        bb.addButton("Отмена", QDialogButtonBox.ButtonRole.RejectRole)
+        bb.accepted.connect(dlg.accept)
+        bb.rejected.connect(dlg.reject)
+        lay.addWidget(bb)
+
+        self.engine.mark_expired()
+        rows = self.db.all()
+        n_exp = sum(r["status"] == "Срок истёк" for r in rows)
+        n_rej = sum(r["status"] == "Отклонён" for r in rows)
+        n_nofit = sum(r["status"] == "Не подходит" for r in rows)
+        c_exp.setText(f"С истёкшим сроком подачи — {n_exp}")
+        c_rej.setText(f"Отмеченные «Не участвуем» — {n_rej}")
+        c_nofit.setText(f"Не подходящие по критериям (срок ещё не истёк) — {n_nofit}")
+
+        def upd():
+            n = n_exp * c_exp.isChecked() + n_rej * c_rej.isChecked() + n_nofit * c_nofit.isChecked()
+            b_ok.setText(f"Очистить ({n})")
+            b_ok.setEnabled(n > 0)
+
+        for c in (c_exp, c_rej, c_nofit):
+            c.toggled.connect(upd)
+        upd()
+        if not dlg.exec():
+            return
+        statuses = set()
+        if c_exp.isChecked():
+            statuses.add("Срок истёк")
+        if c_rej.isChecked():
+            statuses.add("Отклонён")
+        if c_nofit.isChecked():
+            statuses.add("Не подходит")
+        victims = [r for r in self.db.all() if r["status"] in statuses]
+        if c_files.isChecked() and victims:
+            ok = QMessageBox.question(
+                self, "Удалить папки?",
+                f"Будут удалены папки с документами {len(victims)} тендеров (включая подготовленные "
+                "предложения). Это нельзя отменить. Продолжить?")
+            if ok != QMessageBox.StandardButton.Yes:
+                return
+        removed, folders = self.engine.cleanup(victims, c_files.isChecked())
+        self.refresh_tenders()
+        self.progress.setText(f"Очищено тендеров: {removed}" + (f", папок: {folders}" if c_files.isChecked() else ""))
 
     def add_by_url(self):
         url, ok = QInputDialog.getText(self, "Тендер по ссылке", "Ссылка на страницу процедуры:")

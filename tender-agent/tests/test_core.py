@@ -476,3 +476,29 @@ def test_unit_prices_and_markup_fit():
     terms.markup_percent = int(mk * 10) / 10
     total = unit_price(item, terms) * 24 * 1.2
     assert total <= 6035.90 * 0.99 and total > 6035.90 * 0.98
+
+
+def test_cleanup_expired(tmp_path):
+    """«Очистить неактуальное»: просроченные удаляются (с папками по желанию), поданные остаются,
+    удалённые не возвращаются при следующем мониторинге."""
+    from tenderagent.config import Settings
+    from tenderagent.db import DB
+    from tenderagent.models import Tender
+    from tenderagent.pipeline import Engine, tender_folder
+
+    db = DB()
+    eng = Engine(Settings(), db, log=lambda *a: None)
+    old = Tender("goszakupki", "1", "u", title="Шины", number="a1", customer="ОАО Завод", deadline="2020-01-01T10:00")
+    sub = Tender("goszakupki", "2", "u", title="Бумага", number="a2", customer="ОАО Завод", deadline="2020-01-01T10:00")
+    new = Tender("goszakupki", "3", "u", title="Ручки", number="a3", customer="КУП", deadline="2099-01-01T10:00")
+    for t in (old, sub, new):
+        db.save_tender(t, folder=str(tender_folder(t)))
+    db.set_status(sub.uid, "Подан")
+    assert eng.mark_expired() == 1
+    victims = eng.cleanup_candidates()
+    assert [r["uid"] for r in victims] == [old.uid]
+    folder = Path(victims[0]["folder"])
+    assert eng.cleanup(victims, delete_folders=True) == (1, 1)
+    assert not folder.exists() and folder.parent.exists()     # у заказчика остался поданный тендер
+    assert db.get(old.uid) is None and db.has(old.uid)        # мониторинг его не добавит снова
+    assert db.get(sub.uid)["status"] == "Подан" and db.get(new.uid) is not None
