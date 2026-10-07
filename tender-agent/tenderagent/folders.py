@@ -84,7 +84,7 @@ def customer_dir_name(customer: str) -> str:
 def tender_dir_name(t: Tender) -> str:
     """«2026-10-02 № auc0003717571 Бумага офисная А4» — не длиннее TENDER_LIMIT."""
     date = (t.published or t.deadline or "")[:10]
-    num = _safe(t.number or t.ext_id.split("/")[-1], 20)
+    num = _safe(t.num, 20)
     head = " ".join(x for x in (date, f"№ {num}") if x)
     room = TENDER_LIMIT - len(head) - 1
     title = _safe(t.title, room) if room > 8 else ""
@@ -158,7 +158,7 @@ def write_info(t: Tender, folder: Path, status: str = "") -> None:
     """Сведения о закупке — чтобы по папке было понятно всё без программы."""
     lines = [
         f"Предмет закупки: {t.title}",
-        f"Номер процедуры: {t.number or t.ext_id}",
+        f"Номер процедуры: {t.num}",
         f"Вид процедуры: {t.procedure}" if t.procedure else "",
         f"Заказчик: {t.customer}" + (f" (УНП {t.customer_unp})" if t.customer_unp else ""),
         f"Приём предложений до: {t.deadline.replace('T', ' ')}" if t.deadline else "",

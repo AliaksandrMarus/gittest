@@ -57,7 +57,7 @@ class OfferLine:
     def value(self, role: str, req: Requisites) -> str:
         return {
             "num": str(self.n),
-            "name": self.name,
+            "name": self.offered or self.name,   # в нашу строку — товар из нашего прайса
             "offered": self.offered,
             "unit": self.unit,
             "qty": qty_str(self.qty),

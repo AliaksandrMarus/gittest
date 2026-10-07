@@ -1,6 +1,7 @@
 """Общие структуры данных."""
 from __future__ import annotations
 
+import re
 from dataclasses import asdict, dataclass, field
 
 
@@ -79,6 +80,15 @@ class Tender:
     @property
     def uid(self) -> str:
         return f"{self.site}:{self.ext_id}"
+
+    @property
+    def num(self) -> str:
+        """Номер процедуры для документов. Старые версии иногда сохраняли сюда ФИО
+        или телефон контактного лица — такое не используем, берём номер из ссылки."""
+        n = (self.number or "").strip()
+        if re.fullmatch(r"[A-Za-zА-Яа-я]{0,6}[\s\-№]*\d[\w\-/.]{2,30}", n):
+            return n
+        return self.ext_id.split("/")[-1]
 
     def to_dict(self) -> dict:
         d = asdict(self)

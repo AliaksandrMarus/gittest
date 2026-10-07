@@ -96,7 +96,7 @@ def offer_docx(path: Path, t: Tender, lines: list[OfferLine], req: Requisites, t
     p.add_run(f"{t.customer or 'Заказчику'}")
     _heading(d, "ЦЕНОВОЕ ПРЕДЛОЖЕНИЕ")
     d.add_paragraph(
-        f"Изучив документацию по процедуре закупки № {t.number or t.ext_id} «{t.title}», "
+        f"Изучив документацию по процедуре закупки № {t.num} «{t.title}», "
         f"{req.full_name or '[наименование участника]'} предлагает поставить товар на следующих условиях:"
     )
     vat = req.vat_payer
@@ -113,7 +113,7 @@ def offer_docx(path: Path, t: Tender, lines: list[OfferLine], req: Requisites, t
             r.bold = True
             r.font.size = Pt(9)
     for ln in lines:
-        name = ln.name if not ln.offered or ln.offered == ln.name else f"{ln.name}\n(предлагается: {ln.offered})"
+        name = ln.offered or ln.name  # наименование товара из нашего прайса, а не позиция заказчика
         vals = [str(ln.n), name, ln.unit, qty_str(ln.qty), money(ln.price), money(ln.sum)]
         if vat:
             vals += [f"{ln.vat_rate:g}%", money(ln.vat_sum), money(ln.total)]
@@ -159,7 +159,7 @@ def offer_xlsx(path: Path, t: Tender, lines: list[OfferLine], req: Requisites) -
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Предложение"
-    ws["A1"] = f"Ценовое предложение {req.short_name or req.full_name} по процедуре № {t.number or t.ext_id}"
+    ws["A1"] = f"Ценовое предложение {req.short_name or req.full_name} по процедуре № {t.num}"
     ws["A1"].font = Font(bold=True, size=12)
     ws["A2"] = t.title
     vat = req.vat_payer
@@ -208,7 +208,7 @@ def cover_letter(path: Path, t: Tender, req: Requisites, attachments: list[str],
     _heading(d, "Сопроводительное письмо")
     d.add_paragraph(
         f"{req.full_name or '[наименование участника]'} направляет предложение для участия "
-        f"в процедуре закупки № {t.number or t.ext_id} «{t.title}» на общую сумму "
+        f"в процедуре закупки № {t.num} «{t.title}» на общую сумму "
         f"{money(total)} бел. руб.{' с НДС' if req.vat_payer else ' (без НДС)'}."
     )
     d.add_paragraph("Приложения:")
@@ -256,7 +256,7 @@ def inventory(path: Path, t: Tender, req: Requisites, items: list[str]) -> None:
     d = _doc()
     _heading(d, "ОПИСЬ ДОКУМЕНТОВ")
     d.add_paragraph(f"представленных {req.short_name or req.full_name or '[участник]'} для участия "
-                    f"в процедуре закупки № {t.number or t.ext_id}")
+                    f"в процедуре закупки № {t.num}")
     tb = d.add_table(rows=1, cols=3)
     _grid(tb)
     for j, h in enumerate(["№", "Наименование документа", "Кол-во листов"]):
@@ -309,7 +309,7 @@ def checklist(path: Path, t: Tender, matches: list[Match], required: list[str],
               conditions: dict[str, str], filled: list[str], notes: list[str]) -> None:
     d = _doc()
     _heading(d, "ЧЕК-ЛИСТ ПЕРЕД ПОДАЧЕЙ")
-    d.add_paragraph(f"Процедура № {t.number or t.ext_id}: {t.title}")
+    d.add_paragraph(f"Процедура № {t.num}: {t.title}")
     d.add_paragraph(f"Заказчик: {t.customer}")
     if t.deadline:
         d.add_paragraph(f"Окончание приёма предложений: {t.deadline.replace('T', ' ')}")
@@ -360,7 +360,7 @@ def marking_statement(path: Path, t: Tender, lines: list[OfferLine], req: Requis
     _heading(d, "СПРАВКА О МАРКИРОВКЕ ТОВАРА")
     d.add_paragraph(
         f"{req.full_name or '[наименование участника]'} сообщает, что товар, предлагаемый к поставке "
-        f"по процедуре закупки № {t.number or t.ext_id} «{t.title}», подлежащий в соответствии "
+        f"по процедуре закупки № {t.num} «{t.title}», подлежащий в соответствии "
         "с законодательством Республики Беларусь обязательной маркировке средствами идентификации, "
         "маркирован средствами идентификации, сведения о нём переданы в Государственную автоматизированную "
         "информационную систему маркировки товаров в установленном порядке.")

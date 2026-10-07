@@ -173,10 +173,10 @@ class Engine:
                     try:
                         self.sites[t.site].fetch_details(t)  # свежие ссылки и cookies для скачивания
                     except Exception as e:  # noqa: BLE001
-                        self.log(f"{t.number or t.ext_id}: карточка не обновлена ({e})")
+                        self.log(f"{t.num}: карточка не обновлена ({e})")
                 a = self.analyze(t, download=self.settings.monitor.auto_download_docs)
             except Exception as e:  # noqa: BLE001
-                self.log(f"Ошибка сверки {t.number or t.ext_id}: {e}")
+                self.log(f"Ошибка сверки {t.num}: {e}")
                 continue
             status = STATUS_FIT if a.fits else STATUS_NOFIT
             good += a.fits
@@ -237,7 +237,7 @@ class Engine:
                     continue
                 # Данных из списка (название, заказчик, срок, стоимость) достаточно,
                 # чтобы показать тендер; документы пользователь скачает с сайта сам.
-                self.log(f"{t.number or t.ext_id}: карточка не открылась ({e}), беру данные из реестра")
+                self.log(f"{t.num}: карточка не открылась ({e}), беру данные из реестра")
                 if not t.positions:
                     from .models import Position
                     t.positions = [Position(name=t.title, source="реестр")]
@@ -247,7 +247,7 @@ class Engine:
             try:
                 a = self.analyze(t, download=m.auto_download_docs)
             except Exception as e:
-                self.log(f"Ошибка анализа {t.number or t.ext_id}: {e}")
+                self.log(f"Ошибка анализа {t.num}: {e}")
                 self.db.save_tender(t, STATUS_ERROR)
                 continue
             status = STATUS_FIT if a.fits else STATUS_NOFIT

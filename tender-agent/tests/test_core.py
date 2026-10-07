@@ -532,3 +532,27 @@ def test_customer_terms_docs_and_marking(tmp_path):
     assert terms.delivery_term == "в течение 5 рабочих дней с даты заявки"
     assert terms.payment_terms == "отсрочка платежа 30 календарных дней"
     assert "Срок поставки" in taken and t.fields["Требования к маркировке"]
+
+
+def test_offer_uses_our_product_name_and_valid_number(tmp_path):
+    """В нашем ценовом предложении — наименование из нашего прайса; номер процедуры — не ФИО."""
+    import docx
+
+    from tenderagent.config import OfferTerms, Requisites
+    from tenderagent.docs.fill import offer_lines
+    from tenderagent.docs.generate import offer_docx
+    from tenderagent.models import Match, Position, PriceItem, Tender
+
+    t = Tender("goszakupki", "marketing/view/3725000", "u", title="Шины 8,25 R20",
+               number="Мамай Илона Николаевна, +375177124714")
+    assert t.num == "3725000"
+    assert Tender("x", "1", "u", number="auc0003722747").num == "auc0003722747"
+    m = Match(Position("Шины 8,25 R20 (Вилейский центр)", 12, "штук"),
+              PriceItem("А/ШИНА 8.25R20 К-84МБ,У-2", 555.67), 90, price=555.67)
+    p = tmp_path / "offer.docx"
+    offer_docx(p, t, offer_lines([m], OfferTerms(), Requisites(full_name="ООО «Миртаер»")),
+               Requisites(full_name="ООО «Миртаер»"), OfferTerms())
+    d = docx.Document(p)
+    assert d.tables[0].rows[1].cells[1].text == "А/ШИНА 8.25R20 К-84МБ,У-2"
+    text = "\n".join(x.text for x in d.paragraphs)
+    assert "№ 3725000" in text and "Мамай" not in text

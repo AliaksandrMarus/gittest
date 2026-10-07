@@ -197,7 +197,7 @@ class TenderDialog(QDialog):
         est = f"{money(t.estimate)} {t.currency}" if t.estimate else "не указана"
         self.head.setText(
             f"<h3 style='margin:0'>{t.title}</h3>"
-            f"<p>№ <b>{t.number or t.ext_id}</b> · {t.site} · {t.procedure}<br>"
+            f"<p>№ <b>{t.num}</b> · {t.site} · {t.procedure}<br>"
             f"Заказчик: <b>{t.customer or '—'}</b> {('УНП ' + t.customer_unp) if t.customer_unp else ''}<br>"
             f"Приём предложений до: <b>{dl}</b> · Ориентировочная стоимость: <b>{est}</b>"
             + (f" · ОКРБ: {', '.join(t.okrb[:6])}" if t.okrb else "")

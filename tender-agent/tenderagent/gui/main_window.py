@@ -166,7 +166,7 @@ class MainWindow(QMainWindow):
             vals = [
                 datetime.fromisoformat(r["found_at"]).strftime("%Y-%m-%d %H:%M"),
                 self.engine.sites[t.site].cfg.title if t.site in self.engine.sites else t.site,
-                t.number or t.ext_id,
+                t.num,
                 t.title,
                 t.customer,
                 datetime.fromisoformat(t.deadline).strftime("%Y-%m-%d %H:%M") if t.deadline else "",
