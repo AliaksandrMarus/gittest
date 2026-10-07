@@ -422,3 +422,36 @@ def test_paths_fit_windows_limit():
         path = "\\".join([base, customer_dir_name(t.customer), tender_dir_name(t), sub, longest_file])
         assert len(path) <= 250, (len(path), path)
     assert longest_file.endswith(".xlsx")
+
+
+def test_goszakupki_file_link_returns_info_then_file(tmp_path):
+    """goszakupki: ссылка на документ отдаёт JSON-справку, сам файл — по той же ссылке с &download=1."""
+    from tenderagent.sites.base import Http
+
+    docx_bytes = (Path(__file__).parent / "fixtures" / "signed_cms.docx").read_bytes()
+    stub = ('{"ok":true,"info":{"name":"proekt-dogovora-prilozhenie-1_1791358415.docx",'
+            '"size":"24.67Кб","created":"07.10.2026","key":1}}').encode()
+
+    class Resp:
+        def __init__(self, content, url):
+            self.content, self.url, self.headers, self.ok = content, url, {}, True
+
+        def raise_for_status(self):
+            pass
+
+    calls = []
+
+    class Sess:
+        headers = {}
+
+        def get(self, url, **kw):
+            calls.append(url)
+            return Resp(docx_bytes if url.endswith("download=1") else stub, url)
+
+    h = Http(log=lambda *a: None)
+    h.s = Sess()
+    url = "https://goszakupki.by/single-source/get-file/3717571?c=detail&f=1"
+    p = h.download(url, tmp_path, "proekt-dogovora")
+    assert calls == [url, url + "&download=1"]
+    assert p.name == "proekt-dogovora-prilozhenie-1_1791358415.docx"
+    assert p.read_bytes()[:4] == b"PK\x03\x04"   # настоящий документ (и без конверта ЭЦП)

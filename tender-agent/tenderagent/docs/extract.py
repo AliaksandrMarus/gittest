@@ -230,12 +230,13 @@ def analyze_folder(folder: Path, log=print) -> list[DocInfo]:
         try:
             text, tables = read_any(p)
         except Exception as e:
-            from ..sites.base import _looks_like_html
+            from ..sites.base import _file_info_stub, _looks_like_html
 
-            if _looks_like_html(p.read_bytes()[:8000]):
+            head = p.read_bytes()[:65537]
+            if _looks_like_html(head[:8000]) or _file_info_stub(head) is not None:
                 # Вместо файла когда-то скачалась веб-страница — убираем, чтобы скачать заново.
                 p.unlink(missing_ok=True)
-                log(f"{p.name}: вместо файла была веб-страница — удалён, будет скачан заново")
+                log(f"{p.name}: вместо файла была веб-страница или справка о файле — удалён, будет скачан заново")
             else:
                 log(f"Не прочитан {p.name}: {e}")
             continue

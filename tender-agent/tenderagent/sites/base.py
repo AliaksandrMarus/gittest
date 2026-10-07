@@ -140,6 +140,16 @@ class Http:
         r = self.s.get(url, timeout=120, headers=headers)
         r.raise_for_status()
         data = r.content
+        stub = _file_info_stub(data)
+        if stub is not None:
+            # goszakupki: ссылка отдаёт справку о файле (JSON), сам файл — по той же ссылке с &download=1
+            name_hint = stub.get("name") or name_hint
+            real = url + ("&" if "?" in url else "?") + "download=1"
+            r = self.s.get(real, timeout=180, headers={"Referer": referer or url})
+            r.raise_for_status()
+            data = r.content
+            if _file_info_stub(data) is not None:
+                raise SiteError("площадка вернула справку о файле вместо самого файла")
         if _looks_like_html(data):
             # Попробуем пройти по ссылке/переадресации со страницы-заглушки один раз.
             nxt = _next_link_from_html(data, r.url)
@@ -175,6 +185,22 @@ class Http:
             n += 1
         path.write_bytes(data)
         return path
+
+
+def _file_info_stub(data: bytes) -> dict | None:
+    """Ответ вида {"ok":true,"info":{"name":"…docx","size":"24.67Кб",…}} — справка, а не файл."""
+    head = data[:4096].lstrip()
+    if not head.startswith(b"{") or len(data) > 65536:
+        return None
+    try:
+        import json
+
+        obj = json.loads(data.decode("utf-8", "replace"))
+    except ValueError:
+        return None
+    if isinstance(obj, dict) and isinstance(obj.get("info"), dict) and "ok" in obj:
+        return obj["info"]
+    return None
 
 
 def _looks_like_html(data: bytes) -> bool:
