@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QHBoxLayout, QHeaderView,
+from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QDialog, QDoubleSpinBox, QDialogButtonBox, QHBoxLayout, QHeaderView,
                                QLabel, QLineEdit, QListWidget, QListWidgetItem, QMessageBox,
                                QPushButton, QSplitter, QTableWidget, QTableWidgetItem, QVBoxLayout,
                                QWidget)
@@ -13,12 +13,15 @@ from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QHB
 from .. import textnorm
 from ..db import STATUS_FIT, STATUS_NOFIT, STATUS_REJECTED, STATUS_SUBMITTED
 from ..docs.fill import money
+from ..matching import customer_unit_price, markup_for_target
 from ..folders import DOCS
 from ..pipeline import Analysis, Engine
 from .common import open_path, open_url, run_task
 
 COLS = ["№", "Позиция заказчика", "Кол-во", "Ед.", "Товар из нашего прайса", "Похожесть",
-        "Цена без НДС", "Сумма без НДС", "В предложение"]
+        "Наша цена\nза ед. без НДС", "Наша цена\nза ед. с НДС", "Цена заказчика\nза ед. (с НДС)",
+        "Расхождение", "Сумма\nбез НДС", "В предложение"]
+C_QTY, C_ITEM, C_PRICE, C_OURVAT, C_CUST, C_DIFF, C_SUM, C_INC = 2, 4, 6, 7, 8, 9, 10, 11
 
 
 class ItemPicker(QDialog):
@@ -90,6 +93,43 @@ class TenderDialog(QDialog):
         self.verdict.setStyleSheet("padding:8px;border-radius:6px;")
         lay.addWidget(self.verdict)
 
+        # --- цена: наценка к прайсу (своя для этого тендера) и подгонка под ориентир ---
+        pr = QHBoxLayout()
+        pr.addWidget(QLabel("Наценка к прайсу:"))
+        self.markup = QDoubleSpinBox()
+        self.markup.setRange(-90, 500)
+        self.markup.setDecimals(1)
+        self.markup.setSingleStep(1)
+        self.markup.setSuffix(" %")
+        self.markup.setToolTip("Своя наценка для этого тендера: положительная — дороже прайса, "
+                               "отрицательная — скидка. Цены пересчитываются сразу.")
+        pr.addWidget(self.markup)
+        self.incl_vat = QCheckBox("цены в прайсе с НДС")
+        self.incl_vat.setToolTip("Отметьте, если в вашем прайсе цены уже включают НДС "
+                                 "(розничные прайсы обычно с НДС). Настройка общая для всех тендеров.")
+        pr.addWidget(self.incl_vat)
+        pr.addSpacing(24)
+        pr.addWidget(QLabel("Подогнать — ниже ориентира заказчика на"))
+        self.fit_gap = QDoubleSpinBox()
+        self.fit_gap.setRange(0, 50)
+        self.fit_gap.setDecimals(1)
+        self.fit_gap.setValue(1.0)
+        self.fit_gap.setSuffix(" %")
+        pr.addWidget(self.fit_gap)
+        self.b_fit = QPushButton("Подобрать наценку")
+        self.b_fit.setToolTip("Рассчитать наценку так, чтобы наше предложение (с НДС) было ниже "
+                              "ориентировочной стоимости заказчика на указанный процент")
+        pr.addWidget(self.b_fit)
+        pr.addStretch(1)
+        lay.addLayout(pr)
+        self._markup_timer = QTimer(self)
+        self._markup_timer.setSingleShot(True)
+        self._markup_timer.setInterval(350)
+        self._markup_timer.timeout.connect(self._markup_changed)
+        self.markup.valueChanged.connect(lambda *_: self._markup_timer.start())
+        self.incl_vat.toggled.connect(self._incl_vat_changed)
+        self.b_fit.clicked.connect(self._fit_markup)
+
         split = QSplitter(Qt.Orientation.Vertical)
         self.table = QTableWidget(0, len(COLS))
         self.table.setHorizontalHeaderLabels(COLS)
@@ -146,6 +186,7 @@ class TenderDialog(QDialog):
 
         self.engine.db.mark_seen(uid)
         self.reload()
+        self._sync_price_controls()
         self.reanalyze(download=False)
 
     # --- данные ---------------------------------------------------------------
@@ -231,33 +272,63 @@ class TenderDialog(QDialog):
         vat = self.engine.settings.requisites.vat_payer
         rate = self.engine.settings.terms.vat_rate
         with_vat = s.our_sum * (1 + rate / 100) if vat else s.our_sum
-        lim = f" · Ориентир заказчика: <b>{money(s.limit_sum)}</b>" if s.limit_sum else ""
+        lim = ""
+        if s.limit_sum:
+            d = (with_vat - s.limit_sum) / s.limit_sum * 100
+            color = "#1a7f37" if d <= 0 else "#b42318"
+            pct = f"{d:+.1f}%".replace(".", ",")
+            lim = (f" · Ориентир заказчика: <b>{money(s.limit_sum)}</b>"
+                   f" · Расхождение: <b style='color:{color}'>{pct}</b>")
         self.summary.setText(f"В прайсе найдено <b>{s.found} из {s.total}</b> позиций · "
                              f"Наша сумма без НДС: <b>{money(s.our_sum)}</b> · "
                              f"{'с НДС' if vat else 'итого'}: <b>{money(with_vat)}</b>{lim}")
 
+    def _vat_mult(self) -> float:
+        st = self.engine.settings
+        return 1 + st.terms.vat_rate / 100 if st.requisites.vat_payer else 1.0
+
     def _fill_table(self):
         self.table.blockSignals(True)
         ms = self.analysis.matches
+        t = self.row["tender"]
+        vm = self._vat_mult()
         self.table.setRowCount(len(ms))
         for i, m in enumerate(ms):
+            ours_vat = round(m.price * vm, 2) if (m.item and m.price is not None) else None
+            cust = customer_unit_price(m, len(ms), t.estimate)
+            diff = (ours_vat - cust) / cust * 100 if (ours_vat is not None and cust) else None
             vals = [str(i + 1), m.position.name, money(m.position.qty).replace(",00", "") if m.position.qty else "",
                     m.position.unit, (m.item.name if m.item else "— нет в прайсе —"),
                     (f"{m.score}%" + (" (вручную)" if m.manual else "")) if m.item else "",
-                    money(m.price) if m.price is not None else "", money((m.price or 0) * m.qty) if m.item else ""]
+                    money(m.price) if m.price is not None else "",
+                    money(ours_vat) if ours_vat is not None else "",
+                    money(cust) if cust else "—",
+                    (f"{diff:+.1f}%".replace(".", ",")) if diff is not None else "",
+                    money((m.price or 0) * m.qty) if m.item else ""]
             for j, v in enumerate(vals):
                 it = QTableWidgetItem(v)
-                if j not in (2, 6):
+                if j not in (C_QTY, C_PRICE):
                     it.setFlags(it.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 if j == 1:
                     it.setToolTip(f"{m.position.name}\nИсточник: {m.position.source}")
-                if j == 4 and m.item:
+                if j == C_ITEM and m.item:
                     it.setToolTip(f"{m.item.name}\nКод: {m.item.code}\nЦена прайса: {m.item.price}")
+                if j == C_CUST and cust:
+                    it.setToolTip("Ориентировочная (предельная) стоимость позиции / количество")
+                if j in (C_PRICE, C_OURVAT, C_CUST, C_DIFF, C_SUM):
+                    it.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 self.table.setItem(i, j, it)
+            if diff is not None:
+                d = self.table.item(i, C_DIFF)
+                d.setForeground(QColor("#1a7f37" if diff <= 0 else "#b42318"))
+                f = d.font()
+                f.setBold(True)
+                d.setFont(f)
+                d.setToolTip("Наша цена ниже цены заказчика" if diff <= 0 else "Наша цена выше цены заказчика")
             chk = QTableWidgetItem()
             chk.setFlags(Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
             chk.setCheckState(Qt.CheckState.Checked if (m.include and m.found) else Qt.CheckState.Unchecked)
-            self.table.setItem(i, 8, chk)
+            self.table.setItem(i, C_INC, chk)
             color = None
             if not m.found:
                 color = QColor("#fde2e1")
@@ -268,8 +339,64 @@ class TenderDialog(QDialog):
                     self.table.item(i, j).setBackground(color)
         self.table.resizeColumnsToContents()
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(C_ITEM, QHeaderView.ResizeMode.Stretch)
         self.table.blockSignals(False)
+
+    # --- наценка ------------------------------------------------------------------
+    def _sync_price_controls(self):
+        for w in (self.markup, self.incl_vat):
+            w.blockSignals(True)
+        mk = self.row["overrides"].get("_markup")
+        self.markup.setValue(float(mk) if mk is not None else self.engine.settings.terms.markup_percent)
+        self.incl_vat.setChecked(self.engine.settings.terms.prices_include_vat)
+        for w in (self.markup, self.incl_vat):
+            w.blockSignals(False)
+
+    def _markup_changed(self):
+        if not self.analysis:
+            return
+        ov = dict(self.row["overrides"])
+        ov["_markup"] = round(self.markup.value(), 2)
+        self.engine.db.save_tender(self.row["tender"], overrides=ov)
+        self.row["overrides"] = ov
+        self._recalc()
+
+    def _incl_vat_changed(self, on: bool):
+        self.engine.settings.terms.prices_include_vat = on
+        self.engine.settings.save()
+        if self.analysis:
+            self._recalc()
+
+    def _fit_markup(self):
+        if not self.analysis:
+            return
+        t = self.row["tender"]
+        ms = self.analysis.matches
+        target = self.analysis.summary.limit_sum
+        if not target:
+            parts = [customer_unit_price(m, len(ms), t.estimate) for m in ms if m.found and m.include]
+            if parts and all(parts):
+                target = sum(p * m.qty for p, m in zip(parts, [m for m in ms if m.found and m.include]))
+        if not target:
+            QMessageBox.information(self, "Подбор наценки",
+                                    "У заказчика не указана ориентировочная стоимость — подгонять не к чему.")
+            return
+        target *= 1 - self.fit_gap.value() / 100
+        fixed = {int(k): float(v["price"]) for k, v in self.row["overrides"].items()
+                 if str(k).isdigit() and isinstance(v, dict) and v.get("price") is not None}
+        terms = self.engine.terms_for(self.row["overrides"])
+        mk = markup_for_target(ms, terms, self._vat_mult(), target, fixed)
+        if mk is None:
+            return
+        mk = int(mk * 10) / 10  # вниз до 0,1 % — чтобы точно уложиться ниже ориентира
+        if mk < -90:
+            QMessageBox.warning(self, "Подбор наценки", "Даже со скидкой 90 % не уложиться в ориентир заказчика.")
+            return
+        if mk < 0:
+            QMessageBox.information(self, "Подбор наценки",
+                                    f"Чтобы уложиться в ориентир, нужна скидка {abs(mk):.1f} % от прайса. "
+                                    "Проверьте, выгодно ли это.".replace(".", ",", 1))
+        self.markup.setValue(mk)  # сработает пересчёт
 
     # --- правки пользователя ----------------------------------------------------
     def _override(self, i: int, **kw):
@@ -286,7 +413,7 @@ class TenderDialog(QDialog):
         self._analysis_done(a)
 
     def _cell_double(self, r: int, c: int):
-        if c != 4 or not self.analysis:
+        if c != C_ITEM or not self.analysis:
             return
         m = self.analysis.matches[r]
         dlg = ItemPicker(self.engine, m.position.name, self)
@@ -302,13 +429,13 @@ class TenderDialog(QDialog):
         r, c = it.row(), it.column()
         from ..pricelist import parse_number
 
-        if c == 8:
+        if c == C_INC:
             self._override(r, include=it.checkState() == Qt.CheckState.Checked)
-        elif c == 6:
+        elif c == C_PRICE:
             v = parse_number(it.text())
             if v is not None:
                 self._override(r, price=v)
-        elif c == 2:
+        elif c == C_QTY:
             v = parse_number(it.text())
             if v is not None:
                 self._override(r, qty=v)

@@ -135,3 +135,36 @@ def summarize(matches: list[Match], estimate: float | None = None,
     ok = None if limit_sum is None else our * vat_multiplier <= limit_sum + 0.005
     return MatchSummary(total, len(found), int(round(100 * len(found) / total)) if total else 0,
                         round(our, 2), limit_sum, ok)
+
+
+def customer_unit_price(m: Match, n_positions: int, estimate: float | None) -> float | None:
+    """Цена заказчика за единицу: предельная (ориентировочная) стоимость позиции / количество.
+    Если позиция одна, а стоимость указана на всю закупку, — общая стоимость / количество.
+    Как правило, это цена с НДС."""
+    qty = m.position.qty or 0
+    if qty <= 0:
+        return None
+    total = m.position.price_limit
+    if not total and n_positions == 1 and estimate:
+        total = estimate
+    return round(total / qty, 2) if total else None
+
+
+def markup_for_target(matches: list[Match], index_terms: OfferTerms, vat_multiplier: float,
+                      target_total: float, fixed_prices: dict[int, float]) -> float | None:
+    """Наценка (%), при которой сумма предложения с НДС равна target_total.
+    fixed_prices — позиции с ценой, введённой вручную (их наценка не меняет)."""
+    from dataclasses import replace
+
+    base_terms = replace(index_terms, markup_percent=0.0)
+    variable = fixed = 0.0
+    for i, m in enumerate(matches):
+        if not (m.found and m.include):
+            continue
+        if i in fixed_prices:
+            fixed += fixed_prices[i] * m.qty * vat_multiplier
+        else:
+            variable += unit_price(m.item, base_terms) * m.qty * vat_multiplier
+    if variable <= 0:
+        return None
+    return ((target_total - fixed) / variable - 1) * 100

@@ -455,3 +455,24 @@ def test_goszakupki_file_link_returns_info_then_file(tmp_path):
     assert calls == [url, url + "&download=1"]
     assert p.name == "proekt-dogovora-prilozhenie-1_1791358415.docx"
     assert p.read_bytes()[:4] == b"PK\x03\x04"   # настоящий документ (и без конверта ЭЦП)
+
+
+def test_unit_prices_and_markup_fit():
+    """Цена заказчика за единицу, расхождение и подбор наценки под ориентир (пример из goszakupki:
+    24 шины 225/75 R16C, ориентир 6 035,90 BYN с НДС)."""
+    from tenderagent.config import OfferTerms
+    from tenderagent.matching import customer_unit_price, markup_for_target, unit_price
+    from tenderagent.models import Match, Position, PriceItem
+
+    item = PriceItem("А/ШИНА 225/75R16C BEL-500 СЕР Л/ГР Б/К", 244.19)
+    m = Match(Position("Автошина зимняя 225/75 R 16C 121/120 R", qty=24, unit="штук"), item, 85)
+    assert customer_unit_price(m, 1, 6035.90) == 251.5          # 6035,90 / 24
+    # прайс с НДС: наша цена с НДС 244,19 → на 2,9 % ниже заказчика
+    terms = OfferTerms(prices_include_vat=True)
+    m.price = unit_price(item, terms)
+    assert round(m.price * 1.2, 2) == 244.19
+    # подобрать наценку, чтобы быть на 1 % ниже ориентира
+    mk = markup_for_target([m], terms, 1.2, 6035.90 * 0.99, {})
+    terms.markup_percent = int(mk * 10) / 10
+    total = unit_price(item, terms) * 24 * 1.2
+    assert total <= 6035.90 * 0.99 and total > 6035.90 * 0.98

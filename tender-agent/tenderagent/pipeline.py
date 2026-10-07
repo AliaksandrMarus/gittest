@@ -231,10 +231,20 @@ class Engine:
         write_info(t, folder, "подходит" if a.fits else "не подходит: " + "; ".join(a.reasons))
         return a
 
+    def terms_for(self, overrides: dict | None = None):
+        """Условия для конкретного тендера: наценка может быть своя (поле в карточке)."""
+        from dataclasses import replace
+
+        mk = (overrides or {}).get("_markup")
+        return replace(self.settings.terms, markup_percent=float(mk)) if mk is not None else self.settings.terms
+
     def match(self, t: Tender, overrides: dict | None = None) -> list[Match]:
         s = self.settings
-        matches = match_positions(t.positions, self.index, s.terms, s.monitor.min_item_score, self.db.mappings())
+        terms = self.terms_for(overrides)
+        matches = match_positions(t.positions, self.index, terms, s.monitor.min_item_score, self.db.mappings())
         for k, ov in (overrides or {}).items():
+            if not str(k).isdigit():
+                continue  # служебные ключи вроде «_markup»
             i = int(k)
             if i >= len(matches):
                 continue
@@ -243,7 +253,7 @@ class Engine:
                 item = self.index.find(ov["item"]) if ov["item"] else None
                 m.item, m.manual = item, True
                 m.score = 100 if item else 0
-                m.price = unit_price(item, s.terms) if item else None
+                m.price = unit_price(item, terms) if item else None
             if "include" in ov:
                 m.include = bool(ov["include"])
             if ov.get("price") is not None and m.item:
@@ -370,7 +380,8 @@ class Engine:
             notes.append("Документация в старом формате .doc — установите MS Word, чтобы программа могла "
                          "заполнять такие формы автоматически.")
 
-        generate.comparison_xlsx(check / "Сравнение с прайсом.xlsx", a.matches)
+        vat_mult = 1 + terms.vat_rate / 100 if req.vat_payer else 1.0
+        generate.comparison_xlsx(check / "Сравнение с прайсом.xlsx", a.matches, t.estimate, vat_mult)
         generate.checklist(check / "ЧЕК-ЛИСТ перед подачей.docx", t, a.matches, a.required,
                            a.conditions, filled, notes)
         write_info(t, folder, STATUS_READY)

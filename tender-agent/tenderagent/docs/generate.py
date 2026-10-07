@@ -268,29 +268,39 @@ def inventory(path: Path, t: Tender, req: Requisites, items: list[str]) -> None:
     d.save(str(path))
 
 
-def comparison_xlsx(path: Path, matches: list[Match]) -> None:
+def comparison_xlsx(path: Path, matches: list[Match], estimate: float | None = None,
+                    vat_multiplier: float = 1.0) -> None:
     import openpyxl
     from openpyxl.styles import Font, PatternFill
+
+    from ..matching import customer_unit_price
 
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Сравнение"
     ws.append(["№", "Позиция заказчика", "Кол-во", "Ед.", "Источник", "Найдено в прайсе", "Код",
-               "Похожесть %", "Цена прайса", "Цена в предложении", "Включено", "Ориентир. стоимость"])
+               "Похожесть %", "Цена прайса", "Наша цена за ед. без НДС", "Наша цена за ед. с НДС",
+               "Цена заказчика за ед. (с НДС)", "Расхождение %", "Включено", "Ориентир. стоимость позиции"])
     for c in ws[1]:
         c.font = Font(bold=True)
     red = PatternFill("solid", fgColor="F8D7DA")
     yellow = PatternFill("solid", fgColor="FFF3CD")
+    green_font, red_font = Font(color="1A7F37", bold=True), Font(color="B42318", bold=True)
     for i, m in enumerate(matches, 1):
+        ours_vat = round(m.price * vat_multiplier, 2) if (m.item and m.price is not None) else None
+        cust = customer_unit_price(m, len(matches), estimate)
+        diff = round((ours_vat - cust) / cust * 100, 1) if (ours_vat is not None and cust) else None
         ws.append([i, m.position.name, m.position.qty, m.position.unit, m.position.source,
                    m.item.name if m.item else "НЕ НАЙДЕНО", m.item.code if m.item else "",
-                   m.score, m.item.price if m.item else None, m.price,
+                   m.score, m.item.price if m.item else None, m.price, ours_vat, cust, diff,
                    "да" if (m.found and m.include) else "нет", m.position.price_limit])
         fill = red if not m.found else (yellow if m.score < 85 and not m.manual else None)
         if fill:
             for c in ws[ws.max_row]:
                 c.fill = fill
-    for col, w in zip("ABCDEFGHIJKL", [5, 50, 9, 7, 18, 50, 12, 11, 12, 14, 9, 14]):
+        if diff is not None:
+            ws.cell(ws.max_row, 13).font = green_font if diff <= 0 else red_font
+    for col, w in zip("ABCDEFGHIJKLMNO", [5, 50, 9, 7, 18, 50, 12, 11, 12, 14, 14, 16, 13, 9, 16]):
         ws.column_dimensions[col].width = w
     wb.save(path)
 
