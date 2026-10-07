@@ -74,13 +74,16 @@ class Tender:
     positions: list[Position] = field(default_factory=list)
     documents: list[Document] = field(default_factory=list)
     matched_query: str = ""
+    page_html: str = field(default="", repr=False, compare=False)
 
     @property
     def uid(self) -> str:
         return f"{self.site}:{self.ext_id}"
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        d = asdict(self)
+        d.pop("page_html", None)  # страница хранится файлом в папке тендера, не в базе
+        return d
 
     @classmethod
     def from_dict(cls, d: dict) -> "Tender":

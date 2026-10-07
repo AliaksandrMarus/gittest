@@ -502,3 +502,33 @@ def test_cleanup_expired(tmp_path):
     assert not folder.exists() and folder.parent.exists()     # у заказчика остался поданный тендер
     assert db.get(old.uid) is None and db.has(old.uid)        # мониторинг его не добавит снова
     assert db.get(sub.uid)["status"] == "Подан" and db.get(new.uid) is not None
+
+
+def test_customer_terms_docs_and_marking(tmp_path):
+    """Заказчик — не контактное лицо; ссылки «get-file» без расширения — документы;
+    сроки поставки/оплаты берутся у заказчика; справка о маркировке — если её требуют."""
+    from tenderagent.config import OfferTerms
+    from tenderagent.models import Tender
+    from tenderagent.pipeline import customer_terms
+    from tenderagent.sites import Http, make_sites
+
+    html = """<html><body><h1>Процедура закупки № auc0003722747</h1><table>
+    <tr><td>Контактное лицо заказчика</td><td>Сушко Анастасия Васильевна</td></tr>
+    <tr><td>Наименование заказчика</td><td>КУП «Горводоканал»</td></tr>
+    <tr><td>Предмет закупки</td><td>Автошины 225/75R16C</td></tr>
+    <tr><td>Срок поставки</td><td>в течение 5 рабочих дней с даты заявки</td></tr>
+    <tr><td>Условия оплаты</td><td>Отсрочка платежа 30 календарных дней</td></tr>
+    <tr><td>Требования к маркировке</td><td>товар должен быть маркирован средствами идентификации</td></tr>
+    </table>
+    <a class="modal-link" href="/marketing/get-file/3722747?c=detail&f=0">Проект договора</a>
+    <a class="modal-link" href="/marketing/get-file/3722747?c=detail&f=1">Предложение о закупке</a>
+    </body></html>"""
+    site = make_sites(Http())["goszakupki"]
+    t = Tender("goszakupki", "marketing/view/3722747", "https://goszakupki.by/marketing/view/3722747")
+    site.parse_details(t, html, t.url)
+    assert t.customer == "КУП «Горводоканал»" and t.number == "auc0003722747"
+    assert [d.name for d in t.documents] == ["Проект договора", "Предложение о закупке"]
+    terms, taken = customer_terms(OfferTerms(), t.fields, {})
+    assert terms.delivery_term == "в течение 5 рабочих дней с даты заявки"
+    assert terms.payment_terms == "отсрочка платежа 30 календарных дней"
+    assert "Срок поставки" in taken and t.fields["Требования к маркировке"]

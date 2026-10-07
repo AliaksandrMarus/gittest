@@ -30,6 +30,35 @@ class Analysis:
     reasons: list[str] = field(default_factory=list)
 
 
+def customer_terms(terms, fields: dict, conditions: dict):
+    """Сроки поставки и оплаты заказчика вместо наших условий по умолчанию."""
+    from dataclasses import replace
+
+    def pick(*keys):
+        for k in keys:
+            v = (fields.get(k) or "").strip()
+            if v:
+                return v
+        for k in keys:
+            v = (conditions.get(k) or "").strip()
+            if v and len(v) <= 250:
+                return v
+        return ""
+
+    taken, upd = {}, {}
+    for title, attr in (("Срок поставки", "delivery_term"), ("Условия оплаты", "payment_terms")):
+        v = pick(title)
+        if v:
+            v = re.sub(rf"^{title}\s*[:\-–]?\s*", "", v, flags=re.I)
+            upd[attr] = v[0].lower() + v[1:] if v[:1].isupper() and not v[:2].isupper() else v
+            taken[title] = v
+    place = pick("Место поставки", "Условия поставки")
+    if place:
+        upd["delivery_terms_place"] = place
+        taken["Место (условия) поставки"] = place
+    return (replace(terms, **upd) if upd else terms), taken
+
+
 def is_expired(t: Tender) -> bool:
     if not t.deadline:
         return False
@@ -276,6 +305,8 @@ class Engine:
         a.conditions = extract.key_conditions(infos)
         self.db.save_tender(t, folder=str(folder))
         write_info(t, folder, "подходит" if a.fits else "не подходит: " + "; ".join(a.reasons))
+        if t.page_html:
+            (folder / "Страница закупки.html").write_text(t.page_html, "utf-8")
         return a
 
     def terms_for(self, overrides: dict | None = None):
@@ -339,8 +370,9 @@ class Engine:
     # --- пакет документов ------------------------------------------------------
     def prepare(self, t: Tender, a: Analysis) -> Path:
         s = self.settings
-        req, terms = s.requisites, s.terms
+        req = s.requisites
         row = self.db.get(t.uid)
+        terms = self.terms_for(row["overrides"] if row else None)
         folder = tender_folder(t, row["folder"] if row else "")
         doc_dir = folder / DOCS
         if t.documents and not any(d.local_path for d in t.documents):
@@ -351,6 +383,9 @@ class Engine:
             a.infos = extract.analyze_folder(doc_dir, self.log)
             a.required = extract.required_documents(a.infos)
             a.conditions = extract.key_conditions(a.infos)
+
+        # Условия — как у заказчика (страница закупки, затем документация), а не наши «по умолчанию»
+        terms, taken = customer_terms(terms, t.fields, a.conditions)
 
         out = folder / OFFER
         check = folder / CHECK
@@ -405,6 +440,10 @@ class Engine:
                          "Если форма есть в .pdf — перенесите цены из нашей формы вручную.")
         generate.offer_xlsx(check / "Ценовое предложение (таблица).xlsx", t, lines, req)
         generate.participant_info(out / "Сведения об участнике.docx", req, terms)
+        marking = any("маркировк" in r.lower() for r in a.required) or bool(t.fields.get("Требования к маркировке"))
+        if marking:
+            generate.marking_statement(out / "Справка о маркировке товара.docx", t, lines, req)
+            filled.append("Справка о маркировке товара.docx — проверьте, что товар действительно маркирован")
         filled.append("Сведения об участнике.docx")
 
         attachments = [p.name for p in sorted(out.iterdir())] + ["Сопроводительное письмо.docx"]
@@ -417,6 +456,8 @@ class Engine:
                               tt["total"] if req.vat_payer else tt["sum"])
         filled.append("Сопроводительное письмо.docx")
 
+        for k, v in taken.items():
+            notes.append(f"{k} взяты из условий заказчика: «{v}»")
         if not req.full_name or not req.unp:
             notes.append("Не заполнены реквизиты компании (вкладка «Реквизиты») — в документах будут пропуски.")
         for i in a.infos:

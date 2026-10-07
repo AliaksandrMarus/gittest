@@ -346,3 +346,34 @@ def checklist(path: Path, t: Tender, matches: list[Match], required: list[str],
     d.add_paragraph("Подача: откройте страницу процедуры на площадке, загрузите файлы из папки "
                     "«2. Наше предложение (для подачи)», подпишите ЭЦП (ключ Авест) и отправьте.")
     d.save(str(path))
+
+
+def marking_statement(path: Path, t: Tender, lines: list[OfferLine], req: Requisites) -> None:
+    """Справка о маркировке товара — по требованию заказчика. Текст нужно проверить:
+    программа не знает, подлежит ли конкретный товар маркировке и чем он маркирован."""
+    d = _doc()
+    _letterhead(d, req)
+    d.add_paragraph(f"Исх. № ____ от {date.today().strftime('%d.%m.%Y')}")
+    p = d.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    p.add_run(t.customer or "Заказчику")
+    _heading(d, "СПРАВКА О МАРКИРОВКЕ ТОВАРА")
+    d.add_paragraph(
+        f"{req.full_name or '[наименование участника]'} сообщает, что товар, предлагаемый к поставке "
+        f"по процедуре закупки № {t.number or t.ext_id} «{t.title}», подлежащий в соответствии "
+        "с законодательством Республики Беларусь обязательной маркировке средствами идентификации, "
+        "маркирован средствами идентификации, сведения о нём переданы в Государственную автоматизированную "
+        "информационную систему маркировки товаров в установленном порядке.")
+    if lines:
+        d.add_paragraph("Перечень товара:")
+        tb = d.add_table(rows=1, cols=4)
+        _grid(tb)
+        for j, h in enumerate(["№", "Наименование товара", "Кол-во", "Маркировка"]):
+            tb.rows[0].cells[j].text = h
+        for ln in lines:
+            c = tb.add_row().cells
+            c[0].text, c[1].text, c[2].text = str(ln.n), ln.offered or ln.name, f"{qty_str(ln.qty)} {ln.unit}".strip()
+            c[3].text = "маркирован средствами идентификации"
+    d.add_paragraph()
+    _signature(d, req)
+    d.save(str(path))

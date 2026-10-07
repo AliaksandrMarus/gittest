@@ -383,6 +383,7 @@ class GenericSite:
     def fetch_details(self, t: Tender) -> Tender:
         html, url = self.fetch_html(t)
         self.parse_details(t, html, url)
+        t.page_html = html  # копия страницы сохраняется в папку тендера (не в базу)
         return t
 
     def parse_details(self, t: Tender, html: str, url: str) -> None:
@@ -409,7 +410,7 @@ class GenericSite:
         if not re.fullmatch(r"[A-Za-zА-Яа-я]{0,6}[\s\-№]*\d[\w\-/.]{2,30}", kv_num or ""):
             kv_num = ""
         t.number = ((heading_num.group(1) if heading_num else "") or kv_num or t.number or t.ext_id)
-        t.customer = _pick(kv, ["наименование организации", "заказчик", "организатор", "организация"]) or t.customer
+        t.customer = _pick_customer(kv) or t.customer
         unp = re.search(r"\b\d{9}\b", _pick(kv, ["унп"]) or "")
         t.customer_unp = unp.group(0) if unp else t.customer_unp
         t.procedure = _pick(kv, ["вид процедуры", "вид закупки", "тип процедуры", "способ закупки"]) or t.procedure
@@ -428,6 +429,7 @@ class GenericSite:
         if est:
             t.estimate = _money_in(est) or t.estimate
         page_text = soup.get_text(" ")
+        t.fields.update(site_conditions(kv, page_text))
         t.okrb = sorted(set(OKRB_RE.findall(page_text)))
         positions = extract_positions_from_tables(soup.find_all("table"), source="сайт")
         if positions:
@@ -444,6 +446,52 @@ def _money_in(text: str) -> float | None:
     if not m:
         m = re.fullmatch(r"\s*(\d[\d\s\xa0]*(?:[.,]\d+)?)\s*", text or "")
     return parse_number(m.group(1)) if m else None
+
+
+_NOT_CUSTOMER = re.compile(r"(контакт|телефон|лицо|ф\.?и\.?о|адрес|место нахождения|местонахождени|унп|"
+                           r"e-?mail|почт|факс|ответственн|должност|срок|дата|время|ответ|запрос)", re.I)
+
+
+def _pick_customer(kv: dict[str, str]) -> str:
+    """Наименование заказчика — не «контактное лицо заказчика», не адрес и не УНП."""
+    for want in ("наименование заказчика", "наименование организации", "заказчик", "организатор",
+                 "организация"):
+        for k, v in kv.items():
+            kl = k.lower().replace("ё", "е")
+            if want not in kl or not v:
+                continue
+            # «Наименование заказчика (ФИО — для ИП)» — то, что нужно; «Контактное лицо заказчика»,
+            # «Срок размещения заказчиком…», «Адрес заказчика» — нет.
+            if kl.startswith("наименование") or not _NOT_CUSTOMER.search(kl):
+                return v
+    return ""
+
+
+_CONDITIONS = [
+    ("Срок поставки", r"срок\w*\s+(поставки|выполнения|оказания)"),
+    ("Условия оплаты", r"(услови\w*|порядок|срок\w*)\s+(оплаты|расчет\w*)"),
+    ("Место поставки", r"(место|адрес|пункт)\s+(поставки|доставки)"),
+    ("Условия поставки", r"услови\w*\s+(поставки|доставки)"),
+    ("Источник финансирования", r"источник\w*\s+финансирования"),
+    ("Требования к маркировке", r"маркировк"),
+]
+
+
+def site_conditions(kv: dict[str, str], page_text: str) -> dict[str, str]:
+    """Сроки поставки, условия оплаты и т.п. со страницы закупки — для нашего предложения."""
+    out: dict[str, str] = {}
+    for title, pat in _CONDITIONS:
+        for k, v in kv.items():
+            if re.search(pat, k, re.I) and v and len(v) < 600:
+                out[title] = v
+                break
+        if title in out:
+            continue
+        m = re.search(rf"(?:{pat})[^:\n]{{0,40}}:\s*(.{{5,300}}?)(?=\s+(?:Место|Срок|Услови|Порядок|Источник|"
+                      rf"Статус|Количество|$))", page_text, re.I | re.S)
+        if m:
+            out[title] = re.sub(r"\s+", " ", m.group(m.lastindex)).strip(" .;")
+    return out
 
 
 def _pick(kv: dict[str, str], keys: list[str]) -> str:
@@ -580,7 +628,7 @@ def extract_documents(soup, base_url: str) -> list[Document]:
         is_doc = (
             path.endswith(DOC_EXT)
             or low_text.endswith(DOC_EXT)
-            or re.search(r"(download|/file|dfile|attach|getfile|document/get)", low_href)
+            or re.search(r"(download|/file|get-file|dfile|attach|getfile|document/get)", low_href)
         )
         if not is_doc or href.startswith("mailto:"):
             continue
