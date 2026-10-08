@@ -591,3 +591,55 @@ def test_old_stub_files_are_replaced(tmp_path):
     (tmp_path / "old.doc").write_bytes(stub)
     assert purge_bad_downloads(tmp_path, log=lambda *a: None) == 1
     assert not (tmp_path / "old.doc").exists() and (tmp_path / "ok.pdf").exists()
+
+
+def test_goszakupki_zip_fallback_and_marketing_page(tmp_path):
+    """Если &download=1 не отдал файл, берём «Получить архив» (&downloadZip=1):
+    в архиве документ и подпись .sgn. Плюс разбор страницы «заявки о ценах»."""
+    import io
+    import zipfile
+
+    from tenderagent.docs.unwrap import SIGNED_DIR
+    from tenderagent.models import Tender
+    from tenderagent.sites import Http, make_sites
+
+    stub = b'{"ok":true,"info":{"name":"zayavka-na-predelnuju-5_1791295129.doc","size":"66.00Kb","key":1}}'
+    doc = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"\x00" * 800
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("zayavka-na-predelnuju-5_1791295129.doc", doc)
+        z.writestr("zayavka-na-predelnuju-5_1791295129.doc.sgn", b"\x30\x82\x0f\x87signature")
+
+    class Resp:
+        def __init__(self, content):
+            self.content, self.url, self.headers, self.ok = content, "u", {}, True
+
+        def raise_for_status(self):
+            pass
+
+    calls = []
+
+    class Sess:
+        headers = {}
+
+        def get(self, url, **kw):
+            calls.append(url.rsplit("&", 1)[-1])
+            return Resp(buf.getvalue() if url.endswith("downloadZip=1") else stub)
+
+    h = Http(log=lambda *a: None)
+    h.s = Sess()
+    p = h.download("https://goszakupki.by/marketing/get-file/3728554?c=detail&f=1", tmp_path, "x")
+    assert calls[-2:] == ["download=1", "downloadZip=1"]
+    assert p.name == "zayavka-na-predelnuju-5_1791295129.doc" and p.read_bytes() == doc
+    assert (tmp_path / SIGNED_DIR / "zayavka-na-predelnuju-5_1791295129.doc.sgn").exists()
+
+    html = (Path(__file__).parent / "fixtures" / "goszakupki_marketing.html").read_text("utf-8")
+    t = Tender("goszakupki", "marketing/view/3728554", "https://goszakupki.by/marketing/view/3728554")
+    make_sites(Http())["goszakupki"].parse_details(t, html, t.url)
+    assert t.number == "auc0003728554"
+    assert t.customer == 'Учреждение здравоохранения "Жлобинская центральная районная больница"'
+    assert [(p.name, p.qty) for p in t.positions][2] == ("Автошина зимняя 235/65R16С", 4.0)
+    assert [d.name for d in t.documents] == ["zad.-na-zak_1791295123.pdf", "zayavka-na-predelnuju-5_1791295129.doc"]
+    assert t.fields["Условия оплаты"] == "Согласно договора"
+    assert t.fields["Срок поставки"] == "c 20.10.2026 по 26.10.2026"
+    assert t.fields["Место поставки"].startswith("Республика Беларусь, Гомельская область, 247210")

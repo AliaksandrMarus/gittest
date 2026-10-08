@@ -144,12 +144,24 @@ class Http:
         if stub is not None:
             # goszakupki: ссылка отдаёт справку о файле (JSON), сам файл — по той же ссылке с &download=1
             name_hint = stub.get("name") or name_hint
-            real = url + ("&" if "?" in url else "?") + "download=1"
-            r = self.s.get(real, timeout=180, headers={"Referer": referer or url})
+            sep = "&" if "?" in url else "?"
+            r = self.s.get(url + sep + "download=1", timeout=180, headers={"Referer": referer or url})
             r.raise_for_status()
             data = r.content
-            if _file_info_stub(data) is not None:
-                raise SiteError("площадка вернула справку о файле вместо самого файла")
+            if is_bad_download(data):
+                # «Получить архив»: в нём документ и отдельный файл подписи .sgn
+                rz = self.s.get(url + sep + "downloadZip=1", timeout=180, headers={"Referer": referer or url})
+                rz.raise_for_status()
+                inner = _file_from_zip(rz.content, name_hint)
+                if inner is None:
+                    raise SiteError("площадка вернула справку о файле вместо самого файла")
+                data, name_hint, sig = inner
+                if sig:
+                    keep = folder / _signed_dir()
+                    keep.mkdir(parents=True, exist_ok=True)
+                    (keep / _safe_name(name_hint + ".sgn")).write_bytes(sig)
+                r = rz
+                r.headers = {}  # имя файла — из архива, а не из заголовка ответа
         if _looks_like_html(data):
             # Попробуем пройти по ссылке/переадресации со страницы-заглушки один раз.
             nxt = _next_link_from_html(data, r.url)
@@ -190,6 +202,33 @@ class Http:
             n += 1
         path.write_bytes(data)
         return path
+
+
+def _signed_dir() -> str:
+    from ..docs.unwrap import SIGNED_DIR
+
+    return SIGNED_DIR
+
+
+def _file_from_zip(data: bytes, name_hint: str = ""):
+    """Из архива площадки: (документ, имя, подпись .sgn или None). None — если не архив."""
+    import io
+    import zipfile
+
+    if not data.startswith(b"PK\x03\x04"):
+        return None
+    try:
+        z = zipfile.ZipFile(io.BytesIO(data))
+    except zipfile.BadZipFile:
+        return None
+    names = [i for i in z.infolist() if not i.is_dir()]
+    docs = [i for i in names if not i.filename.lower().endswith((".sgn", ".sig", ".p7s"))]
+    if not docs:
+        return None
+    doc = max(docs, key=lambda i: i.file_size)
+    sig = next((i for i in names if i.filename.lower().startswith(doc.filename.lower())
+                and i.filename.lower().endswith((".sgn", ".sig", ".p7s"))), None)
+    return z.read(doc), Path(doc.filename).name or name_hint, (z.read(sig) if sig else None)
 
 
 def is_bad_download(data: bytes) -> bool:
@@ -412,7 +451,9 @@ class GenericSite:
             t.title = clean(h1.get_text())
         heading_num = None
         for h in soup.find_all(["h1", "h2", "h3", "title"]):
-            heading_num = re.search(r"№\s*([A-Za-zА-Яа-я]*\d[\w\-/]*)", h.get_text(" "))
+            ht = h.get_text(" ")
+            heading_num = (re.search(r"№\s*([A-Za-zА-Яа-я]*\d[\w\-/]*)", ht)
+                           or re.search(r"\b([a-z]{2,4}\d{7,})\b", ht))  # «… на ТРУ auc0003728554»
             if heading_num:
                 break
         kv_num = _pick(kv, ["номер процедуры", "номер закупки", "номер", "№"])
@@ -480,7 +521,7 @@ def _pick_customer(kv: dict[str, str]) -> str:
 
 _CONDITIONS = [
     ("Срок поставки", r"срок\w*\s+(поставки|выполнения|оказания)"),
-    ("Условия оплаты", r"(услови\w*|порядок|срок\w*)\s+(оплаты|расчет\w*)"),
+    ("Условия оплаты", r"(услови\w*|порядок|срок\w*|способ\w*)\s+(оплаты|расчет\w*|расчёт\w*)"),
     ("Место поставки", r"(место|адрес|пункт)\s+(поставки|доставки)"),
     ("Условия поставки", r"услови\w*\s+(поставки|доставки)"),
     ("Источник финансирования", r"источник\w*\s+финансирования"),
@@ -498,8 +539,8 @@ def site_conditions(kv: dict[str, str], page_text: str) -> dict[str, str]:
                 break
         if title in out:
             continue
-        m = re.search(rf"(?:{pat})[^:\n]{{0,40}}:\s*(.{{5,300}}?)(?=\s+(?:Место|Срок|Услови|Порядок|Источник|"
-                      rf"Статус|Количество|$))", page_text, re.I | re.S)
+        m = re.search(rf"(?:{pat})[^:\n]{{0,80}}:\s*(.{{5,300}}?)(?=\s+(?:Место|Срок|Услови|Порядок|Источник|"
+                      rf"Способ|Размер|Код|Статус|Количество|$))", page_text, re.I | re.S)
         if m:
             out[title] = re.sub(r"\s+", " ", m.group(m.lastindex)).strip(" .;")
     return out
@@ -645,6 +686,8 @@ def extract_documents(soup, base_url: str) -> list[Document]:
             continue
         if _SITE_DOCS.search(low_href) or _SITE_DOCS.search(low_text):
             continue  # регламент площадки, политика данных и т.п. — не документация закупки
+        if re.search(r"[?&](download|downloadzip|sgn)=1", low_href) or low_text == "получить архив":
+            continue  # кнопки окна «Информация о файле» — сам файл уже есть в списке
         name = text if low_text.endswith(DOC_EXT) else (text or Path(path).name)
         docs.setdefault(href, Document(name=name[:150], url=href))
     return list(docs.values())
