@@ -5,7 +5,7 @@ import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import QObject, Qt, QTimer, Signal
 from PySide6.QtGui import QAction, QColor, QIcon
 from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QDoubleSpinBox, QFileDialog,
                                QFormLayout, QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
@@ -90,6 +90,8 @@ class MainWindow(QMainWindow):
             QTimer.singleShot(1500, self.toggle_monitor)
         if not self.settings.requisites.full_name:
             QTimer.singleShot(400, self._first_run_hint)
+        elif self.settings.monitor.check_updates:
+            QTimer.singleShot(4000, lambda: self.check_updates(silent=True))
 
     # =================================================================== тендеры
     def _build_tenders_tab(self) -> QWidget:
@@ -894,9 +896,85 @@ class MainWindow(QMainWindow):
         b = QPushButton("Открыть папку программы")
         b.clicked.connect(lambda: open_path(data_dir()))
         row.addWidget(b)
+        b_upd = QPushButton("⬆ Проверить обновления")
+        b_upd.clicked.connect(lambda: self.check_updates(silent=False))
+        row.addWidget(b_upd)
+        self.c_updates = QCheckBox("Проверять обновления при запуске")
+        self.c_updates.setChecked(self.settings.monitor.check_updates)
+        self.c_updates.toggled.connect(self._toggle_updates)
+        row.addWidget(self.c_updates)
         row.addStretch(1)
         lay.addLayout(row)
         return w
+
+    # ================================================================ обновления
+    def _toggle_updates(self, on: bool):
+        self.settings.monitor.check_updates = on
+        self.settings.save()
+
+    def check_updates(self, silent: bool = True):
+        from .. import updater
+
+        def done(rel):
+            if rel is None:
+                if not silent:
+                    QMessageBox.information(self, "Обновление",
+                                            f"У вас последняя версия ({APP_VERSION}).")
+                return
+            self._offer_update(rel)
+
+        def failed(err):
+            self.log(f"Проверка обновлений не удалась: {err}")
+            if not silent:
+                QMessageBox.warning(self, "Обновление", f"Не удалось проверить обновления:\n{err}")
+
+        run_task(updater.check, on_done=done, on_fail=failed)
+
+    def _offer_update(self, rel):
+        from .. import updater
+
+        notes = rel.notes[:1500] + ("…" if len(rel.notes) > 1500 else "")
+        box = QMessageBox(self)
+        box.setWindowTitle("Доступно обновление")
+        box.setText(f"Доступна новая версия <b>{rel.version}</b> (у вас {APP_VERSION}).<br><br>"
+                    "Программа скачает её, закроется и через несколько секунд запустится уже обновлённой. "
+                    "Настройки, прайс, реквизиты и папки тендеров сохранятся.")
+        if notes:
+            box.setDetailedText("Что нового:\n\n" + notes)
+        b_now = box.addButton("Обновить сейчас", QMessageBox.ButtonRole.AcceptRole)
+        box.addButton("Позже", QMessageBox.ButtonRole.RejectRole)
+        box.exec()
+        if box.clickedButton() is not b_now:
+            return
+        if updater.install_kind() == "source":
+            QMessageBox.information(self, "Обновление", "Программа запущена из исходников — обновите их через git.")
+            return
+        from PySide6.QtWidgets import QProgressDialog
+
+        dlg = QProgressDialog("Скачиваю обновление…", None, 0, 100, self)
+        dlg.setWindowTitle("Обновление")
+        dlg.setMinimumDuration(0)
+        dlg.setAutoClose(False)
+        dlg.setValue(0)
+
+        class _P(QObject):
+            changed = Signal(int)
+
+        sig = _P(self)
+        sig.changed.connect(dlg.setValue)
+
+        def done(_):
+            dlg.setLabelText("Перезапуск…")
+            self.engine.stop_requested = True
+            self._quitting = True
+            QTimer.singleShot(300, self.close)
+
+        def failed(err):
+            dlg.close()
+            QMessageBox.warning(self, "Обновление", f"Не удалось обновиться:\n{err}\n\n"
+                                                    f"Можно скачать вручную: {rel.page_url}")
+
+        run_task(updater.apply_and_restart, rel, progress=sig.changed.emit, on_done=done, on_fail=failed)
 
     def _append_log(self, text: str):
         line = f"{datetime.now():%d.%m %H:%M:%S}  {text}"

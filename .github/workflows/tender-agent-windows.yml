@@ -32,6 +32,14 @@ jobs:
           cache: pip
           cache-dependency-path: tender-agent/requirements.txt
 
+      - name: Версия программы
+        id: ver
+        shell: bash
+        run: |
+          v=$(python -c "import re;print(re.search(r'APP_VERSION = \"([^\"]+)\"', open('tenderagent/config.py', encoding='utf-8').read()).group(1))")
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "Версия: $v"
+
       - name: Зависимости
         run: |
           python -m pip install --upgrade pip
@@ -68,17 +76,19 @@ jobs:
       - name: Выпуск в Releases
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: tender-agent-v1.0.${{ github.run_number }}
-          name: ТендерАгент 1.0.${{ github.run_number }}
+          # Программа сама проверяет выпуски с тегом ta-v<версия> и предлагает обновиться.
+          tag_name: ta-v${{ steps.ver.outputs.version }}
+          name: ТендерАгент ${{ steps.ver.outputs.version }}
           target_commitish: ${{ github.sha }}
           make_latest: true
           body: |
-            ТендерАгент — мониторинг тендеров Беларуси и подготовка ценовых предложений.
+            ${{ github.event.head_commit.message }}
 
-            **Скачать:** `TenderAgent.exe` — один файл, запускается двойным щелчком.
-            Если Windows покажет «Windows защитила ваш компьютер» — «Подробнее» → «Выполнить в любом случае».
-
-            `TenderAgent-folder.zip` — тот же вариант в виде папки (запускается быстрее): распакуйте и запустите `ТендерАгент.exe`.
+            ---
+            Установленная программа (с версии 1.1.0) обновится сама: при запуске предложит «Обновить сейчас».
+            Первая установка: скачайте `TenderAgent.exe` и запустите. Если Windows покажет «Windows защитила
+            ваш компьютер» — «Подробнее» → «Выполнить в любом случае».
+            `TenderAgent-folder.zip` — тот же вариант в виде папки (запускается быстрее).
           files: |
             tender-agent/dist/TenderAgent.exe
             tender-agent/dist/TenderAgent-folder.zip

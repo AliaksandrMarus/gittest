@@ -643,3 +643,58 @@ def test_goszakupki_zip_fallback_and_marketing_page(tmp_path):
     assert t.fields["Условия оплаты"] == "Согласно договора"
     assert t.fields["Срок поставки"] == "c 20.10.2026 по 26.10.2026"
     assert t.fields["Место поставки"].startswith("Республика Беларусь, Гомельская область, 247210")
+
+
+def test_updater_check_and_script(tmp_path, monkeypatch):
+    """Обновление: находит новый выпуск ta-v<версия>, скачивает .exe и пишет скрипт подмены."""
+    import sys as _sys
+
+    from tenderagent import updater
+
+    assert updater.is_newer("1.1.1", "1.1.0") and not updater.is_newer("1.0.18", "1.1.0")
+
+    class R:
+        def __init__(self, js=None, content=b""):
+            self._js, self.content, self.headers = js, content, {"content-length": str(len(content))}
+
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return self._js
+
+        def iter_content(self, n):
+            yield self.content
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    release = {"tag_name": "ta-v9.0.0", "body": "Что нового", "html_url": "https://github.com/x",
+               "assets": [{"name": "TenderAgent.exe", "browser_download_url": "https://dl/exe"},
+                          {"name": "TenderAgent-folder.zip", "browser_download_url": "https://dl/zip"}]}
+    monkeypatch.setattr(updater.requests, "get",
+                        lambda url, **kw: R(release) if "api.github.com" in url else R(content=b"MZnewexe"))
+    rel = updater.check()
+    assert rel.version == "9.0.0" and rel.exe_url == "https://dl/exe" and rel.notes == "Что нового"
+    release["tag_name"] = "tender-agent-v1.0.99"   # старый формат тегов — не предлагать
+    assert updater.check() is None
+    release["tag_name"] = "ta-v9.0.0"
+
+    exe = tmp_path / "ТендерАгент.exe"
+    exe.write_bytes(b"MZold")
+    monkeypatch.setattr(_sys, "frozen", True, raising=False)
+    monkeypatch.setattr(_sys, "executable", str(exe))
+    monkeypatch.setattr(_sys, "_MEIPASS", str(tmp_path / "_MEI123"), raising=False)
+    monkeypatch.setattr(updater.tempfile, "mkdtemp", lambda prefix="": str(tmp_path / "upd"))
+    (tmp_path / "upd").mkdir()
+    started = []
+    monkeypatch.setattr(updater.subprocess, "Popen", lambda args, **kw: started.append(args))
+    assert updater.install_kind() == "onefile"
+    updater.apply_and_restart(rel)
+    script = (tmp_path / "upd" / "update.ps1").read_text("utf-8-sig")
+    assert (tmp_path / "upd" / "new.exe").read_bytes() == b"MZnewexe"
+    assert "ТендерАгент.exe" in script and "Wait-Process" in script and "Start-Process" in script
+    assert started and started[0][0] == "powershell"

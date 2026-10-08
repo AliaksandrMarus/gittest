@@ -13,7 +13,7 @@ from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 
 APP_NAME = "ТендерАгент"
-APP_VERSION = "1.0.15"
+APP_VERSION = "1.1.0"
 
 
 def _documents_dir() -> Path:
@@ -110,6 +110,7 @@ class MonitorSettings:
     auto_download_docs: bool = True    # качать документы для анализа сразу
     auto_prepare: bool = False         # готовить пакет без нажатия кнопки
     start_monitoring_on_launch: bool = False
+    check_updates: bool = True         # проверять новую версию при запуске
     minimize_to_tray: bool = True
 
 
