@@ -217,7 +217,31 @@ def repair_signed(folder: Path, log=print) -> None:
             log(f"{p.name}: документ извлечён из подписи ЭЦП")
 
 
+def purge_bad_downloads(folder: Path, log=print) -> int:
+    """Удалить файлы, которые на самом деле справки о файле или веб-страницы
+    (сохранены старыми версиями программы) — любого расширения, в т.ч. .doc."""
+    from ..sites.base import is_bad_download
+    from .unwrap import SIGNED_DIR
+
+    n = 0
+    if not folder.exists():
+        return 0
+    for p in list(folder.rglob("*")):
+        if not p.is_file() or SIGNED_DIR in p.parts or p.stat().st_size > 70000:
+            continue
+        try:
+            bad = is_bad_download(p.read_bytes())
+        except OSError:
+            continue
+        if bad:
+            p.unlink(missing_ok=True)
+            n += 1
+            log(f"{p.name}: это была справка о файле, а не документ — удалён")
+    return n
+
+
 def analyze_folder(folder: Path, log=print) -> list[DocInfo]:
+    purge_bad_downloads(folder, log)
     repair_signed(folder, log)
     unpack_archives(folder, log)
     convert_legacy(folder, log)

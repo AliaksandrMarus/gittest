@@ -556,3 +556,38 @@ def test_offer_uses_our_product_name_and_valid_number(tmp_path):
     assert d.tables[0].rows[1].cells[1].text == "А/ШИНА 8.25R20 К-84МБ,У-2"
     text = "\n".join(x.text for x in d.paragraphs)
     assert "№ 3725000" in text and "Мамай" not in text
+
+
+def test_old_stub_files_are_replaced(tmp_path):
+    """Старая справка «{"ok":true,"info":…}» под именем .doc удаляется, настоящий файл
+    ложится на её место (а не рядом с «(1)» в имени)."""
+    from tenderagent.docs.extract import purge_bad_downloads
+    from tenderagent.sites.base import Http
+
+    stub = b'{"ok":true,"info":{"name":"zayavka-na-predelnuju-5_1791295129.doc","size":"66.00\xd0\x9a\xd0\xb1","key":1}}'
+    real = b"\xd0\xcf\x11\xe0" + b"\x00" * 600
+    (tmp_path / "zayavka-na-predelnuju-5_1791295129.doc").write_bytes(stub)
+    (tmp_path / "ok.pdf").write_bytes(b"%PDF-1.4 real")
+
+    class Resp:
+        def __init__(self, content):
+            self.content, self.url, self.headers, self.ok = content, "u", {}, True
+
+        def raise_for_status(self):
+            pass
+
+    class Sess:
+        headers = {}
+
+        def get(self, url, **kw):
+            return Resp(real if url.endswith("download=1") else stub)
+
+    h = Http(log=lambda *a: None)
+    h.s = Sess()
+    p = h.download("https://goszakupki.by/marketing/get-file/1?c=detail&f=1", tmp_path, "x")
+    assert p.name == "zayavka-na-predelnuju-5_1791295129.doc" and p.read_bytes() == real
+    assert not (tmp_path / "zayavka-na-predelnuju-5_1791295129 (1).doc").exists()
+
+    (tmp_path / "old.doc").write_bytes(stub)
+    assert purge_bad_downloads(tmp_path, log=lambda *a: None) == 1
+    assert not (tmp_path / "old.doc").exists() and (tmp_path / "ok.pdf").exists()

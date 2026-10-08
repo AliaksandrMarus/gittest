@@ -74,6 +74,16 @@ class MainWindow(QMainWindow):
             self.engine.relocate_folders()
         except Exception as e:  # noqa: BLE001
             self.log(f"Перенос папок не выполнен: {e}")
+        try:  # справки о файлах, сохранённые старыми версиями под видом документов
+            from ..docs.extract import purge_bad_downloads
+            from ..folders import DOCS as _D
+
+            n = sum(purge_bad_downloads(p, lambda *_: None) for p in tenders_dir().glob(f"*/*/{_D}"))
+            if n:
+                self.log(f"Удалено справок вместо документов: {n}. Откройте эти тендеры и нажмите "
+                         "«Скачать документы и сверить с прайсом» — документы скачаются заново.")
+        except Exception as e:  # noqa: BLE001
+            self.log(f"Проверка документов не выполнена: {e}")
         self.refresh_tenders()
         self._update_status()
         if self.settings.monitor.start_monitoring_on_launch:

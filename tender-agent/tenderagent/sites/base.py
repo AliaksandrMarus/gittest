@@ -177,14 +177,25 @@ class Http:
             keep.mkdir(exist_ok=True)
             (keep / (name + ".p7s")).write_bytes(signed)
         path = folder / name
-        if path.exists() and path.read_bytes() == data:
-            return path
+        if path.exists():
+            old = path.read_bytes()
+            if old == data:
+                return path
+            if is_bad_download(old):
+                path.write_bytes(data)  # на месте старой справки/страницы — настоящий файл
+                return path
         n = 1
         while path.exists():
             path = folder / f"{Path(name).stem} ({n}){Path(name).suffix}"
             n += 1
         path.write_bytes(data)
         return path
+
+
+def is_bad_download(data: bytes) -> bool:
+    """Вместо файла сохранилась веб-страница или справка о файле (goszakupki)."""
+    head = data[:65537]
+    return _looks_like_html(head[:8000]) or _file_info_stub(head) is not None
 
 
 def _file_info_stub(data: bytes) -> dict | None:

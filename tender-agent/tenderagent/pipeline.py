@@ -267,15 +267,12 @@ class Engine:
     def download_docs(self, t: Tender, folder: Path) -> Path:
         dest = folder / DOCS
         dest.mkdir(parents=True, exist_ok=True)
-        from .sites.base import _file_info_stub, _looks_like_html
+        if extract.purge_bad_downloads(dest, self.log):
+            self.log("Скачиваю документы заново")
 
         for d in t.documents:
             if d.local_path and Path(d.local_path).exists():
-                head = Path(d.local_path).read_bytes()[:65537]
-                if not (_looks_like_html(head[:8000]) or _file_info_stub(head) is not None):
-                    continue
-                Path(d.local_path).unlink()  # раньше вместо файла сохранилась справка/страница — качаем заново
-                self.log(f"{d.name}: прежняя загрузка была не файлом — скачиваю заново")
+                continue
             try:
                 p = self.http.download(d.url, dest, d.name, referer=t.url)
                 d.local_path = str(p)
