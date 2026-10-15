@@ -602,6 +602,11 @@ class MainWindow(QMainWindow):
         b2.setToolTip("Перечитать файл (если вы обновили прайс)")
         b2.clicked.connect(lambda: self._load_price())
         top.addWidget(b2)
+        b3 = QPushButton("🗑 Очистить прайс")
+        b3.setProperty("danger", True)
+        b3.setToolTip("Убрать загруженный прайс из программы (сам файл на диске не удаляется)")
+        b3.clicked.connect(self.clear_price)
+        top.addWidget(b3)
         lay.addLayout(top)
         hint = QLabel("Подходят: Excel (.xlsx, .xls), CSV, выгрузка из 1С в Excel или обмен 1С с сайтом "
                       "(CommerceML: import.xml/offers.xml). Колонки определяются автоматически — проверьте ниже.")
@@ -664,6 +669,41 @@ class MainWindow(QMainWindow):
         self.settings.pricelist.columns = {}
         self.header_spin.setValue(0)
         self._load_price(reset_columns=True)
+
+    def clear_price(self):
+        if not self.settings.pricelist.path and not len(self.engine.index):
+            QMessageBox.information(self, "Прайс", "Прайс не загружен.")
+            return
+        box = QMessageBox(self)
+        box.setWindowTitle("Очистить прайс")
+        box.setIcon(QMessageBox.Icon.Question)
+        box.setText(f"Убрать прайс из программы?\n\n{self.settings.pricelist.path}\n\n"
+                    "Сам файл на диске не удаляется. Сверка тендеров с прайсом будет невозможна, "
+                    "пока вы не загрузите новый.")
+        forget = QCheckBox("Забыть и ручные сопоставления товаров (выбранные двойным щелчком в карточках)")
+        box.setCheckBox(forget)
+        yes = box.addButton("Очистить", QMessageBox.ButtonRole.AcceptRole)
+        box.addButton("Отмена", QMessageBox.ButtonRole.RejectRole)
+        box.exec()
+        if box.clickedButton() is not yes:
+            return
+        pl = self.settings.pricelist
+        pl.path, pl.sheet, pl.header_row, pl.columns = "", "", 0, {}
+        self.settings.save()
+        self.engine.set_price_items([])
+        n = self.db.clear_mappings() if forget.isChecked() else 0
+        self.price_path.setText("Файл не выбран")
+        self.price_info.setText("Прайс не загружен.")
+        self.sheet_combo.clear()
+        self.header_spin.setValue(0)
+        for cb in self.role_combos.values():
+            cb.clear()
+        self.price_tbl.setRowCount(0)
+        self.price_tbl.setColumnCount(0)
+        self.price_test.clear()
+        self.price_test_out.setText("")
+        self.log("Прайс очищен" + (f", забыто ручных сопоставлений: {n}" if forget.isChecked() else ""))
+        self._update_status()
 
     def _load_price(self, silent: bool = False, reset_columns: bool = False):
         pl = self.settings.pricelist

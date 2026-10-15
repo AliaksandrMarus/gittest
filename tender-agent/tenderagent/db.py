@@ -109,6 +109,13 @@ class DB:
         with self._lock:
             return {r["key"]: r["item_ref"] for r in self.conn.execute("SELECT * FROM mappings")}
 
+    def clear_mappings(self) -> int:
+        """Забыть все ручные сопоставления «позиция заказчика → товар прайса»."""
+        with self._lock:
+            n = self.conn.execute("DELETE FROM mappings").rowcount
+            self.conn.commit()
+            return n
+
     def set_mapping(self, key: str, item_ref: str | None) -> None:
         with self._lock:
             if item_ref is None:
