@@ -5,9 +5,15 @@ RewriteRule ^ https://manipulator-bobruisk.by%{REQUEST_URI} [L,R=301]
 RewriteCond %{HTTP_HOST} ^www\. [NC]
 RewriteRule ^ https://manipulator-bobruisk.by%{REQUEST_URI} [L,R=301]
 
-# Старые адреса WordPress → новые страницы
-RewriteRule ^kontakty/?$ /kontakty/ [L,R=301]
+# Старые адреса WordPress → новые страницы (по данным Search Console)
+RewriteRule ^contact/?$ /kontakty/ [L,R=301]
+RewriteRule ^sample-page/?$ / [L,R=301]
+RewriteRule ^(home|dom)/?$ / [L,R=301]
 RewriteRule ^wp-(admin|login\.php|content|includes)(/.*)?$ / [L,R=301]
+RewriteRule ^(feed|comments/feed)/?$ / [L,R=301]
+RewriteCond %{QUERY_STRING} (^|&)p=\d+ [OR]
+RewriteCond %{QUERY_STRING} (^|&)page_id=\d+
+RewriteRule ^$ /? [L,R=301]
 
 ErrorDocument 404 /404.html
 
