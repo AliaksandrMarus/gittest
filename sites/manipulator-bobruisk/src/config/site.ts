@@ -70,29 +70,33 @@ export const fleet = {
 
 /**
  * Прайс. price: null — «по запросу». Цены в белорусских рублях.
- * TODO: впишите свои цены. Пока везде «по запросу».
+ * Выставлены по нижней границе рынка Бобруйска (октябрь 2026: perevozka24, zakup.by,
+ * bel-gruz, sdelaem.by, deal.by). Поправьте под свои реальные тарифы.
  */
 export type PriceRow = { name: string; unit: string; price: number | null; from?: boolean };
 export const prices: { group: string; rows: PriceRow[] }[] = [
   {
     group: 'Кран-манипулятор',
     rows: [
-      { name: 'Работа по Бобруйску', unit: 'час', price: null, from: true },
-      { name: 'Минимальный заказ', unit: 'заказ', price: null },
-      { name: 'Выезд за город', unit: 'км', price: null },
-      { name: 'Межгород, перевозка по Беларуси', unit: 'рейс', price: null, from: true },
+      { name: 'Работа по Бобруйску', unit: 'час', price: 60, from: true },
+      { name: 'Минимальный заказ (2 часа)', unit: 'заказ', price: 120, from: true },
+      { name: 'Выезд за город', unit: 'км', price: 1.5, from: true },
+      { name: 'Смена, 8 часов', unit: 'смена', price: 450, from: true },
     ],
   },
   {
     group: 'Мини-экскаватор',
     rows: [
-      { name: 'Работа с оператором', unit: 'час', price: null, from: true },
-      { name: 'Смена, 8 часов', unit: 'смена', price: null },
-      { name: 'Копка траншеи', unit: 'пог. м', price: null, from: true },
-      { name: 'Доставка экскаватора на объект', unit: 'рейс', price: null, from: true },
+      { name: 'Работа с оператором', unit: 'час', price: 60, from: true },
+      { name: 'Смена, 8 часов', unit: 'смена', price: 450, from: true },
+      { name: 'Копка траншеи', unit: 'пог. м', price: 10, from: true },
+      { name: 'Доставка экскаватора на объект', unit: 'рейс', price: 60, from: true },
     ],
   },
 ];
+
+/** Минимальные цены — для описаний страниц и разметки. */
+export const priceFrom = { manipulator: 60, excavator: 60 } as const;
 
 /**
  * Куда уходят заявки с форм.

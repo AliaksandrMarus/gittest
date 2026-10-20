@@ -18,6 +18,7 @@ export function businessSchema(image: string) {
     ...(contacts.email ? { email: contacts.email } : {}),
     image,
     currenciesAccepted: 'BYN',
+    priceRange: 'от 60 BYN/час',
     paymentAccepted: 'Наличные, безналичный расчёт',
     address: {
       '@type': 'PostalAddress',

@@ -9,7 +9,7 @@ import Faq from './Faq.astro';
 import LeadForm from './LeadForm.astro';
 import CtaBand from './CtaBand.astro';
 import Gallery from './Gallery.astro';
-import { contacts, hours } from '../config/site';
+import { contacts, hours, priceFrom } from '../config/site';
 import { breadcrumbSchema, faqSchema, serviceSchema } from '../lib/schema';
 
 export interface Props {
@@ -30,7 +30,7 @@ const label = isM ? 'Манипулятор' : 'Мини-экскаватор';
 const path = `/${p.category}/`;
 ---
 
-<Base title={p.seoTitle} description={p.description} path={path} schemas={[breadcrumbSchema([{ label }]), serviceSchema({ title: p.h1, description: p.description, path, type: isM ? 'Услуги крана-манипулятора' : 'Услуги мини-экскаватора' }), faqSchema(p.faq)]}>
+<Base title={p.seoTitle} description={p.description} path={path} schemas={[breadcrumbSchema([{ label }]), serviceSchema({ title: p.h1, description: p.description, path, type: isM ? 'Услуги крана-манипулятора' : 'Услуги мини-экскаватора', price: isM ? priceFrom.manipulator : priceFrom.excavator }), faqSchema(p.faq)]}>
   <div class="phero">
     <Breadcrumbs items={[{ label }]} />
     <div class="wrap phero__grid">
