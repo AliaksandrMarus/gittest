@@ -1,0 +1,14 @@
+---
+import Photo from './Photo.astro';
+export interface Props { items: { src: string; alt: string; caption: string; ratio?: string }[] }
+const { items } = Astro.props;
+---
+
+<div class="gallery">
+  {items.map((it) => (
+    <figure>
+      <Photo src={it.src} alt={it.alt} ratio={it.ratio ?? '4 / 3'} sizes="(min-width: 62rem) 30vw, 100vw" />
+      <figcaption>{it.caption}</figcaption>
+    </figure>
+  ))}
+</div>

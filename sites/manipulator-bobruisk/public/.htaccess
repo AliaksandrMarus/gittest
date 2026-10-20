@@ -1,0 +1,34 @@
+# Apache: https, без www, кэш статики, сжатие, страница 404.
+RewriteEngine On
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://manipulator-bobruisk.by%{REQUEST_URI} [L,R=301]
+RewriteCond %{HTTP_HOST} ^www\. [NC]
+RewriteRule ^ https://manipulator-bobruisk.by%{REQUEST_URI} [L,R=301]
+
+# Старые адреса WordPress → новые страницы
+RewriteRule ^kontakty/?$ /kontakty/ [L,R=301]
+RewriteRule ^wp-(admin|login\.php|content|includes)(/.*)?$ / [L,R=301]
+
+ErrorDocument 404 /404.html
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml application/xml text/plain
+</IfModule>
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/avif "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+<Files "config.local.php">
+  Require all denied
+</Files>
+<Files "leads.log">
+  Require all denied
+</Files>

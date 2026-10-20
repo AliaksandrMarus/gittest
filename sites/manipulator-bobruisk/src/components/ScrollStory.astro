@@ -1,0 +1,108 @@
+---
+import { link } from '../lib/url';
+import Photo from './Photo.astro';
+
+/**
+ * Видео, которое «проигрывается» прокруткой: кадры из ролика с объекта
+ * (манипулятор разгружает ФБС) рисуются на canvas по мере скролла.
+ * Кадры подгружаются, только когда секция близко. При reduced motion
+ * и без JS виден обычный кадр-фото.
+ */
+export interface Props { frames: number; dir: string; steps: { title: string; text: string }[]; poster: string; posterAlt: string }
+const { frames, dir, steps, poster, posterAlt } = Astro.props;
+const base = link(`/media/${dir}/`);
+---
+
+<section class="story" data-story data-frames={frames} data-base={base} aria-labelledby="story-title">
+  <div class="story__sticky">
+    <div class="wrap story__grid">
+      <div class="story__text">
+        <p class="eyebrow">Как мы работаем · реальное видео с объекта</p>
+        <h2 id="story-title">Привезли ФБС и сразу выгрузили краном</h2>
+        <ol class="story__steps">
+          {steps.map((s, i) => <li data-step={i} class:list={[i === 0 && 'is-on']}><b>{s.title}</b><p>{s.text}</p></li>)}
+        </ol>
+        <div class="story__bar" aria-hidden="true"><i data-bar></i></div>
+      </div>
+      <div class="story__media">
+        <div class="story__phone">
+          <canvas width="320" height="568" data-canvas aria-label={posterAlt} role="img"></canvas>
+          <div class="story__poster" data-poster><Photo src={poster} alt={posterAlt} ratio="320 / 568" sizes="360px" /></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .story { position: relative; height: 320vh; background: var(--c-graphite); color: var(--c-on-dark); }
+  .story__sticky { position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h)); display: grid; align-items: center; overflow: hidden; }
+  .story__grid { display: grid; grid-template-columns: 1fr auto; gap: clamp(24px, 5vw, 72px); align-items: center; }
+  .story h2 { color: #fff; margin-top: 10px; }
+  .story__steps { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 14px; }
+  .story__steps li { padding-left: 18px; border-left: 3px solid #3a3f44; opacity: .45; transition: opacity .3s, border-color .3s; }
+  .story__steps li.is-on { opacity: 1; border-color: var(--c-yellow); }
+  .story__steps b { font: 600 22px/1.2 var(--f-display); text-transform: uppercase; color: #fff; }
+  .story__steps p { color: var(--c-on-dark-mute); margin-top: 4px; max-width: 40ch; }
+  .story__bar { height: 3px; background: #3a3f44; margin-top: 26px; max-width: 320px; border-radius: 2px; overflow: hidden; }
+  .story__bar i { display: block; height: 100%; width: 0; background: var(--c-yellow); }
+  .story__phone { position: relative; width: min(340px, calc((100vh - var(--header-h) - 80px) * 0.5634), 80vw); aspect-ratio: 320 / 568; border-radius: 26px; overflow: hidden; border: 6px solid #0f1112; box-shadow: 0 30px 60px rgb(0 0 0 / .45); background: #0f1112; }
+  .story__phone canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .story__poster { position: absolute; inset: 0; transition: opacity .3s; }
+  .story__poster :global(img), .story__poster :global(.ph) { width: 100%; height: 100%; border: 0; border-radius: 0; }
+  .story.is-live .story__poster { opacity: 0; }
+  @media (max-width: 760px) {
+    .story { height: 280vh; }
+    .story__grid { grid-template-columns: 1fr; justify-items: center; gap: 14px; }
+    .story__text { width: 100%; }
+    .story__text h2 { font-size: 1.6rem; }
+    .story__steps { margin-top: 12px; gap: 0; }
+    .story__steps li { display: none; border: 0; padding: 0; }
+    .story__steps li.is-on { display: block; }
+    .story__steps p { font-size: var(--fs-sm); }
+    .story__bar { margin-top: 10px; max-width: none; }
+    .story__phone { width: min(56vw, calc((100vh - var(--header-h)) * 0.27)); border-radius: 18px; border-width: 4px; }
+    .story .eyebrow { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .story { height: auto; } .story__sticky { position: static; height: auto; padding-block: 64px; } }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-story]').forEach((sec) => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const n = Number(sec.dataset.frames), base = sec.dataset.base ?? '';
+    const canvas = sec.querySelector<HTMLCanvasElement>('[data-canvas]')!;
+    const ctx = canvas.getContext('2d')!;
+    const steps = [...sec.querySelectorAll<HTMLElement>('[data-step]')];
+    const bar = sec.querySelector<HTMLElement>('[data-bar]')!;
+    const imgs: HTMLImageElement[] = [];
+    let loaded = false, last = -1;
+    const load = () => {
+      if (loaded) return; loaded = true;
+      for (let i = 1; i <= n; i++) {
+        const im = new Image(); im.decoding = 'async';
+        im.src = `${base}f${String(i).padStart(3, '0')}.webp`;
+        if (i === 1) im.onload = () => { sec.classList.add('is-live'); draw(); };
+        imgs.push(im);
+      }
+    };
+    const progress = () => {
+      const r = sec.getBoundingClientRect();
+      const total = r.height - innerHeight;
+      return total > 0 ? Math.min(1, Math.max(0, -r.top / total)) : 0;
+    };
+    const draw = () => {
+      const p = progress();
+      let idx = Math.round(p * (n - 1));
+      while (idx > 0 && !(imgs[idx]?.complete && imgs[idx].naturalWidth)) idx--;
+      const im = imgs[idx];
+      if (im && im.complete && im.naturalWidth && idx !== last) { ctx.drawImage(im, 0, 0, canvas.width, canvas.height); last = idx; }
+      const s = Math.min(steps.length - 1, Math.floor(p * steps.length));
+      steps.forEach((el, i) => el.classList.toggle('is-on', i === s));
+      bar.style.width = `${(p * 100).toFixed(1)}%`;
+    };
+    new IntersectionObserver((e) => { if (e[0].isIntersecting) load(); }, { rootMargin: '1200px 0px' }).observe(sec);
+    let ticking = false;
+    addEventListener('scroll', () => { if (!loaded || ticking) return; ticking = true; requestAnimationFrame(() => { ticking = false; draw(); }); }, { passive: true });
+  });
+</script>

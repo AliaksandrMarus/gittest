@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import PriceTables from '../components/PriceTables.astro';
+import LeadForm from '../components/LeadForm.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Icon from '../components/Icon.astro';
+import { contacts } from '../config/site';
+import { breadcrumbSchema } from '../lib/schema';
+---
+
+<Base title="Цены на услуги манипулятора и мини-экскаватора в Бобруйске" description="Стоимость работы крана-манипулятора и мини-экскаватора в Бобруйске: час работы, минимальный заказ, смена, межгород. Точную цену назовём по телефону +375 44 499-82-22." path="/ceny/" schemas={[breadcrumbSchema([{ label: 'Цены' }])]}>
+  <div class="phero">
+    <Breadcrumbs items={[{ label: 'Цены' }]} />
+    <div class="wrap" style="padding-block:28px 56px;display:grid;gap:18px;max-width:var(--wrap)">
+      <h1>Цены</h1>
+      <p class="lead" style="color:#d0cec7">Стоимость зависит от груза, расстояния и объёма земляных работ. Назовём точную цену до выезда — бесплатно и за пару минут.</p>
+      <div class="hero__cta"><a class="btn btn--primary" href={`tel:${contacts.phoneRaw}`}><Icon name="phone" size={18} />{contacts.phoneHuman}</a></div>
+    </div>
+  </div>
+  <section class="section">
+    <div class="wrap">
+      <PriceTables />
+      <div class="prose" style="margin-top:36px">
+        <h2>Из чего складывается цена</h2>
+        <ul>
+          <li><strong>Время работы</strong> — оплачивается почасово, с минимальным заказом.</li>
+          <li><strong>Расстояние</strong> — выезд за пределы Бобруйска считается по километражу.</li>
+          <li><strong>Сложность</strong> — монтаж ЖБИ и работа в стеснённых условиях требуют больше времени.</li>
+          <li><strong>Объём земляных работ</strong> — траншеи можно считать по погонным метрам.</li>
+        </ul>
+        <p>Для организаций работаем по договору с безналичной оплатой.</p>
+      </div>
+    </div>
+  </section>
+  <section class="section section--white" id="zayavka">
+    <div class="wrap split">
+      <div class="section-head" style="margin:0"><p class="eyebrow">Расчёт</p><h2>Узнать точную стоимость</h2><p>Опишите задачу — перезвоним и посчитаем.</p></div>
+      <LeadForm card id="form-prices" />
+    </div>
+  </section>
+  <CtaBand />
+</Base>

@@ -1,0 +1,51 @@
+---
+import { Picture } from 'astro:assets';
+import Placeholder from './Placeholder.astro';
+
+/**
+ * Фото из src/assets/photos/ через Picture: AVIF и WebP, srcset, явные размеры.
+ * Нет файла — заглушка с подписью, какой снимок нужен. Страницы не надо
+ * править по мере появления фотографий: положили файл — он на сайте.
+ */
+export interface Props {
+  src: string;
+  alt: string;
+  ratio?: string;
+  icon?: Parameters<typeof Placeholder>[0]['icon'];
+  priority?: boolean;
+  sizes?: string;
+  class?: string;
+}
+
+const { src, alt, ratio = '4 / 3', icon, priority = false, sizes = '(min-width: 62rem) 45vw, 100vw', class: cls } = Astro.props;
+
+const assets = import.meta.glob<{ default: ImageMetadata }>('/src/assets/photos/**/*.{jpg,jpeg,png,webp,avif,JPG,JPEG}');
+const base = src.replace(/\.[a-z]+$/i, '');
+const key = Object.keys(assets).find((p) => p.replace(/\.[a-zA-Z]+$/, '').endsWith(`/${base}`));
+const image = key ? (await assets[key]()).default : undefined;
+---
+
+{
+  image ? (
+    <Picture
+      src={image}
+      alt={alt}
+      class:list={['photo', cls]}
+      style={`aspect-ratio:${ratio}`}
+      widths={[480, 800, 1200, 1600]}
+      sizes={sizes}
+      formats={['avif', 'webp']}
+      fallbackFormat="jpeg"
+      quality={74}
+      loading={priority ? 'eager' : 'lazy'}
+      fetchpriority={priority ? 'high' : 'auto'}
+      decoding={priority ? 'sync' : 'async'}
+    />
+  ) : (
+    <Placeholder label={alt} file={`${base}.jpg`} icon={icon} ratio={ratio} class={cls} />
+  )
+}
+
+<style>
+  .photo { width: 100%; height: auto; object-fit: cover; border-radius: var(--r-lg); border: 1px solid var(--c-line); }
+</style>

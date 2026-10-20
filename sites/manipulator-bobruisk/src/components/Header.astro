@@ -1,0 +1,53 @@
+---
+import { contacts, nav, hours, site } from '../config/site';
+import { link } from '../lib/url';
+import Icon from './Icon.astro';
+
+export interface Props { currentPath: string }
+const { currentPath } = Astro.props;
+const isCurrent = (href: string) => currentPath === href || (href !== '/' && currentPath.startsWith(href));
+---
+
+<header class="header">
+  <div class="wrap header__in">
+    <a class="logo" href={link('/')} aria-label={`${site.name} — на главную`}>
+      <svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true">
+        <rect width="40" height="40" rx="8" fill="#f2b300" />
+        <path d="M9 31V14l17-6v4M9 14h22M26 12v9M24 21h4l-2 3" fill="none" stroke="#1a1500" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M7 31h14" stroke="#1a1500" stroke-width="2.6" stroke-linecap="round" />
+      </svg>
+      <span class="logo__text"><b>Манипулятор</b><small>Бобруйск · {hours.short}</small></span>
+    </a>
+    <nav class="nav" aria-label="Основное меню">
+      {nav.map((n) => <a href={link(n.href)} aria-current={isCurrent(n.href) ? 'page' : undefined}>{n.label}</a>)}
+    </nav>
+    <a class="header__phone" href={`tel:${contacts.phoneRaw}`}>
+      <b>{contacts.phoneHuman}</b>
+      <small><span class="dot"></span>Принимаем заказы {hours.short}</small>
+    </a>
+    <button class="btn btn--primary btn--sm" type="button" data-open-callback>Перезвоните мне</button>
+    <button class="burger" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mnav" data-burger><Icon name="menu" size={26} /></button>
+  </div>
+  <nav class="mnav" id="mnav" aria-label="Мобильное меню" data-mnav>
+    <a class="mnav__link" href={link('/')}>Главная</a>
+    {nav.map((n) => <a class="mnav__link" href={link(n.href)}>{n.label}</a>)}
+    <a class="btn btn--primary btn--wide" href={`tel:${contacts.phoneRaw}`}><Icon name="phone" size={18} />{contacts.phoneHuman}</a>
+    <button class="btn btn--ghost btn--wide" style="color:#fff" type="button" data-open-callback>Перезвоните мне</button>
+  </nav>
+</header>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-burger]');
+  const menu = document.querySelector<HTMLElement>('[data-mnav]');
+  if (btn && menu) {
+    const set = (open: boolean) => {
+      menu.classList.toggle('is-open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
+      document.body.style.overflow = open ? 'hidden' : '';
+    };
+    btn.addEventListener('click', () => set(!menu.classList.contains('is-open')));
+    menu.querySelectorAll('a, button').forEach((el) => el.addEventListener('click', () => set(false)));
+    addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+  }
+</script>

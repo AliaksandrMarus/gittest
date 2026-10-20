@@ -1,0 +1,11 @@
+{
+  "name": "Манипулятор Бобруйск",
+  "short_name": "Манипулятор",
+  "icons": [
+    { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ],
+  "theme_color": "#1c1f22",
+  "background_color": "#f4f3ef",
+  "display": "browser"
+}

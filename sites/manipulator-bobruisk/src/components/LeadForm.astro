@@ -1,0 +1,87 @@
+---
+import { contacts, FORM_ENDPOINT, hours } from '../config/site';
+import { link } from '../lib/url';
+import Icon from './Icon.astro';
+
+export interface Props {
+  /** full — заявка с услугой и деталями; callback — только имя и телефон. */
+  variant?: 'full' | 'callback';
+  /** Предвыбранная услуга. */
+  service?: 'Манипулятор' | 'Мини-экскаватор';
+  title?: string;
+  card?: boolean;
+  id?: string;
+}
+
+const { variant = 'full', service = 'Манипулятор', title, card = false, id = `form-${variant}` } = Astro.props;
+const configured = FORM_ENDPOINT !== '';
+const options = ['Манипулятор', 'Мини-экскаватор', 'Обе машины'];
+---
+
+{
+  configured ? (
+    <form class:list={['form', card && 'form--card']} id={id} action={FORM_ENDPOINT} method="post" data-lead-form novalidate>
+      {title && <h3>{title}</h3>}
+      <input type="hidden" name="variant" value={variant} />
+      <input type="hidden" name="page" value={Astro.url.pathname} />
+      <input type="hidden" name="ts" value="" data-ts />
+      <div class="hp" aria-hidden="true">
+        <label>Не заполняйте это поле<input type="text" name="company" tabindex="-1" autocomplete="off" /></label>
+      </div>
+
+      {variant === 'full' && (
+        <fieldset class="seg">
+          <legend>Что нужно</legend>
+          {options.map((o) => (
+            <label><input type="radio" name="service" value={o} checked={o === service} /> {o}</label>
+          ))}
+        </fieldset>
+      )}
+
+      {variant === 'full' && (
+        <label class="field">
+          <span>Задача</span>
+          <textarea name="comment" rows="3" maxlength="800" placeholder="Например: привезти 4 кольца КС-10 со склада и выкопать яму под септик" />
+        </label>
+      )}
+
+      {variant === 'full' && (
+        <div class="row2">
+          <label class="field"><span>Адрес объекта</span><input type="text" name="address" maxlength="120" placeholder="Бобруйск, ул. …" autocomplete="street-address" /></label>
+          <label class="field"><span>Когда</span><input type="text" name="when" maxlength="60" placeholder="Завтра с утра" /></label>
+        </div>
+      )}
+
+      <div class="row2">
+        <label class="field">
+          <span>Как к вам обращаться</span>
+          <input type="text" name="name" required minlength="2" maxlength="60" autocomplete="name" placeholder="Иван" />
+          <span class="field__error" data-error-for="name" />
+        </label>
+        <label class="field">
+          <span>Телефон</span>
+          <input type="tel" name="phone" required inputmode="tel" autocomplete="tel" placeholder="+375 (29) 123-45-67" data-phone />
+          <span class="field__error" data-error-for="phone" />
+        </label>
+      </div>
+
+      <label class="consent">
+        <input type="checkbox" name="consent" required checked />
+        <span>Согласен на обработку персональных данных по <a href={link('/politika-konfidencialnosti/')}>политике конфиденциальности</a>. Телефон нужен только чтобы перезвонить.</span>
+      </label>
+
+      <button class="btn btn--primary btn--wide" type="submit">{variant === 'callback' ? 'Жду звонка' : 'Отправить заявку'}</button>
+      <p class="form__status" role="status" aria-live="polite" data-form-status />
+    </form>
+  ) : (
+    <div class:list={['form__fallback', card && 'form--card']}>
+      {title && <h3>{title}</h3>}
+      <p>Позвоните или напишите — ответим сразу. {hours.human}.</p>
+      <div class="contact-btns">
+        <a class="btn btn--primary" href={`tel:${contacts.phoneRaw}`}><Icon name="phone" size={18} />{contacts.phoneHuman}</a>
+        <a class="btn btn--ghost" href={contacts.telegram} target="_blank" rel="noopener"><Icon name="telegram" size={18} />Telegram</a>
+        <a class="btn btn--ghost" href={contacts.viber}><Icon name="viber" size={18} />Viber</a>
+      </div>
+    </div>
+  )
+}

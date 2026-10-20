@@ -1,0 +1,23 @@
+---
+import { prices } from '../config/site';
+import { formatPrice } from '../lib/format';
+export interface Props { only?: string }
+const { only } = Astro.props;
+const groups = only ? prices.filter((g) => g.group === only) : prices;
+---
+
+<div class="price-grid">
+  {groups.map((g) => (
+    <div>
+      <div class="tbl">
+        <table class="ptable">
+          <caption class="visually-hidden">{g.group}</caption>
+          <thead><tr><th scope="col">{g.group}</th><th scope="col">Стоимость</th></tr></thead>
+          <tbody>
+            {g.rows.map((r) => <tr><td>{r.name}</td><td>{formatPrice(r)}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  ))}
+</div>

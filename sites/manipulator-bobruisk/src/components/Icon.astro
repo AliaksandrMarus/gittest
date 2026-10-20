@@ -1,0 +1,42 @@
+---
+/** Инлайновые иконки: их мало, отдельный запрос дороже пары сотен байт в HTML. */
+export interface Props {
+  name: keyof typeof paths;
+  size?: number;
+  class?: string;
+}
+
+const S = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+const paths = {
+  phone: '<path fill="currentColor" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  telegram: '<path fill="currentColor" d="M21.5 3.5 2.8 10.7c-1 .4-1 1.8 0 2.2l4.6 1.5 1.8 5.4c.3.9 1.4 1.1 2 .4l2.5-2.6 4.6 3.4c.8.6 1.9.2 2.1-.8l3.2-15c.2-1-.8-1.9-1.8-1.5zM9 14.3 17.6 7 10.4 15l-.3 3.3L9 14.3z"/>',
+  viber: `<path ${S} d="M12 3c-4.8 0-8 2.7-8 7 0 2.4.9 4.2 2.6 5.4V20l3.1-2c.7.2 1.5.3 2.3.3 4.8 0 8-2.8 8-7.3S16.8 3 12 3z"/><path ${S} d="M9.5 8.5c.5 2.6 2.4 4.6 5 5.2M12.5 7.2a3.3 3.3 0 0 1 3 3"/>`,
+  clock: `<circle ${S} cx="12" cy="12" r="9"/><path ${S} d="M12 7v5l3 2"/>`,
+  check: `<path ${S} d="m5 12.5 4.2 4.2L19 7"/>`,
+  arrow: `<path ${S} d="M5 12h13m-5.5-5.5L18 12l-5.5 5.5"/>`,
+  close: `<path ${S} d="m6 6 12 12M18 6 6 18"/>`,
+  menu: `<path ${S} d="M4 7h16M4 12h16M4 17h16"/>`,
+  pin: `<path ${S} d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle ${S} cx="12" cy="10" r="2.5"/>`,
+  shield: `<path ${S} d="M12 3 20 6.5v5.5c0 4.4-3.3 8.1-8 9.3-4.7-1.2-8-4.9-8-9.3V6.5L12 3z"/><path ${S} d="m8.5 12 2.5 2.5 4.5-5"/>`,
+  doc: `<path ${S} d="M7 3h7l5 5v13H7z"/><path ${S} d="M14 3v5h5M10 13h6M10 17h6"/>`,
+  bolt: `<path ${S} d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3z"/>`,
+  callback: `<path ${S} d="M15 3h6v6M21 3l-7 7"/><path fill="currentColor" d="M20 16.4v2.6a1.8 1.8 0 0 1-2 1.8 17.8 17.8 0 0 1-7.8-2.8 17.5 17.5 0 0 1-5.4-5.4A17.8 17.8 0 0 1 2 4.8 1.8 1.8 0 0 1 3.8 3h2.6a1.8 1.8 0 0 1 1.8 1.5c.1.9.3 1.7.6 2.5a1.8 1.8 0 0 1-.4 1.9L7.3 10a14.4 14.4 0 0 0 5.4 5.4l1.1-1.1a1.8 1.8 0 0 1 1.9-.4c.8.3 1.6.5 2.5.6a1.8 1.8 0 0 1 1.5 1.8z"/>`,
+  crane: `<path ${S} d="M3 20h9M5 20V8l12-4v3M5 8h14M17 7v6M15.5 13h3l-1.5 3"/><path ${S} d="M8 20V11"/>`,
+  excavator: `<path ${S} d="M3 18.5h11a2 2 0 0 1 0 4H3a2 2 0 0 1 0-4zM4 18v-4h6v4M6 14v-3h3l1 3M10 12l5-6 4 3-1 5"/><path ${S} d="M18 14l3 1-1 3-3-1"/>`,
+  truck: `<path ${S} d="M2 6h11v10H2zM13 9h4l3 3.5V16h-7"/><circle ${S} cx="6" cy="17.5" r="1.8"/><circle ${S} cx="16.5" cy="17.5" r="1.8"/>`,
+  ring: `<ellipse ${S} cx="12" cy="7" rx="7" ry="2.5"/><path ${S} d="M5 7v10c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V7"/>`,
+  bricks: `<path ${S} d="M3 8h18v12H3zM3 12h18M3 16h18M8 8v4M15 8v4M11.5 12v4M5.5 16v4M17 16v4M10 4h4v4h-4z"/>`,
+  container: `<path ${S} d="M2 7h20v11H2zM6 7v11M10 7v11M14 7v11M18 7v11"/>`,
+  gear: `<circle ${S} cx="12" cy="12" r="3"/><path ${S} d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/>`,
+  trench: `<path ${S} d="M2 9h6v8h8V9h6"/><path ${S} d="M8 13h8"/>`,
+  septic: `<path ${S} d="M2 8h20M6 8v11h12V8M6 13h12"/><path ${S} d="M10 3v5M14 3v5"/>`,
+  foundation: `<path ${S} d="M3 21h18M5 21V11h14v10M9 21v-6h6v6M3 11l9-7 9 7"/>`,
+  level: `<path ${S} d="M2 18c4-5 8-5 10-3s6 2 10-3"/><path ${S} d="M2 21h20"/>`,
+  ruble: `<path ${S} d="M8 21V4h5.5a4 4 0 0 1 0 8H6M6 16h8"/>`,
+  map: `<path ${S} d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>`,
+} as const;
+
+const { name, size = 24, class: cls } = Astro.props;
+---
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" focusable="false" class={cls} set:html={paths[name]} />

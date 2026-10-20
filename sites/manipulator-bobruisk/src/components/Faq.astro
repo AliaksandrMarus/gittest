@@ -1,0 +1,15 @@
+---
+export interface Props { items: { q: string; a: string }[]; title?: string; eyebrow?: string }
+const { items, title = 'Частые вопросы', eyebrow = 'Вопросы и ответы' } = Astro.props;
+---
+
+<section class="section section--tight" aria-labelledby="faq-title">
+  <div class="wrap">
+    <div class="section-head"><p class="eyebrow">{eyebrow}</p><h2 id="faq-title">{title}</h2></div>
+    <div class="faq">
+      {items.map((it, i) => (
+        <details open={i === 0}><summary>{it.q}</summary><div>{it.a}</div></details>
+      ))}
+    </div>
+  </div>
+</section>

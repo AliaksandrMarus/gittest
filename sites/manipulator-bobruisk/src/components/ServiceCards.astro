@@ -1,0 +1,20 @@
+---
+import { getCollection } from 'astro:content';
+import { link } from '../lib/url';
+import Icon from './Icon.astro';
+export interface Props { category?: 'manipulyator' | 'mini-ekskavator'; exclude?: string }
+const { category, exclude } = Astro.props;
+const all = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order)
+  .filter((s) => (!category || s.data.category === category) && s.id !== exclude);
+---
+
+<div class="cards">
+  {all.map((s) => (
+    <a class="card" href={link(`/${s.data.category}/${s.id}/`)}>
+      <span class="card__icon"><Icon name={s.data.icon} size={24} /></span>
+      <h3>{s.data.short}</h3>
+      <p>{s.data.card}</p>
+      <span class="card__more">Подробнее <Icon name="arrow" size={16} /></span>
+    </a>
+  ))}
+</div>

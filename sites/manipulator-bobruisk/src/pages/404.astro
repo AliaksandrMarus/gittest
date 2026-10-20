@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { contacts } from '../config/site';
+import { link } from '../lib/url';
+---
+
+<Base title="Страница не найдена" description="Такой страницы нет на сайте." path="/404/" noindex>
+  <section class="section">
+    <div class="wrap" style="display:grid;gap:18px;justify-items:start">
+      <p class="eyebrow">Ошибка 404</p>
+      <h1>Такой страницы нет</h1>
+      <p class="lead">Возможно, адрес изменился. Перейдите на главную или сразу позвоните.</p>
+      <div class="hero__cta">
+        <a class="btn btn--dark" href={link('/')}>На главную</a>
+        <a class="btn btn--primary" href={`tel:${contacts.phoneRaw}`}><Icon name="phone" size={18} />{contacts.phoneHuman}</a>
+      </div>
+    </div>
+  </section>
+</Base>

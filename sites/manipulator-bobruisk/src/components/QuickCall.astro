@@ -1,0 +1,34 @@
+---
+import { contacts } from '../config/site';
+import Icon from './Icon.astro';
+/** Кнопки связи: на телефоне — нижняя панель, на компьютере — стек справа. */
+---
+
+<div class="quickcall" data-quickcall>
+  <a class="qc qc--call" href={`tel:${contacts.phoneRaw}`} aria-label={`Позвонить: ${contacts.phoneHuman}`}>
+    <span class="pulse"><Icon name="phone" size={20} /></span><span>Позвонить</span>
+  </a>
+  <a class="qc qc--tg" href={contacts.telegram} target="_blank" rel="noopener" aria-label="Написать в Telegram" data-goal="telegram">
+    <Icon name="telegram" size={20} /><span>Telegram</span>
+  </a>
+  <a class="qc qc--vb" href={contacts.viber} aria-label="Написать в Viber" data-goal="viber">
+    <Icon name="viber" size={20} /><span>Viber</span>
+  </a>
+  <button class="qc qc--cb" type="button" data-open-callback aria-label="Заказать обратный звонок">
+    <Icon name="callback" size={20} /><span>Перезвоните</span>
+  </button>
+</div>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-quickcall]');
+  if (bar) {
+    const toggle = () => {
+      const show = scrollY > 300;
+      bar.classList.toggle('is-visible', show);
+      document.documentElement.style.setProperty('--quickcall-h', show && innerWidth <= 960 ? `${bar.offsetHeight}px` : '0px');
+    };
+    toggle();
+    addEventListener('scroll', toggle, { passive: true });
+    addEventListener('resize', toggle, { passive: true });
+  }
+</script>

@@ -1,0 +1,94 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import Photo from './Photo.astro';
+import Icon from './Icon.astro';
+import LeadForm from './LeadForm.astro';
+import Faq from './Faq.astro';
+import CtaBand from './CtaBand.astro';
+import ServiceCards from './ServiceCards.astro';
+import PriceTables from './PriceTables.astro';
+import { contacts, hours } from '../config/site';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../lib/schema';
+
+export interface Props { entry: CollectionEntry<'services'> }
+const { entry } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+const isM = d.category === 'manipulyator';
+const hub = isM ? { href: '/manipulyator/', label: 'Манипулятор' } : { href: '/mini-ekskavator/', label: 'Мини-экскаватор' };
+const path = `/${d.category}/${entry.id}/`;
+const crumbs = [hub, { label: d.short }];
+---
+
+<Base
+  title={d.seoTitle}
+  description={d.description}
+  path={path}
+  schemas={[breadcrumbSchema(crumbs.map((c, i) => (i === crumbs.length - 1 ? { label: c.label } : c))), serviceSchema({ title: d.title, description: d.description, path, type: d.short }), faqSchema(d.faq)]}
+>
+  <div class="phero">
+    <Breadcrumbs items={crumbs} />
+    <div class="wrap phero__grid">
+      <div class="phero__text">
+        <p class="eyebrow">{hub.label} · {contacts.city}</p>
+        <h1>{d.title}</h1>
+        <p class="lead">{d.lead}</p>
+        <div class="hero__cta">
+          <a class="btn btn--primary" href={`tel:${contacts.phoneRaw}`}><Icon name="phone" size={18} />{contacts.phoneHuman}</a>
+          <a class="btn btn--ghost" href="#zayavka">Оставить заявку</a>
+        </div>
+        <p class="text-mute" style="color:var(--c-on-dark-mute);font-size:var(--fs-sm)">{hours.human}. {contacts.areaHuman}.</p>
+      </div>
+      <div class="phero__media"><Photo src={d.photo} alt={d.photoAlt} ratio="4 / 3" priority icon={isM ? 'crane' : 'excavator'} /></div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap split">
+      <article class="prose"><Content /></article>
+      <aside class="aside">
+        <div class="box">
+          <h2 style="font-size:var(--fs-xl)">Что входит</h2>
+          <ul class="checks">{d.includes.map((i) => <li><Icon name="check" size={20} /><span>{i}</span></li>)}</ul>
+        </div>
+        <div class="box box--dark">
+          <h2 style="font-size:var(--fs-xl)">Узнать цену</h2>
+          <p style="color:var(--c-on-dark-mute)">Назовите задачу — диспетчер сразу скажет стоимость и время подачи.</p>
+          <a class="btn btn--primary btn--wide" href={`tel:${contacts.phoneRaw}`}><Icon name="phone" size={18} />{contacts.phoneHuman}</a>
+          <button class="btn btn--ghost btn--wide" type="button" data-open-callback>Перезвоните мне</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section section--white section--tight">
+    <div class="wrap">
+      <div class="section-head"><p class="eyebrow">Стоимость</p><h2>Цены: {hub.label.toLowerCase()}</h2></div>
+      <PriceTables only={isM ? 'Кран-манипулятор' : 'Мини-экскаватор'} />
+    </div>
+  </section>
+
+  <Faq items={d.faq} />
+
+  <section class="section section--white" id="zayavka">
+    <div class="wrap split">
+      <div class="section-head" style="margin:0">
+        <p class="eyebrow">Заявка</p>
+        <h2>Рассчитаем стоимость за 5 минут</h2>
+        <p>Опишите задачу и адрес. Перезвоним, назовём цену и согласуем время.</p>
+      </div>
+      <LeadForm card service={isM ? 'Манипулятор' : 'Мини-экскаватор'} id="form-service" />
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="wrap">
+      <div class="section-head"><p class="eyebrow">Ещё услуги</p><h2>Что ещё делаем</h2></div>
+      <ServiceCards exclude={entry.id} />
+    </div>
+  </section>
+
+  <CtaBand />
+</Base>

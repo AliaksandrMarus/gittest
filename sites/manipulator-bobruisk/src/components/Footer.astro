@@ -1,0 +1,46 @@
+---
+import { getCollection } from 'astro:content';
+import { contacts, site, hours } from '../config/site';
+import { link } from '../lib/url';
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+const m = services.filter((s) => s.data.category === 'manipulyator');
+const e = services.filter((s) => s.data.category === 'mini-ekskavator');
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <div style="display:grid;gap:12px;align-content:start">
+        <h3>{site.name}</h3>
+        <p>Грузоперевозки с краном-манипулятором и земляные работы мини-экскаватором. {contacts.areaHuman}.</p>
+        <a class="footer__phone" href={`tel:${contacts.phoneRaw}`}>{contacts.phoneHuman}</a>
+        <p>{hours.human}</p>
+        {contacts.email && <a href={`mailto:${contacts.email}`}>{contacts.email}</a>}
+      </div>
+      <div>
+        <h3><a href={link('/manipulyator/')}>Манипулятор</a></h3>
+        <ul>{m.map((s) => <li><a href={link(`/manipulyator/${s.id}/`)}>{s.data.short}</a></li>)}</ul>
+      </div>
+      <div>
+        <h3><a href={link('/mini-ekskavator/')}>Мини-экскаватор</a></h3>
+        <ul>{e.map((s) => <li><a href={link(`/mini-ekskavator/${s.id}/`)}>{s.data.short}</a></li>)}</ul>
+      </div>
+      <div>
+        <h3>Клиентам</h3>
+        <ul>
+          <li><a href={link('/ceny/')}>Цены</a></li>
+          <li><a href={link('/kontakty/')}>Контакты и заявка</a></li>
+          <li><a href={contacts.telegram} target="_blank" rel="noopener">Telegram</a></li>
+          <li><a href={contacts.viber}>Viber</a></li>
+          <li><a href={link('/politika-konfidencialnosti/')}>Политика конфиденциальности</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__legal">
+      <span>© {year} {site.name}. {site.legalName}, УНП {site.unp}. {site.registration}.</span>
+      <span>Сайт не является публичной офертой. Стоимость уточняйте по телефону.</span>
+    </div>
+  </div>
+</footer>

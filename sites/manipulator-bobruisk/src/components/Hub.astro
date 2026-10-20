@@ -1,0 +1,95 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import Photo from './Photo.astro';
+import Icon from './Icon.astro';
+import ServiceCards from './ServiceCards.astro';
+import PriceTables from './PriceTables.astro';
+import Faq from './Faq.astro';
+import LeadForm from './LeadForm.astro';
+import CtaBand from './CtaBand.astro';
+import Gallery from './Gallery.astro';
+import { contacts, hours } from '../config/site';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../lib/schema';
+
+export interface Props {
+  category: 'manipulyator' | 'mini-ekskavator';
+  seoTitle: string;
+  description: string;
+  h1: string;
+  lead: string;
+  photo: string;
+  photoAlt: string;
+  specs: { label: string; value: string }[];
+  faq: { q: string; a: string }[];
+  gallery: { src: string; alt: string; caption: string; ratio?: string }[];
+}
+const p = Astro.props;
+const isM = p.category === 'manipulyator';
+const label = isM ? 'Манипулятор' : 'Мини-экскаватор';
+const path = `/${p.category}/`;
+---
+
+<Base title={p.seoTitle} description={p.description} path={path} schemas={[breadcrumbSchema([{ label }]), serviceSchema({ title: p.h1, description: p.description, path, type: isM ? 'Услуги крана-манипулятора' : 'Услуги мини-экскаватора' }), faqSchema(p.faq)]}>
+  <div class="phero">
+    <Breadcrumbs items={[{ label }]} />
+    <div class="wrap phero__grid">
+      <div class="phero__text">
+        <p class="eyebrow">{hours.human}</p>
+        <h1>{p.h1}</h1>
+        <p class="lead">{p.lead}</p>
+        <div class="hero__cta">
+          <a class="btn btn--primary" href={`tel:${contacts.phoneRaw}`}><Icon name="phone" size={18} />{contacts.phoneHuman}</a>
+          <button class="btn btn--ghost" type="button" data-open-callback>Перезвоните мне</button>
+        </div>
+        <div class="specs">{p.specs.filter((s) => s.value).map((s) => <div class="spec"><span>{s.label}</span><b>{s.value}</b></div>)}</div>
+      </div>
+      <div class="phero__media"><Photo src={p.photo} alt={p.photoAlt} ratio="4 / 3" priority icon={isM ? 'crane' : 'excavator'} /></div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head"><p class="eyebrow">Услуги</p><h2>Что делает {isM ? 'манипулятор' : 'мини-экскаватор'}</h2></div>
+      <ServiceCards category={p.category} />
+    </div>
+  </section>
+
+  <section class="section section--white section--tight">
+    <div class="wrap split">
+      <div class="prose"><slot /></div>
+      <aside class="aside">
+        <div class="box box--dark">
+          <h2 style="font-size:var(--fs-xl)">Нужна техника?</h2>
+          <p style="color:var(--c-on-dark-mute)">Звоните в любое время — назовём цену и время подачи.</p>
+          <a class="btn btn--primary btn--wide" href={`tel:${contacts.phoneRaw}`}><Icon name="phone" size={18} />{contacts.phoneHuman}</a>
+          <a class="btn btn--ghost btn--wide" href={contacts.telegram} target="_blank" rel="noopener"><Icon name="telegram" size={18} />Прислать фото в Telegram</a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="wrap">
+      <div class="section-head"><p class="eyebrow">С объектов</p><h2>Фото с работ</h2></div>
+      <Gallery items={p.gallery} />
+    </div>
+  </section>
+
+  <section class="section section--white section--tight">
+    <div class="wrap">
+      <div class="section-head"><p class="eyebrow">Стоимость</p><h2>Цены</h2></div>
+      <PriceTables only={isM ? 'Кран-манипулятор' : 'Мини-экскаватор'} />
+    </div>
+  </section>
+
+  <Faq items={p.faq} />
+
+  <section class="section section--white" id="zayavka">
+    <div class="wrap split">
+      <div class="section-head" style="margin:0"><p class="eyebrow">Заявка</p><h2>Рассчитаем стоимость</h2><p>Опишите задачу — перезвоним за несколько минут.</p></div>
+      <LeadForm card service={isM ? 'Манипулятор' : 'Мини-экскаватор'} id="form-hub" />
+    </div>
+  </section>
+  <CtaBand />
+</Base>

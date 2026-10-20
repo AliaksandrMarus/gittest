@@ -1,0 +1,225 @@
+---
+import { getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Photo from '../components/Photo.astro';
+import ServiceCards from '../components/ServiceCards.astro';
+import ScrollStory from '../components/ScrollStory.astro';
+import Gallery from '../components/Gallery.astro';
+import PriceTables from '../components/PriceTables.astro';
+import Faq from '../components/Faq.astro';
+import LeadForm from '../components/LeadForm.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { contacts, fleet, hours } from '../config/site';
+import { link } from '../lib/url';
+import { faqSchema } from '../lib/schema';
+import posterSrc from '../assets/photos/hero-poster.jpg';
+
+const poster = await getImage({ src: posterSrc, width: 1280, format: 'webp', quality: 70 });
+
+const faq = [
+  { q: 'Сколько стоят услуги манипулятора и мини-экскаватора?', a: 'Цена зависит от задачи: что везти и куда, сколько копать, где объект. Позвоните или оставьте заявку, и диспетчер назовёт стоимость за несколько минут. Минимальный заказ и почасовые тарифы есть на странице «Цены».' },
+  { q: 'Как быстро приедет техника?', a: 'Работаем круглосуточно и без выходных. По Бобруйску часто можем подать машину в тот же день. Точное время назовёт диспетчер.' },
+  { q: 'Можно заказать сразу и манипулятор, и экскаватор?', a: 'Да, и это удобнее всего. Например, экскаватор копает котлован под септик или траншею под фундамент, а манипулятор привозит кольца или блоки ФБС и сразу опускает их краном. Обе машины наши, время согласуем сами.' },
+  { q: 'Как доставляется мини-экскаватор на объект?', a: 'На нашем же манипуляторе. Отдельный трал искать и оплачивать не нужно.' },
+  { q: 'Работаете с организациями?', a: 'Да. Заключаем официальный договор, принимаем безналичную оплату и выдаём закрывающие документы.' },
+  { q: 'Куда выезжаете?', a: 'Бобруйск, Бобруйский район, Могилёвская область. Перевозки манипулятором выполняем по всей Беларуси.' },
+];
+
+const gallery = [
+  { src: 'manipulyator-fbs-razgruzka', alt: 'Кран-манипулятор разгружает блоки ФБС на участке', caption: 'Разгрузка блоков ФБС краном', ratio: '3 / 4' },
+  { src: 'montazh-fbs-transheya', alt: 'Блок ФБС на стропах опускается в траншею', caption: 'Монтаж ФБС в траншею', ratio: '3 / 4' },
+  { src: 'kotlovan-transheya-fbs', alt: 'Траншея под ленточный фундамент после мини-экскаватора', caption: 'Траншея под фундамент', ratio: '3 / 4' },
+  { src: 'ekskavator-u-doma', alt: 'Мини-экскаватор работает вплотную к кирпичному дому', caption: 'Планировка двора у дома', ratio: '3 / 4' },
+];
+---
+
+<Base
+  title="Манипулятор и мини-экскаватор в Бобруйске — услуги 24/7"
+  description="Услуги крана-манипулятора 5 т и мини-экскаватора в Бобруйске и районе. Перевозка и монтаж ЖБИ, доставка стройматериалов, траншеи, септики, фундамент. Круглосуточно: +375 44 499-82-22."
+  path="/"
+  schemas={[faqSchema(faq)]}
+>
+  <section class="hero">
+    <div class="hero__media">
+      <video autoplay muted loop playsinline preload="metadata" poster={poster.src} aria-hidden="true" data-hero-video>
+        <source src={link('/media/hero-ekskavator.mp4')} type="video/mp4" />
+      </video>
+    </div>
+    <div class="wrap">
+      <div class="hero__in">
+        <p class="eyebrow">Бобруйск · район · вся Беларусь</p>
+        <h1>Манипулятор и мини-экскаватор <span>в Бобруйске</span></h1>
+        <p class="lead">Загрузим, завезём, выгрузим и выкопаем. Кран-манипулятор {fleet.manipulator.crane} и мини-экскаватор с опытными операторами. Одна заявка — обе машины на объекте.</p>
+        <div class="hero__cta">
+          <a class="btn btn--primary" href={`tel:${contacts.phoneRaw}`}><Icon name="phone" size={18} />{contacts.phoneHuman}</a>
+          <button class="btn btn--ghost" type="button" data-open-callback>Перезвоните мне</button>
+        </div>
+        <ul class="hero__facts">
+          <li><Icon name="clock" size={18} />{hours.human}</li>
+          <li><Icon name="crane" size={18} />Кран {fleet.manipulator.crane}, стрела {fleet.manipulator.boom}</li>
+          <li><Icon name="trench" size={18} />Ковши {fleet.excavator.buckets}</li>
+          <li><Icon name="doc" size={18} />Работаем по договору</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="svc-title">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">Наша техника</p>
+        <h2 id="svc-title">Две машины на любые работы на участке</h2>
+        <p>Частным заказчикам и организациям. Своя техника и свои операторы: без посредников и переплат.</p>
+      </div>
+      <div class="duo">
+        <a class="svc reveal" href={link('/manipulyator/')}>
+          <div class="svc__img"><Photo src="manipulyator-daf-palfinger" alt="Кран-манипулятор DAF с краном Palfinger на базе" ratio="16 / 10" icon="crane" /></div>
+          <div class="svc__body">
+            <p class="eyebrow">01 · Грузоперевозки</p>
+            <h3>Кран-манипулятор</h3>
+            <ul>
+              <li>Перевозка и монтаж ЖБИ: ФБС, кольца, плиты</li>
+              <li>Кирпич, газосиликат, плитка на поддонах</li>
+              <li>Бытовки, контейнеры, оборудование</li>
+            </ul>
+            <div class="specs">
+              <div class="spec"><span>Кран</span><b>{fleet.manipulator.crane}</b></div>
+              <div class="spec"><span>Вылет стрелы</span><b>{fleet.manipulator.boom}</b></div>
+              <div class="spec"><span>Работаем</span><b>24/7</b></div>
+            </div>
+            <span class="btn btn--dark">Подробнее о манипуляторе <Icon name="arrow" size={18} /></span>
+          </div>
+        </a>
+        <a class="svc reveal" href={link('/mini-ekskavator/')}>
+          <div class="svc__img"><Photo src="ekskavator-na-obekte" alt="Мини-экскаватор с полным ковшом грунта на участке" ratio="16 / 10" icon="excavator" /></div>
+          <div class="svc__body">
+            <p class="eyebrow">02 · Земляные работы</p>
+            <h3>Мини-экскаватор</h3>
+            <ul>
+              <li>Траншеи под воду, канализацию, газ, кабель</li>
+              <li>Котлованы под септик и фундамент</li>
+              <li>Планировка участка, пни, старые фундаменты</li>
+            </ul>
+            <div class="specs">
+              <div class="spec"><span>Ковши</span><b>{fleet.excavator.buckets}</b></div>
+              <div class="spec"><span>Гусеницы</span><b>{fleet.excavator.tracks}</b></div>
+              <div class="spec"><span>Доставка</span><b>своя</b></div>
+            </div>
+            <span class="btn btn--dark">Подробнее об экскаваторе <Icon name="arrow" size={18} /></span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <ScrollStory
+    frames={70}
+    dir="fbs"
+    poster="manipulyator-fbs-razgruzka"
+    posterAlt="Видео: кран-манипулятор разгружает блоки ФБС с платформы на участке"
+    steps={[
+      { title: 'Приехали на участок', text: 'Манипулятор подъезжает к месту работ и выставляет опоры.' },
+      { title: 'Застропили блок', text: 'Оператор цепляет ФБС за монтажные петли прямо на платформе.' },
+      { title: 'Подняли краном', text: 'Блок плавно поднимается и уходит в сторону от машины.' },
+      { title: 'Опустили на место', text: 'Блок ставится туда, где он нужен: на площадку или сразу в траншею.' },
+    ]}
+  />
+
+  <section class="section section--white">
+    <div class="wrap split" style="align-items:center">
+      <div class="reveal"><Photo src="manipulyator-s-ekskavatorom" alt="Манипулятор DAF везёт мини-экскаватор на бортовой платформе" ratio="4 / 3" icon="truck" /></div>
+      <div class="section-head reveal" style="margin:0">
+        <p class="eyebrow">Удобно и выгодно</p>
+        <h2>Экскаватор приезжает на нашем манипуляторе</h2>
+        <p>Не нужно искать трал для доставки техники. Манипулятор привозит экскаватор, а потом и кольца, блоки или трубы. Земляные работы и монтаж ЖБИ идут одной командой, без простоев между подрядчиками.</p>
+        <ul class="checks" style="margin-top:8px">
+          <li><Icon name="check" size={20} /><span>Септик под ключ: котлован, доставка и установка колец</span></li>
+          <li><Icon name="check" size={20} /><span>Фундамент: траншея и монтаж блоков ФБС</span></li>
+          <li><Icon name="check" size={20} /><span>Водопровод и канализация: траншея и обратная засыпка</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="all-title">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">Услуги</p>
+        <h2 id="all-title">Что мы делаем</h2>
+      </div>
+      <ServiceCards />
+    </div>
+  </section>
+
+  <section class="section section--dark" aria-labelledby="adv-title">
+    <div class="wrap">
+      <div class="section-head"><p class="eyebrow">Почему мы</p><h2 id="adv-title">Работаем так, чтобы позвали снова</h2></div>
+      <ul class="adv">
+        <li><b>Круглосуточно</b><p>Принимаем заказы 24/7, срочный выезд в любое время.</p></li>
+        <li><b>Своя техника</b><p>Манипулятор и экскаватор наши. Цена без наценки посредника.</p></li>
+        <li><b>По договору</b><p>Официальный договор, безналичная оплата, документы для организаций.</p></li>
+        <li><b>Цена заранее</b><p>Называем стоимость до выезда. Гибкие тарифы под объём и расстояние.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section section--tight" aria-labelledby="steps-title">
+    <div class="wrap">
+      <div class="section-head"><p class="eyebrow">Как заказать</p><h2 id="steps-title">От звонка до техники на объекте</h2></div>
+      <ol class="steps">
+        <li><b>Звонок или заявка</b><p>Расскажите, что везти или копать и где объект. Можно прислать фото в Telegram или Viber.</p></li>
+        <li><b>Цена и время</b><p>Диспетчер называет стоимость и согласует удобное время подачи.</p></li>
+        <li><b>Техника на месте</b><p>Оператор выполняет работу, вы принимаете результат.</p></li>
+        <li><b>Оплата по факту</b><p>Наличными или безналичным расчётом по договору.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section section--white section--tight" aria-labelledby="works-title">
+    <div class="wrap">
+      <div class="section-head"><p class="eyebrow">Наши объекты</p><h2 id="works-title">Фото с работ</h2></div>
+      <Gallery items={gallery} />
+    </div>
+  </section>
+
+  <section class="section section--tight" aria-labelledby="price-title">
+    <div class="wrap">
+      <div class="section-head"><p class="eyebrow">Стоимость</p><h2 id="price-title">Цены на услуги</h2><p>Итоговая сумма зависит от задачи. Назовём её по телефону до выезда.</p></div>
+      <PriceTables />
+      <p style="margin-top:18px"><a class="btn btn--ghost" href={link('/ceny/')}>Все цены и условия <Icon name="arrow" size={18} /></a></p>
+    </div>
+  </section>
+
+  <Faq items={faq} />
+
+  <section class="section section--white" id="zayavka" aria-labelledby="form-title">
+    <div class="wrap split">
+      <div class="section-head" style="margin:0">
+        <p class="eyebrow">Заявка</p>
+        <h2 id="form-title">Рассчитаем стоимость за 5 минут</h2>
+        <p>Опишите задачу — перезвоним, назовём цену и время подачи.</p>
+        <ul class="checks" style="margin-top:8px">
+          <li><Icon name="phone" size={20} /><span><a href={`tel:${contacts.phoneRaw}`}><b>{contacts.phoneHuman}</b></a> — звонок, {hours.short}</span></li>
+          <li><Icon name="telegram" size={20} /><span><a href={contacts.telegram} target="_blank" rel="noopener">Telegram</a> или <a href={contacts.viber}>Viber</a> — пришлите фото объекта</span></li>
+          <li><Icon name="map" size={20} /><span>{contacts.areaHuman}</span></li>
+        </ul>
+      </div>
+      <LeadForm card id="form-home" />
+    </div>
+  </section>
+
+  <CtaBand />
+</Base>
+
+<style>
+  .hero__media video { width: 100%; height: 100%; object-fit: cover; }
+  .hero { min-height: min(86vh, 760px); display: grid; align-items: center; }
+</style>
+
+<script>
+  // Видео не крутим тем, кто просил меньше движения, и на экономии трафика.
+  const v = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+  const conn = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
+  if (v && (matchMedia('(prefers-reduced-motion: reduce)').matches || conn?.saveData)) { v.removeAttribute('autoplay'); v.pause(); }
+</script>

@@ -1,0 +1,12 @@
+---
+import { getCollection } from 'astro:content';
+import ServiceDetail from '../../components/ServiceDetail.astro';
+
+export async function getStaticPaths() {
+  const all = await getCollection('services', (s) => s.data.category === 'manipulyator');
+  return all.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+const { entry } = Astro.props;
+---
+
+<ServiceDetail entry={entry} />

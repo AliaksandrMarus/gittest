@@ -1,0 +1,93 @@
+---
+import '@fontsource-variable/oswald';
+import '@fontsource-variable/golos-text';
+import '../styles/global.css';
+import { site, contacts, analytics } from '../config/site';
+import { link, absolute } from '../lib/url';
+import { businessSchema, websiteSchema } from '../lib/schema';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import QuickCall from '../components/QuickCall.astro';
+import CallbackModal from '../components/CallbackModal.astro';
+
+export interface Props {
+  title: string;
+  description: string;
+  /** Путь страницы со слешем на конце. */
+  path: string;
+  schemas?: unknown[];
+  noindex?: boolean;
+  ogImage?: string;
+}
+
+const { title, description, path, schemas = [], noindex = false, ogImage } = Astro.props;
+const canonical = absolute(path);
+const image = absolute(ogImage ?? '/og-default.png');
+/** Превью в подпапке закрываем от поиска, чтобы не конкурировало с боевым доменом. */
+const isPreview = import.meta.env.BASE_URL !== '/';
+const allSchemas = [businessSchema(image), websiteSchema(), ...schemas];
+---
+
+<!doctype html>
+<html lang="ru-BY">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {isPreview ? <meta name="robots" content="noindex, nofollow" /> : noindex ? <meta name="robots" content="noindex, follow" /> : <meta name="robots" content="index, follow, max-image-preview:large" />}
+    <meta name="theme-color" content="#1c1f22" />
+    <meta name="format-detection" content="telephone=yes" />
+    <meta name="geo.region" content="BY-MA" />
+    <meta name="geo.placename" content={contacts.city} />
+    <meta name="geo.position" content={`${contacts.geo.lat};${contacts.geo.lon}`} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content="ru_BY" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href={link('/favicon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={link('/apple-touch-icon.png')} />
+    <link rel="manifest" href={link('/site.webmanifest')} />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(allSchemas)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Перейти к содержимому</a>
+    <Header currentPath={path} />
+    <main id="main"><slot /></main>
+    <Footer />
+    <QuickCall />
+    <CallbackModal />
+
+    <script>import '../scripts/forms';</script>
+    <script>
+      const items = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+          for (const e of entries) if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
+        }, { rootMargin: '0px 0px -8% 0px' });
+        items.forEach((el) => io.observe(el));
+      } else items.forEach((el) => el.classList.add('is-visible'));
+    </script>
+    <script is:inline define:vars={{ ymId: analytics.yandexMetrika, gaId: analytics.ga4 }}>
+      var boot = function () {
+        if (ymId) {
+          (function (m, e, t, r, i, k, a) { m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments); }; m[i].l = 1 * new Date(); k = e.createElement(t); a = e.getElementsByTagName(t)[0]; k.async = 1; k.src = r; a.parentNode.insertBefore(k, a); })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
+          window.ym(Number(ymId), 'init', { webvisor: true, clickmap: true, accurateTrackBounce: true, trackLinks: true });
+        }
+        if (gaId) {
+          var s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId; document.head.appendChild(s);
+          window.dataLayer = window.dataLayer || []; window.gtag = function () { window.dataLayer.push(arguments); }; window.gtag('js', new Date()); window.gtag('config', gaId);
+        }
+      };
+      if (ymId || gaId) { if ('requestIdleCallback' in window) requestIdleCallback(boot, { timeout: 4000 }); else addEventListener('load', function () { setTimeout(boot, 1200); }); }
+    </script>
+  </body>
+</html>

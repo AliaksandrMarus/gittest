@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import LeadForm from '../components/LeadForm.astro';
+import Icon from '../components/Icon.astro';
+import { contacts, hours, site } from '../config/site';
+import { breadcrumbSchema } from '../lib/schema';
+---
+
+<Base title="Контакты — заказать манипулятор и мини-экскаватор в Бобруйске" description={`Заказать кран-манипулятор или мини-экскаватор в Бобруйске: ${contacts.phoneHuman}, Telegram, Viber. ${hours.human}. ${contacts.areaHuman}.`} path="/kontakty/" schemas={[breadcrumbSchema([{ label: 'Контакты' }])]}>
+  <div class="phero">
+    <Breadcrumbs items={[{ label: 'Контакты' }]} />
+    <div class="wrap" style="padding-block:28px 56px;display:grid;gap:18px">
+      <h1>Контакты</h1>
+      <p class="lead" style="color:#d0cec7">Принимаем заказы круглосуточно. Звоните, пишите или оставьте заявку — перезвоним.</p>
+    </div>
+  </div>
+  <section class="section">
+    <div class="wrap split">
+      <div style="display:grid;gap:16px;align-content:start">
+        <div class="box">
+          <p class="eyebrow">Телефон диспетчера</p>
+          <a href={`tel:${contacts.phoneRaw}`} style="font:600 clamp(28px,5vw,40px)/1.1 var(--f-display);text-decoration:none;color:var(--c-ink)">{contacts.phoneHuman}</a>
+          <p class="text-mute"><span class="dot" style="display:inline-block;margin-right:8px"></span>{hours.human}</p>
+          <div class="contact-btns">
+            <a class="btn btn--primary" href={`tel:${contacts.phoneRaw}`}><Icon name="phone" size={18} />Позвонить</a>
+            <a class="btn btn--ghost" href={contacts.telegram} target="_blank" rel="noopener"><Icon name="telegram" size={18} />Telegram</a>
+            <a class="btn btn--ghost" href={contacts.viber}><Icon name="viber" size={18} />Viber</a>
+          </div>
+          {contacts.email && <p>Почта: <a href={`mailto:${contacts.email}`}>{contacts.email}</a></p>}
+        </div>
+        <div class="box">
+          <p class="eyebrow">Где работаем</p>
+          <p>{contacts.areaHuman}. Техника выезжает к заказчику.</p>
+        </div>
+        <div class="box">
+          <p class="eyebrow">Реквизиты</p>
+          <p>{site.legalName}<br />УНП {site.unp}<br />{site.registration}</p>
+        </div>
+      </div>
+      <LeadForm card title="Заявка на технику" id="form-contacts" />
+    </div>
+  </section>
+</Base>
