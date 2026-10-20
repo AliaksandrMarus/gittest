@@ -60,9 +60,11 @@ export const fleet = {
     model: 'Kubota RX-405',
     buckets: '30, 40 и 50 см',
     tracks: 'резиновые',
-    /** TODO: из паспорта машины. */
-    weight: '',
-    depth: '',
+    /** Kubota RX-405 по открытым данным (allstocker.com, untcs.com). Сверьте с паспортом. */
+    weight: '3,5 т',
+    depth: 'до 3,2 м',
+    reach: 'до 4,8 м',
+    bucket: '0,11 м³',
   },
 } as const;
 
