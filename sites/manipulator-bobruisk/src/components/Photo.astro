@@ -20,8 +20,20 @@ export interface Props {
 const { src, alt, ratio = '4 / 3', icon, priority = false, sizes = '(min-width: 62rem) 45vw, 100vw', class: cls } = Astro.props;
 
 const assets = import.meta.glob<{ default: ImageMetadata }>('/src/assets/photos/**/*.{jpg,jpeg,png,webp,avif,JPG,JPEG}');
+/**
+ * Пока своего снимка нет, на живом сайте показываем близкий реальный кадр
+ * вместо заглушки. Как только файл с основным именем появится — встанет он.
+ */
+const FALLBACK: Record<string, string> = {
+  'manipulyator-daf-palfinger': 'manipulyator-fbs-razgruzka',
+  'manipulyator-s-ekskavatorom': 'manipulyator-fbs-razgruzka',
+  'bytovka-perevozka': 'manipulyator-fbs-razgruzka',
+  'ekskavator-na-obekte': 'ekskavator-u-doma',
+  'septik-kolca': 'montazh-fbs-transheya',
+};
+const find = (name: string) => Object.keys(assets).find((p) => p.replace(/\.[a-zA-Z]+$/, '').endsWith(`/${name}`));
 const base = src.replace(/\.[a-z]+$/i, '');
-const key = Object.keys(assets).find((p) => p.replace(/\.[a-zA-Z]+$/, '').endsWith(`/${base}`));
+const key = find(base) ?? (FALLBACK[base] ? find(FALLBACK[base]) : undefined);
 const image = key ? (await assets[key]()).default : undefined;
 ---
 
