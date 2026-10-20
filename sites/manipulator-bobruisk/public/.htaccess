@@ -1,7 +1,8 @@
-# Apache: https, без www, кэш статики, сжатие, страница 404.
+# Apache: без www, кэш статики, сжатие, страница 404.
+# Переадресацию http → https здесь НЕ делаем: на hoster.by HTTPS обрабатывает
+# сервер перед Apache, и %{HTTPS} всегда «off» — получался бесконечный редирект.
+# Включайте «Перенаправление на HTTPS» в панели хостинга.
 RewriteEngine On
-RewriteCond %{HTTPS} !=on
-RewriteRule ^ https://manipulator-bobruisk.by%{REQUEST_URI} [L,R=301]
 RewriteCond %{HTTP_HOST} ^www\. [NC]
 RewriteRule ^ https://manipulator-bobruisk.by%{REQUEST_URI} [L,R=301]
 
