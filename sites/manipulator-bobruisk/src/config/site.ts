@@ -102,7 +102,7 @@ export const FORM_ENDPOINT = import.meta.env.PUBLIC_FORM_ENDPOINT ?? '/api/lead.
 
 /** Пустая строка — счётчик не подключается. */
 export const analytics = {
-  yandexMetrika: '', // TODO: номер счётчика Яндекс.Метрики
+  yandexMetrika: '103817808',
   ga4: '',
 } as const;
 
