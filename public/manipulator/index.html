@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Грузоперевозки с манипулятором и услуги миниэкскаватора JCB 8035 в Бобруйске и районе.">
+<title>Манипулятор Бобруйск</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: fixed top bar; a 720vh scroll track with a sticky 3D work site (crane truck, then mini excavator) and story cards;
+   then plain sections: services, how to order, prices, request form, contacts. Single deliberate dark look: dusk on a work site. */
+:root {
+  color-scheme: dark;
+  --bg: #121416;
+  --bg-2: #181b1e;
+  --panel: rgba(17, 19, 21, 0.8);
+  --fg: #f1eee8;
+  --muted: #a8a59d;
+  --line: #2c3034;
+  --yellow: #f2b300;
+  --yellow-ink: #1a1500;
+  --steel: #8a97a1;
+  --font-display: "Oswald", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "Golos Text", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+a { color: inherit; }
+section, footer { scroll-margin-top: 64px; }
+:focus-visible { outline: 2px solid var(--yellow); outline-offset: 3px; }
+
+/* top bar */
+.bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 10px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: linear-gradient(to bottom, rgba(10, 11, 12, .85), rgba(10, 11, 12, 0));
+}
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; min-width: 0; }
+.brand-mark { width: 34px; height: 34px; border-radius: 6px; background: var(--yellow); color: var(--yellow-ink); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 15px; flex: none; }
+.brand-name { font-family: var(--font-display); font-weight: 500; font-size: 17px; letter-spacing: .02em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar nav { display: flex; gap: 18px; font-size: 14px; color: var(--muted); }
+.bar nav a { text-decoration: none; }
+.bar nav a:hover { color: var(--fg); }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer;
+  padding: 11px 18px; border-radius: 8px; font: 600 15px/1.2 var(--font-body); text-decoration: none; white-space: nowrap;
+}
+.btn-y { background: var(--yellow); color: var(--yellow-ink); }
+.btn-y:hover { filter: brightness(1.08); }
+.btn-o { background: transparent; color: var(--fg); border: 1px solid #4a5056; }
+.btn-o:hover { border-color: var(--fg); }
+@media (max-width: 760px) { .bar nav { display: none; } .bar .btn { padding: 9px 12px; font-size: 14px; } }
+
+/* 3D story */
+#track { position: relative; height: 720vh; }
+#view { position: sticky; top: 0; height: 100vh; overflow: hidden; background: #6d7883; }
+#scene { display: block; width: 100%; height: 100%; }
+.shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(10,11,12,.62) 0%, rgba(10,11,12,.15) 45%, rgba(10,11,12,0) 70%); }
+.story { position: absolute; left: 0; top: 0; bottom: 0; width: min(560px, 100%); padding: 96px 16px 32px 32px; display: grid; align-content: center; pointer-events: none; }
+.card { grid-area: 1 / 1; transition: opacity .35s, transform .35s; pointer-events: auto; }
+.card.off { opacity: 0; transform: translateY(14px); pointer-events: none; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--yellow); margin: 0 0 12px; }
+.hero-title { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: clamp(44px, 7.4vw, 92px); line-height: .95; letter-spacing: .005em; margin: 0 0 18px; text-wrap: balance; text-shadow: 0 2px 30px rgba(0,0,0,.35); }
+.hero-title span { color: var(--yellow); }
+.lead { font-size: 18px; max-width: 34ch; margin: 0 0 22px; color: #e3dfd7; text-shadow: 0 1px 12px rgba(0,0,0,.5); }
+.cta-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.panel { background: var(--panel); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--line); border-radius: 12px; padding: 22px; }
+.panel h2 { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: clamp(28px, 3.4vw, 40px); line-height: 1.02; margin: 0 0 10px; text-wrap: balance; }
+.panel p { margin: 0 0 14px; color: var(--muted); }
+.ticks { list-style: none; padding: 0; margin: 0 0 16px; display: grid; gap: 6px; }
+.ticks li { display: grid; grid-template-columns: 14px 1fr; gap: 10px; }
+.ticks li::before { content: ""; width: 8px; height: 8px; margin-top: 8px; background: var(--yellow); transform: rotate(45deg); }
+.specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.spec { background: var(--bg-2); padding: 10px 12px; min-width: 0; }
+.spec span { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.spec b { font-family: var(--font-mono); font-weight: 600; font-size: 16px; font-variant-numeric: tabular-nums; }
+
+.chapters { position: absolute; right: 16px; bottom: 18px; display: flex; gap: 6px; align-items: center; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.chapters i { display: block; width: 46px; height: 3px; background: rgba(255,255,255,.18); border-radius: 2px; overflow: hidden; }
+.chapters i b { display: block; height: 100%; width: 0; background: var(--yellow); }
+.scroll-hint { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #fff; opacity: .85; transition: opacity .3s; }
+.scroll-hint::after { content: ""; display: block; width: 1px; height: 26px; margin: 8px auto 0; background: currentColor; animation: drop 1.8s ease-in-out infinite; transform-origin: top; }
+@keyframes drop { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(0); transform-origin: bottom; } }
+
+@media (max-width: 760px) {
+  .shade { background: linear-gradient(0deg, rgba(10,11,12,.8) 0%, rgba(10,11,12,.2) 50%, rgba(10,11,12,0) 70%); }
+  .story { width: 100%; padding: 80px 12px 54px; align-content: end; }
+  .hero-title { font-size: clamp(40px, 12vw, 60px); }
+  .lead { font-size: 16px; }
+  .panel { padding: 16px; }
+  .panel .ticks { display: none; }
+  .chapters { left: 12px; right: auto; bottom: 14px; }
+  .scroll-hint { display: none; }
+}
+
+/* plain sections */
+section.block { padding-inline: 16px; padding-block: 72px; }
+.wrap { max-width: 1120px; margin: 0 auto; }
+.block h2.sec { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: clamp(32px, 4.6vw, 52px); line-height: 1; margin: 0 0 12px; text-wrap: balance; }
+.sec-lead { color: var(--muted); max-width: 60ch; margin: 0 0 36px; }
+.duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.svc { border: 1px solid var(--line); border-radius: 12px; padding: 26px; background: var(--bg-2); display: grid; gap: 14px; align-content: start; min-width: 0; }
+.svc h3 { font-family: var(--font-display); font-weight: 500; text-transform: uppercase; font-size: 26px; margin: 0; }
+.svc .idx { font-family: var(--font-mono); font-size: 12px; color: var(--yellow); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips span { border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 14px; color: #d9d5cd; }
+
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; counter-reset: s; }
+.steps li { counter-increment: s; border-top: 2px solid var(--yellow); padding-top: 16px; }
+.steps li::before { content: "0" counter(s); font-family: var(--font-mono); color: var(--yellow); font-size: 13px; }
+.steps b { display: block; font-size: 19px; margin: 6px 0 6px; }
+.steps p { margin: 0; color: var(--muted); }
+
+.prices { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.prices th, .prices td { text-align: left; padding: 14px 12px; border-bottom: 1px solid var(--line); }
+.prices th { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.prices td:last-child { font-family: var(--font-mono); font-weight: 600; white-space: nowrap; text-align: right; }
+.prices th:last-child { text-align: right; }
+.prices .grp td { color: var(--yellow); font-family: var(--font-display); font-size: 18px; text-transform: uppercase; padding-top: 26px; text-align: left; font-weight: 500; }
+.tbl { overflow-x: auto; }
+.note { color: var(--muted); font-size: 14px; margin-top: 14px; }
+
+.todo { outline: 1px dashed var(--yellow); outline-offset: 2px; border-radius: 3px; }
+
+.order { display: grid; grid-template-columns: 1.1fr .9fr; gap: 28px; align-items: start; }
+@media (max-width: 860px) { .order { grid-template-columns: 1fr; } }
+form { display: grid; gap: 14px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+label { display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
+input, select, textarea { font: 16px/1.4 var(--font-body); color: var(--fg); background: var(--bg-2); border: 1px solid #3a3f44; border-radius: 8px; padding: 11px 12px; width: 100%; }
+textarea { min-height: 96px; resize: vertical; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg label { cursor: pointer; border: 1px solid #3a3f44; border-radius: 8px; padding: 11px 12px; color: var(--fg); display: flex; gap: 8px; align-items: center; }
+.seg input { width: auto; accent-color: var(--yellow); }
+.seg label:has(input:checked) { border-color: var(--yellow); background: rgba(242,179,0,.08); }
+.out { border: 1px solid var(--line); border-radius: 12px; padding: 20px; background: var(--bg-2); display: grid; gap: 12px; }
+.out pre { margin: 0; white-space: pre-wrap; font: 14px/1.5 var(--font-mono); color: #ddd8cf; min-height: 120px; }
+.out .cta-row .btn { flex: 1 1 auto; }
+
+.hazard { height: 12px; background: repeating-linear-gradient(-45deg, var(--yellow) 0 14px, #17191b 14px 28px); }
+footer { padding-inline: 16px; padding-block: 48px 64px; background: #0d0f10; }
+.contacts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+.contacts span { display: block; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.contacts b { font-size: 20px; font-weight: 600; }
+.copy { color: #6f6c66; font-size: 13px; margin-top: 36px; }
+
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .scroll-hint::after { animation: none; } .card { transition: none; } }
+</style>
+
+<header class="bar">
+  <a class="brand" href="#top"><span class="brand-mark">МБ</span><span class="brand-name" data-cfg="brand">Манипулятор Бобруйск</span></a>
+  <nav aria-label="Разделы"><a href="#services">Услуги</a><a href="#prices">Цены</a><a href="#order">Заявка</a><a href="#contacts">Контакты</a></nav>
+  <a class="btn btn-y" data-cfg-href="tel" href="#contacts"><span data-cfg="phone">Позвонить</span></a>
+</header>
+
+<div id="top"></div>
+<section id="track" aria-label="Манипулятор и миниэкскаватор в работе">
+  <div id="view">
+    <canvas id="scene" aria-hidden="true"></canvas>
+    <div class="shade"></div>
+    <div class="story">
+      <div class="card" id="c0">
+        <p class="eyebrow" data-cfg="area">Бобруйск и район</p>
+        <h1 class="hero-title">Поднимем.<br>Привезём.<br><span>Выкопаем.</span></h1>
+        <p class="lead">Кран-манипулятор и миниэкскаватор JCB 8035 с опытными операторами. Одна заявка — обе машины на объекте.</p>
+        <div class="cta-row">
+          <a class="btn btn-y" data-cfg-href="tel" href="#contacts">Позвонить</a>
+          <a class="btn btn-o" href="#order">Оставить заявку</a>
+        </div>
+      </div>
+      <div class="card off panel" id="c1">
+        <p class="eyebrow">01 · Перевозка с манипулятором</p>
+        <h2>Сами погрузим, довезём и выгрузим</h2>
+        <ul class="ticks">
+          <li>ЖБИ, кольца, плиты, блоки на поддонах</li>
+          <li>Бытовки, контейнеры, станки, лодки</li>
+          <li>Выгрузка за забор и в труднодоступные места</li>
+        </ul>
+        <div class="specs">
+          <div class="spec"><span>Кран</span><b data-cfg="m_crane">—</b></div>
+          <div class="spec"><span>Вылет стрелы</span><b data-cfg="m_boom">—</b></div>
+          <div class="spec"><span>Кузов</span><b data-cfg="m_body">—</b></div>
+        </div>
+      </div>
+      <div class="card off panel" id="c2">
+        <p class="eyebrow">02 · Миниэкскаватор JCB 8035 ZTS</p>
+        <h2>Копаем там, где большая техника не пройдёт</h2>
+        <ul class="ticks">
+          <li>Траншеи под воду, канализацию, кабель</li>
+          <li>Котлованы, септики, ямы под фундамент</li>
+          <li>Нулевой свес кормы: работает вплотную к стене и забору</li>
+        </ul>
+        <div class="specs">
+          <div class="spec"><span>Масса</span><b data-cfg="e_weight">—</b></div>
+          <div class="spec"><span>Глубина копания</span><b data-cfg="e_depth">—</b></div>
+          <div class="spec"><span>Ширина</span><b data-cfg="e_width">—</b></div>
+        </div>
+      </div>
+      <div class="card off panel" id="c3">
+        <p class="eyebrow">Оба сервиса — один звонок</p>
+        <h2>Привезём кольца и сразу выкопаем септик</h2>
+        <p>Согласуем время обеих машин, чтобы работы шли без простоев.</p>
+        <div class="cta-row">
+          <a class="btn btn-y" data-cfg-href="tel" href="#contacts">Позвонить</a>
+          <a class="btn btn-o" href="#order">Рассчитать заказ</a>
+        </div>
+      </div>
+    </div>
+    <div class="chapters" aria-hidden="true"><span>01</span><i><b id="ch1"></b></i><span>02</span><i><b id="ch2"></b></i></div>
+    <div class="scroll-hint" id="hint">Листайте</div>
+  </div>
+</section>
+
+<section class="block" id="services">
+  <div class="wrap">
+    <h2 class="sec">Две машины на любые работы на участке</h2>
+    <p class="sec-lead">Частным заказчикам и строительным организациям. Работаем по городу и району, выезжаем в соседние города.</p>
+    <div class="duo">
+      <article class="svc">
+        <span class="idx">01</span>
+        <h3>Грузоперевозки с манипулятором</h3>
+        <p style="margin:0;color:var(--muted)">Кран прямо на машине: не нужно заказывать отдельный автокран и грузчиков.</p>
+        <div class="chips"><span>Кольца колодцев</span><span>Плиты перекрытия</span><span>Блоки и кирпич</span><span>Бытовки</span><span>Морские контейнеры</span><span>Станки и оборудование</span><span>Лодки и катера</span><span>Пиломатериалы</span><span>Сломанная техника</span></div>
+      </article>
+      <article class="svc">
+        <span class="idx">02</span>
+        <h3>Услуги миниэкскаватора JCB 8035</h3>
+        <p style="margin:0;color:var(--muted)">Компактная машина на резиновых гусеницах: не портит газон и плитку, проходит в узкие проезды.</p>
+        <div class="chips"><span>Траншеи</span><span>Септики и выгребные ямы</span><span>Котлованы под фундамент</span><span>Ленточный фундамент</span><span>Планировка участка</span><span>Обратная засыпка</span><span>Корчевание пней</span><span>Демонтаж</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="block" style="background:var(--bg-2)">
+  <div class="wrap">
+    <h2 class="sec">Как заказать</h2>
+    <p class="sec-lead">От звонка до техники на объекте.</p>
+    <ol class="steps">
+      <li><b>Позвоните или оставьте заявку</b><p>Расскажите, что везти или копать, и где находится объект.</p></li>
+      <li><b>Получите цену и время</b><p>Сразу назовём стоимость и согласуем удобный день и час.</p></li>
+      <li><b>Техника приезжает</b><p>Оператор делает работу, вы принимаете результат.</p></li>
+      <li><b>Оплата по факту</b><p>Наличные, карта или безналичный расчёт для организаций.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="block" id="prices">
+  <div class="wrap">
+    <h2 class="sec">Цены</h2>
+    <p class="sec-lead">Точную стоимость назовём по телефону: она зависит от груза, расстояния и объёма работ.</p>
+    <div class="tbl"><table class="prices"><thead><tr><th>Услуга</th><th>Стоимость</th></tr></thead><tbody id="priceBody"></tbody></table></div>
+    <p class="note">Время подачи техники на объект входит в минимальный заказ.</p>
+  </div>
+</section>
+
+<section class="block" id="order" style="background:var(--bg-2)">
+  <div class="wrap order">
+    <div>
+      <h2 class="sec">Заявка за минуту</h2>
+      <p class="sec-lead">Заполните поля, и заявка соберётся в готовое сообщение. Отправьте его в Telegram или перезвоните нам.</p>
+      <form id="orderForm" novalidate>
+        <div class="seg" role="radiogroup" aria-label="Услуга">
+          <label><input type="radio" name="svc" id="svcM" value="Манипулятор" checked> Манипулятор</label>
+          <label><input type="radio" name="svc" id="svcE" value="Миниэкскаватор"> Экскаватор</label>
+        </div>
+        <label for="what">Что нужно сделать
+          <textarea id="what" name="what" placeholder="Например: привезти 4 кольца КС-10 со склада и выкопать яму под септик"></textarea>
+        </label>
+        <div class="row2">
+          <label for="addr">Адрес объекта<input id="addr" name="addr" placeholder="Бобруйск, ул. …"></label>
+          <label for="date">Когда<input id="date" name="date" placeholder="Завтра с утра"></label>
+        </div>
+        <div class="row2">
+          <label for="name">Ваше имя<input id="name" name="name" autocomplete="name" placeholder="Иван"></label>
+          <label for="tel">Телефон<input id="tel" name="tel" type="tel" autocomplete="tel" placeholder="+375 29 …"></label>
+        </div>
+      </form>
+    </div>
+    <div class="out" aria-live="polite">
+      <span class="eyebrow" style="margin:0">Ваша заявка</span>
+      <pre id="msg"></pre>
+      <div class="cta-row">
+        <button class="btn btn-y" type="button" id="copyBtn">Скопировать</button>
+        <a class="btn btn-o" id="tgBtn" href="https://t.me/" target="_blank" rel="noopener">Отправить в Telegram</a>
+      </div>
+      <span class="note" id="copyNote" style="margin:0"></span>
+    </div>
+  </div>
+</section>
+
+<div class="hazard" aria-hidden="true"></div>
+<footer id="contacts">
+  <div class="wrap">
+    <div class="contacts">
+      <div><span>Телефон</span><b data-cfg="phone">—</b></div>
+      <div><span>Telegram / Viber</span><b data-cfg="messenger">—</b></div>
+      <div><span>Работаем</span><b data-cfg="hours">—</b></div>
+      <div><span>Зона выезда</span><b data-cfg="area">—</b></div>
+    </div>
+    <p class="copy"><span data-cfg="brand">Манипулятор Бобруйск</span> · Грузоперевозки с манипулятором и услуги миниэкскаватора</p>
+  </div>
+</footer>
+
+<script>
+/* ===== ВАШИ ДАННЫЕ: заполните здесь, всё остальное подставится само.
+   Пустые поля подсвечиваются на странице жёлтой пунктирной рамкой. ===== */
+const SITE = {
+  brand: 'Манипулятор Бобруйск',
+  phone: '',            // '+375 29 123-45-67'
+  messenger: '',        // '@username или номер Viber'
+  telegram: '',         // 'username' без @, для кнопки «Отправить в Telegram»
+  hours: '',            // 'Ежедневно 7:00–21:00'
+  area: 'Бобруйск и район',
+  m_crane: '',          // '3,2 т'
+  m_boom: '',           // '12 м'
+  m_body: '',           // '6,2 м · 10 т'
+  e_weight: '≈3,5 т',   // проверьте по паспорту машины
+  e_depth: '≈3 м',
+  e_width: '≈1,7 м',
+  prices: [
+    ['Манипулятор', null],
+    ['Работа по городу, 1 час', ''],
+    ['Минимальный заказ', ''],
+    ['Межгород, 1 км', ''],
+    ['Миниэкскаватор JCB 8035', null],
+    ['Работа, 1 час', ''],
+    ['Смена, 8 часов', ''],
+    ['Доставка экскаватора на объект', '']
+  ]
+};
+
+(function fillSite() {
+  const todo = (el, v, fallback) => { el.textContent = v || fallback; el.classList.toggle('todo', !v); };
+  document.querySelectorAll('[data-cfg]').forEach(el => {
+    const k = el.dataset.cfg;
+    if (k === 'phone' && el.closest('.btn')) { el.textContent = SITE.phone || 'Позвонить'; return; }
+    todo(el, SITE[k], k === 'phone' ? '+375 (XX) XXX-XX-XX' : '—');
+  });
+  const tel = SITE.phone ? 'tel:' + SITE.phone.replace(/[^\d+]/g, '') : '#contacts';
+  document.querySelectorAll('[data-cfg-href="tel"]').forEach(a => { a.href = tel; });
+  const body = document.getElementById('priceBody');
+  SITE.prices.forEach(([name, val]) => {
+    const tr = document.createElement('tr');
+    if (val === null) { tr.className = 'grp'; tr.innerHTML = '<td colspan="2"></td>'; tr.firstChild.textContent = name; }
+    else {
+      tr.innerHTML = '<td></td><td></td>';
+      tr.children[0].textContent = name;
+      const v = document.createElement('span'); v.textContent = val || 'по запросу'; if (!val) v.className = 'todo';
+      tr.children[1].appendChild(v);
+    }
+    body.appendChild(tr);
+  });
+})();
+
+(function orderForm() {
+  const f = document.getElementById('orderForm'), msg = document.getElementById('msg');
+  const tg = document.getElementById('tgBtn'), note = document.getElementById('copyNote');
+  f.addEventListener('submit', e => e.preventDefault());
+  function build() {
+    const v = id => document.getElementById(id).value.trim();
+    const svc = f.querySelector('input[name="svc"]:checked').value;
+    const lines = ['Заявка: ' + svc];
+    if (v('what')) lines.push('Задача: ' + v('what'));
+    if (v('addr')) lines.push('Адрес: ' + v('addr'));
+    if (v('date')) lines.push('Когда: ' + v('date'));
+    if (v('name') || v('tel')) lines.push('Контакт: ' + [v('name'), v('tel')].filter(Boolean).join(', '));
+    if (lines.length === 1) lines.push('Задача: привезти 4 кольца КС-10 и выкопать яму под септик (пример)');
+    const text = lines.join('\n');
+    msg.textContent = text;
+    const enc = encodeURIComponent(text);
+    tg.href = SITE.telegram ? 'https://t.me/' + SITE.telegram + '?text=' + enc : 'https://t.me/share/url?url=%20&text=' + enc;
+    return text;
+  }
+  f.addEventListener('input', build);
+  build();
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const text = build();
+    const done = () => { note.textContent = 'Скопировано. Вставьте в мессенджер или СМС.'; };
+    try {
+      navigator.clipboard.writeText(text).then(done, () => { selectMsg(); note.textContent = 'Выделили текст: скопируйте его вручную.'; });
+    } catch (e) { selectMsg(); note.textContent = 'Выделили текст: скопируйте его вручную.'; }
+  });
+  function selectMsg() { const r = document.createRange(); r.selectNodeContents(msg); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const seg = (p, a, b) => clamp((p - a) / (b - a));
+  const ease = t => t * t * (3 - 2 * t);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  const track = document.getElementById('track'), view = document.getElementById('view'), canvas = document.getElementById('scene');
+  const cards = [0, 1, 2, 3].map(i => document.getElementById('c' + i));
+  const ch1 = document.getElementById('ch1'), ch2 = document.getElementById('ch2'), hint = document.getElementById('hint');
+  if (!window.THREE) { view.style.background = '#2a2e32'; return; }
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 400);
+
+  // ---------- textures ----------
+  function canvasTex(w, h, draw, rep, srgb = true) {
+    const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+    const t = new THREE.CanvasTexture(c); if (srgb) t.encoding = THREE.sRGBEncoding;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping; if (rep) t.repeat.set(rep[0], rep[1]); t.anisotropy = 8; return t;
+  }
+  const sky = canvasTex(16, 512, (g, w, h) => {
+    const gr = g.createLinearGradient(0, 0, 0, h);
+    gr.addColorStop(0, '#3d5675'); gr.addColorStop(.45, '#8a9fb3'); gr.addColorStop(.72, '#e8b98a'); gr.addColorStop(1, '#f3d2a6');
+    g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  });
+  scene.background = sky;
+  scene.fog = new THREE.Fog(0xd9b996, 55, 150);
+
+  const dirtTex = canvasTex(512, 512, (g, w, h) => {
+    const r = rng(5); g.fillStyle = '#7a634b'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 14000; i++) { const l = 30 + r() * 30; g.fillStyle = `hsla(${26 + r() * 10},${22 + r() * 18}%,${l}%,${.25 + r() * .4})`; g.fillRect(r() * w, r() * h, 1 + r() * 3, 1 + r() * 3); }
+    for (let i = 0; i < 260; i++) { g.fillStyle = `rgba(${r() < .5 ? '45,33,22' : '150,128,100'},${.08 + r() * .1})`; g.beginPath(); g.arc(r() * w, r() * h, 4 + r() * 18, 0, 7); g.fill(); }
+  }, [8, 5]);
+  const grassTex = canvasTex(512, 512, (g, w, h) => {
+    const r = rng(9); g.fillStyle = '#56663a'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 22000; i++) { g.fillStyle = `hsla(${70 + r() * 30},${30 + r() * 20}%,${22 + r() * 22}%,.6)`; g.fillRect(r() * w, r() * h, 1, 2 + r() * 4); }
+  }, [30, 30]);
+  const concreteTex = canvasTex(256, 256, (g, w, h) => {
+    const r = rng(2); g.fillStyle = '#9a9890'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 6000; i++) { const v = 120 + r() * 60 | 0; g.fillStyle = `rgba(${v},${v},${v - 6},.35)`; g.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); }
+  }, [3, 1]);
+  const woodTex = canvasTex(256, 256, (g, w, h) => {
+    const r = rng(4);
+    for (let x = 0; x < w; x += 32) { g.fillStyle = `hsl(28,${30 + r() * 10}%,${30 + r() * 8}%)`; g.fillRect(x, 0, 32, h); g.fillStyle = 'rgba(0,0,0,.4)'; g.fillRect(x, 0, 2, h); }
+  }, [1, 4]);
+  const hazardTex = canvasTex(128, 32, (g, w, h) => {
+    g.fillStyle = '#f2b300'; g.fillRect(0, 0, w, h); g.fillStyle = '#161616';
+    for (let x = -h; x < w + h; x += 32) { g.beginPath(); g.moveTo(x, h); g.lineTo(x + 16, h); g.lineTo(x + 16 + h, 0); g.lineTo(x + h, 0); g.fill(); }
+  }, [2, 1]);
+
+  // ---------- materials ----------
+  const M = {
+    yellow: new THREE.MeshStandardMaterial({ color: 0xf0ae00, roughness: 0.45, metalness: 0.15 }),
+    black: new THREE.MeshStandardMaterial({ color: 0x1b1c1e, roughness: 0.75 }),
+    rubber: new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 0.95 }),
+    steel: new THREE.MeshStandardMaterial({ color: 0x9aa3aa, roughness: 0.35, metalness: 0.8 }),
+    white: new THREE.MeshStandardMaterial({ color: 0xeceae4, roughness: 0.4, metalness: 0.1 }),
+    glass: new THREE.MeshStandardMaterial({ color: 0x1d2a33, roughness: 0.08, metalness: 0.6, transparent: true, opacity: 0.85 }),
+    darkGrey: new THREE.MeshStandardMaterial({ color: 0x3a3e42, roughness: 0.7 }),
+    concrete: new THREE.MeshStandardMaterial({ map: concreteTex, roughness: 0.95 }),
+    wood: new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.9 }),
+    hazard: new THREE.MeshStandardMaterial({ map: hazardTex, roughness: 0.6 }),
+    soil: new THREE.MeshStandardMaterial({ color: 0x5a4330, roughness: 1, map: dirtTex }),
+    pit: new THREE.MeshStandardMaterial({ color: 0x2a1d13, roughness: 1, side: THREE.BackSide }),
+    beacon: new THREE.MeshStandardMaterial({ color: 0xff8a00, emissive: 0xff6a00, emissiveIntensity: 0, roughness: 0.3 }),
+    lamp: new THREE.MeshStandardMaterial({ color: 0xfff6d8, emissive: 0xfff1c4, emissiveIntensity: 1.2 })
+  };
+  function mesh(geo, mat, parent, x = 0, y = 0, z = 0, cast = true) {
+    const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = cast; m.receiveShadow = true; (parent || scene).add(m); return m;
+  }
+  const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+
+  // ---------- lights ----------
+  scene.add(new THREE.HemisphereLight(0xbcd0ec, 0x55432f, 0.65));
+  const sun = new THREE.DirectionalLight(0xffcf9a, 1.75);
+  sun.position.set(-26, 22, 18); sun.target.position.set(3, 0, 0); scene.add(sun.target);
+  sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -22, right: 22, top: 16, bottom: -16, near: 1, far: 90 });
+  sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
+  scene.add(sun);
+
+  // ---------- ground with a hole for the trench ----------
+  const T = { x0: 11.6, x1: 14.4, z0: -2.35, z1: -1.65, depth: 1.0 };   // trench footprint
+  const D = { x0: -14, x1: 22, z0: -9, z1: 9 };                          // work-site dirt pad
+  function groundRect(x0, x1, z0, z1, mat, y = 0) {
+    if (x1 <= x0 || z1 <= z0) return;
+    const g = new THREE.PlaneGeometry(x1 - x0, z1 - z0);
+    const uv = g.attributes.uv; // world-scaled uvs so the texture does not stretch between pieces
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, (x0 + uv.getX(i) * (x1 - x0)) / 8, (z0 + (1 - uv.getY(i)) * (z1 - z0)) / 8);
+    const m = new THREE.Mesh(g, mat); m.rotation.x = -Math.PI / 2; m.position.set((x0 + x1) / 2, y, (z0 + z1) / 2); m.receiveShadow = true; scene.add(m);
+  }
+  const dirtMat = new THREE.MeshStandardMaterial({ map: dirtTex, roughness: 1 });
+  dirtTex.repeat.set(1, 1);
+  groundRect(D.x0, T.x0, D.z0, D.z1, dirtMat); groundRect(T.x1, D.x1, D.z0, D.z1, dirtMat);
+  groundRect(T.x0, T.x1, D.z0, T.z0, dirtMat); groundRect(T.x0, T.x1, T.z1, D.z1, dirtMat);
+  const grassMat = new THREE.MeshStandardMaterial({ map: grassTex, roughness: 1 });
+  grassTex.repeat.set(1, 1);
+  const G = 160;
+  groundRect(-G, D.x0, -G, G, grassMat, -0.01); groundRect(D.x1, G, -G, G, grassMat, -0.01);
+  groundRect(D.x0, D.x1, -G, D.z0, grassMat, -0.01); groundRect(D.x0, D.x1, D.z1, G, grassMat, -0.01);
+  const pit = mesh(box(T.x1 - T.x0, T.depth, T.z1 - T.z0), M.pit, null, (T.x0 + T.x1) / 2, -T.depth / 2, (T.z0 + T.z1) / 2, false);
+  const lid = new THREE.Mesh(new THREE.PlaneGeometry(1, T.z1 - T.z0), dirtMat);
+  lid.rotation.x = -Math.PI / 2; lid.receiveShadow = true; scene.add(lid);
+  // string line along the trench
+  [[T.x0 - 0.3, T.z0 - 0.15], [T.x1 + 0.3, T.z0 - 0.15], [T.x0 - 0.3, T.z1 + 0.15], [T.x1 + 0.3, T.z1 + 0.15]].forEach(([x, z]) => mesh(box(0.05, 0.5, 0.05), M.wood, null, x, 0.25, z));
+
+  // ---------- surroundings ----------
+  (function trees() {
+    const r = rng(21), n = 70;
+    const crown = new THREE.InstancedMesh(new THREE.ConeGeometry(1.6, 5.5, 7), new THREE.MeshStandardMaterial({ color: 0x2f4a2c, roughness: 1 }), n);
+    const trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.18, 0.22, 1.6, 6), new THREE.MeshStandardMaterial({ color: 0x4a3a2a }), n);
+    const o = new THREE.Object3D();
+    for (let i = 0; i < n; i++) {
+      const a = r() * Math.PI * 2, d = 34 + r() * 40, s = 0.8 + r() * 0.9;
+      const x = 4 + Math.cos(a) * d, z = Math.sin(a) * d * 0.8 - 6;
+      o.position.set(x, 0.8 * s, z); o.scale.setScalar(s); o.updateMatrix(); trunk.setMatrixAt(i, o.matrix);
+      o.position.set(x, (1.6 + 2.75) * s, z); o.updateMatrix(); crown.setMatrixAt(i, o.matrix);
+    }
+    crown.castShadow = true; scene.add(crown, trunk);
+  })();
+  // pallets of blocks
+  function pallet(x, z, ry) {
+    const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g);
+    mesh(box(1.2, 0.14, 1.0), M.wood, g, 0, 0.07, 0);
+    mesh(box(1.15, 0.9, 0.95), new THREE.MeshStandardMaterial({ color: 0xcfc8b8, roughness: 0.9 }), g, 0, 0.6, 0);
+    return g;
+  }
+  pallet(-9, 4.5, 0.2); pallet(-7.6, 5.2, -0.1); pallet(18, 3, 0.4);
+
+  // ---------- crane truck (forward = +x) ----------
+  const truck = new THREE.Group(); scene.add(truck);
+  truck.position.set(-1.5, 0, 0);
+  const wheelGeo = new THREE.CylinderGeometry(0.52, 0.52, 0.42, 22); wheelGeo.rotateX(Math.PI / 2);
+  const hubGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.44, 12); hubGeo.rotateX(Math.PI / 2);
+  [3.1, -1.9, -3.2].forEach(x => [-1.02, 1.02].forEach(z => { mesh(wheelGeo, M.rubber, truck, x, 0.52, z); mesh(hubGeo, M.steel, truck, x, 0.52, z); }));
+  mesh(box(8.2, 0.35, 1.1), M.black, truck, -0.2, 0.95, 0);
+  // cab
+  mesh(box(1.9, 2.0, 2.45), M.white, truck, 3.25, 2.05, 0);
+  mesh(box(1.6, 0.45, 2.45), M.white, truck, 3.1, 3.27, 0);
+  mesh(box(0.05, 0.95, 2.2), M.glass, truck, 4.21, 2.55, 0, false);
+  mesh(box(1.0, 0.75, 0.05), M.glass, truck, 3.35, 2.6, 1.23, false); mesh(box(1.0, 0.75, 0.05), M.glass, truck, 3.35, 2.6, -1.23, false);
+  mesh(box(0.12, 0.5, 2.3), M.black, truck, 4.25, 1.3, 0);
+  mesh(box(0.06, 0.12, 2.3), M.yellow, truck, 4.22, 1.65, 0);
+  [-0.9, 0.9].forEach(z => mesh(box(0.05, 0.16, 0.38), M.lamp, truck, 4.29, 1.45, z, false));
+  const beacons = [-0.7, 0.7].map(z => mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.16, 12), M.beacon, truck, 3.3, 3.58, z));
+  // fenders
+  [-1.9, -3.2].forEach(x => [-1.08, 1.08].forEach(z => mesh(box(1.1, 0.06, 0.5), M.black, truck, x, 1.12, z)));
+  // bed
+  const bedTop = 1.38;
+  mesh(box(5.4, 0.18, 2.45), M.wood, truck, -2.0, bedTop - 0.09, 0);
+  [-1.2, 1.2].forEach(z => mesh(box(5.4, 0.35, 0.06), M.darkGrey, truck, -2.0, bedTop + 0.17, z));
+  mesh(box(0.06, 0.35, 2.45), M.darkGrey, truck, -4.68, bedTop + 0.17, 0);
+  // crane base between cab and bed
+  const CX = 1.45;
+  mesh(box(0.9, 0.55, 2.3), M.yellow, truck, CX, 1.35, 0);
+  const column = mesh(new THREE.CylinderGeometry(0.32, 0.38, 1.5, 16), M.yellow, truck, CX, 2.35, 0);
+  // outriggers
+  const outr = [-1, 1].map(s => {
+    const beam = mesh(box(0.26, 0.24, 1.2), M.hazard, truck, CX, 1.25, s * 0.6);
+    const leg = mesh(new THREE.CylinderGeometry(0.09, 0.09, 1, 10), M.steel, truck, CX, 0.7, s * 1.1);
+    const pad = mesh(box(0.42, 0.06, 0.42), M.black, truck, CX, 0.03, s * 1.1);
+    return { s, beam, leg, pad };
+  });
+  // crane arms
+  const SH = new THREE.Vector3(CX, 3.1, 0);      // shoulder pivot (truck-local)
+  const L1 = 4.2, L2 = 3.5;
+  const yawG = new THREE.Group(); yawG.position.copy(SH); truck.add(yawG);
+  mesh(box(0.6, 0.5, 0.6), M.yellow, yawG, 0, -0.05, 0);
+  const b1 = new THREE.Group(); yawG.add(b1);
+  mesh(box(L1, 0.42, 0.36), M.yellow, b1, L1 / 2, 0, 0);
+  mesh(new THREE.CylinderGeometry(0.07, 0.07, 2.4, 8), M.steel, b1, 1.2, -0.32, 0).rotation.z = Math.PI / 2;
+  const b2 = new THREE.Group(); b2.position.x = L1; b1.add(b2);
+  mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.42, 14), M.black, b2, 0, 0, 0).rotation.x = Math.PI / 2;
+  mesh(box(L2, 0.34, 0.3), M.yellow, b2, L2 / 2, 0, 0);
+  const tele = mesh(box(3.2, 0.26, 0.22), M.yellow, b2, L2 - 1.6, 0, 0);
+  const tipLocal = new THREE.Object3D(); b2.add(tipLocal);
+  const hook = mesh(new THREE.ConeGeometry(0.12, 0.3, 8), M.black, null, 0, 0, 0);
+  hook.rotation.x = Math.PI;
+  const lineMat = new THREE.LineBasicMaterial({ color: 0x111111 });
+  const cable = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), lineMat); scene.add(cable);
+  const slings = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(new Array(6).fill(0).map(() => new THREE.Vector3())), lineMat); scene.add(slings);
+
+  // concrete well ring (КС-10)
+  const ringGeo = new THREE.LatheGeometry([new THREE.Vector2(0.58, 0), new THREE.Vector2(0.68, 0), new THREE.Vector2(0.68, 0.9), new THREE.Vector2(0.58, 0.9), new THREE.Vector2(0.58, 0)], 36);
+  const ring = mesh(ringGeo, M.concrete, null);
+  const ring2 = mesh(ringGeo, M.concrete, truck, -3.6, bedTop, 0);    // second ring stays on the bed
+  const ringsDone = mesh(ringGeo, M.concrete, null, -2.6, 0, 4.3);   // one already unloaded earlier
+
+  // ---------- mini excavator (forward = +x) ----------
+  const ex = new THREE.Group(); ex.position.set(10, 0, -2); scene.add(ex);
+  [-0.68, 0.68].forEach(z => {
+    mesh(box(1.7, 0.42, 0.36), M.rubber, ex, 0, 0.27, z);
+    [-0.85, 0.85].forEach(x => { const c = mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.36, 14), M.rubber, ex, x, 0.27, z); c.rotation.x = Math.PI / 2; });
+    mesh(box(1.5, 0.16, 0.2), M.black, ex, 0, 0.3, z * 0.72);
+  });
+  mesh(box(0.8, 0.3, 0.8), M.black, ex, 0, 0.5, 0);
+  const blade = mesh(box(0.14, 0.38, 1.72), M.yellow, ex, 1.15, 0.24, 0);
+  mesh(box(0.5, 0.1, 0.5), M.black, ex, 0.88, 0.38, 0);
+  const house = new THREE.Group(); house.position.y = 0.62; ex.add(house);
+  mesh(new THREE.CylinderGeometry(0.82, 0.82, 0.55, 28, 1, false, Math.PI * 0.5, Math.PI), M.yellow, house, -0.05, 0.28, 0);
+  mesh(box(0.95, 0.55, 1.5), M.yellow, house, 0.25, 0.28, 0);
+  mesh(box(0.06, 0.45, 1.3), M.black, house, -0.86, 0.3, 0).visible = false;
+  // cab (left side)
+  const cab = new THREE.Group(); cab.position.set(0.05, 0.55, 0.32); house.add(cab);
+  mesh(box(1.0, 0.08, 0.86), M.yellow, cab, 0, 1.18, 0);
+  [[0.46, 0.39], [0.46, -0.39], [-0.46, 0.39], [-0.46, -0.39]].forEach(([x, z]) => mesh(box(0.07, 1.18, 0.07), M.black, cab, x, 0.59, z));
+  mesh(box(0.9, 1.05, 0.76), M.glass, cab, 0, 0.6, 0, false);
+  mesh(box(0.4, 0.5, 0.4), M.black, cab, -0.1, 0.25, 0, false);
+  // arm
+  const EP = new THREE.Vector3(0.78, 0.42, -0.28);   // boom pivot (house-local)
+  const E1 = 2.55, E2 = 1.7, EB = 0.58;
+  mesh(box(0.3, 0.4, 0.4), M.yellow, house, 0.72, 0.32, -0.28);
+  const swingPost = new THREE.Group(); swingPost.position.copy(EP); house.add(swingPost);
+  const eb1 = new THREE.Group(); swingPost.add(eb1);
+  mesh(box(E1, 0.26, 0.2), M.yellow, eb1, E1 / 2, 0, 0);
+  mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.4, 8), M.steel, eb1, 0.9, -0.2, 0).rotation.z = Math.PI / 2;
+  const eb2 = new THREE.Group(); eb2.position.x = E1; eb1.add(eb2);
+  mesh(box(E2, 0.2, 0.17), M.yellow, eb2, E2 / 2, 0, 0);
+  mesh(new THREE.CylinderGeometry(0.045, 0.045, 1.0, 8), M.steel, eb2, 0.6, 0.17, 0).rotation.z = Math.PI / 2;
+  const eb3 = new THREE.Group(); eb3.position.x = E2; eb2.add(eb3);
+  const bucket = new THREE.Group(); eb3.add(bucket);
+  mesh(box(EB, 0.05, 0.42), M.black, bucket, EB / 2, -0.17, 0);
+  mesh(box(0.05, 0.36, 0.42), M.black, bucket, 0.02, 0, 0);
+  [-1, 1].forEach(s => mesh(box(EB, 0.36, 0.04), M.black, bucket, EB / 2, 0, s * 0.2));
+  [-0.14, 0, 0.14].forEach(z => mesh(box(0.1, 0.04, 0.05), M.steel, bucket, EB + 0.03, -0.17, z));
+  const load = mesh(new THREE.SphereGeometry(0.2, 10, 8), M.soil, bucket, EB * 0.5, -0.02, 0);
+  load.scale.set(1.2, 0.8, 1.0);
+  // spoil pile
+  const pile = mesh(new THREE.ConeGeometry(1, 1, 18), M.soil, null, 0, 0, 0);
+  const pileBase = new THREE.Vector3();
+
+  // ---------- 2-link planar IK (elbow up) ----------
+  function ik(r, h, l1, l2) {
+    let d = Math.hypot(r, h);
+    d = clamp(d, Math.abs(l1 - l2) + 0.05, (l1 + l2) * 0.995);
+    const a1 = Math.atan2(h, r) + Math.acos(clamp((l1 * l1 + d * d - l2 * l2) / (2 * l1 * d), -1, 1));
+    const a2 = -(Math.PI - Math.acos(clamp((l1 * l1 + l2 * l2 - d * d) / (2 * l1 * l2), -1, 1)));
+    return [a1, a2];
+  }
+
+  // ---------- crane story ----------
+  const tmpV = new THREE.Vector3(), tmpV2 = new THREE.Vector3();
+  const shoulderW = new THREE.Vector3();
+  const BED = new THREE.Vector3(-2.0 + truck.position.x, bedTop, 0);       // ring start (world)
+  const DROP = new THREE.Vector3(-0.6, 0, 4.4);                           // ring landing (world)
+  const SLING = 1.25, RING_H = 0.9;
+  function ringPath(q) {
+    const up = ease(seg(q, 0.38, 0.48)), move = ease(seg(q, 0.48, 0.76)), down = ease(seg(q, 0.76, 0.88));
+    const liftH = 3.2;
+    const a = Math.atan2(BED.z - shoulderW.z, BED.x - shoulderW.x), b = Math.atan2(DROP.z - shoulderW.z, DROP.x - shoulderW.x);
+    const ra = Math.hypot(BED.x - shoulderW.x, BED.z - shoulderW.z), rb = Math.hypot(DROP.x - shoulderW.x, DROP.z - shoulderW.z);
+    let da = b - a; if (da > Math.PI) da -= 2 * Math.PI; if (da < -Math.PI) da += 2 * Math.PI;
+    const ang = a + da * move, rad = lerp(ra, rb, move);
+    const top = BED.y + liftH;
+    const y = q < 0.48 ? lerp(BED.y, top, up) : q < 0.76 ? top : lerp(top, DROP.y, down);
+    return tmpV.set(shoulderW.x + Math.cos(ang) * rad, y, shoulderW.z + Math.sin(ang) * rad);
+  }
+  const FOLD = { yaw: Math.PI, a1: 1.35, a2: -2.75, ext: 0 };
+  function updateCrane(q, t) {
+    // outriggers
+    const o = ease(seg(q, 0.02, 0.14));
+    outr.forEach(({ s, beam, leg, pad }) => {
+      const reach = 1.1 + 1.15 * o;
+      beam.position.z = s * (0.6 + 1.15 * o);
+      const legLen = 0.25 + 0.9 * ease(seg(q, 0.1, 0.18));
+      leg.scale.y = legLen; leg.position.set(CX, 1.13 - legLen / 2, s * reach); pad.position.set(CX, 1.13 - legLen - 0.03, s * reach);
+      pad.visible = legLen > 1.05;
+    });
+    truck.updateMatrixWorld(true);
+    shoulderW.copy(SH).applyMatrix4(truck.matrixWorld);
+    const attached = q >= 0.38 && q < 0.9;
+    const rp = ringPath(q);
+    const ringPos = tmpV2.copy(rp);
+    // hook target: above the ring by the sling length; after release the hook lifts away
+    const slack = q < 0.38 ? lerp(1.6, 0, ease(seg(q, 0.24, 0.36))) : q >= 0.9 ? 1.8 * ease(seg(q, 0.9, 1)) : 0;
+    const hx = ringPos.x, hy = ringPos.y + RING_H + SLING + slack, hz = ringPos.z;
+    const dx = hx - shoulderW.x, dz = hz - shoulderW.z;
+    const CABLE = 1.1;
+    const r = Math.hypot(dx, dz), h = hy + CABLE - shoulderW.y;
+    const ext = clamp((r - 3.0) * 0.5, 0, 1.6);
+    const [a1, a2] = ik(r, h, L1, L2 + ext);
+    const yaw = Math.atan2(-dz, dx);
+    const w = ease(seg(q, 0.14, 0.3));
+    let fy = FOLD.yaw, dy = yaw - fy; while (dy > Math.PI) dy -= 2 * Math.PI; while (dy < -Math.PI) dy += 2 * Math.PI;
+    yawG.rotation.y = fy + dy * w;
+    b1.rotation.z = lerp(FOLD.a1, a1, w);
+    b2.rotation.z = lerp(FOLD.a2, a2, w);
+    const e = lerp(0, ext, w);
+    tele.position.x = L2 - 1.6 + e; tipLocal.position.x = L2 + e;
+    tipLocal.updateMatrixWorld(true);
+    const tip = new THREE.Vector3().setFromMatrixPosition(tipLocal.matrixWorld);
+    hook.position.set(tip.x, lerp(tip.y - 0.3, Math.min(hy, tip.y - 0.3), w), tip.z);
+    hook.visible = w > 0.02;
+    cable.visible = hook.visible;
+    const cp = cable.geometry.attributes.position; cp.setXYZ(0, tip.x, tip.y, tip.z); cp.setXYZ(1, hook.position.x, hook.position.y + 0.15, hook.position.z); cp.needsUpdate = true;
+    // ring
+    ring.position.copy(ringPos);
+    ring.visible = true;
+    const sp = slings.geometry.attributes.position;
+    const showS = attached || (q > 0.33 && q < 0.95);
+    slings.visible = showS && hook.visible;
+    for (let i = 0; i < 3; i++) {
+      const a = i * Math.PI * 2 / 3 + 0.4;
+      sp.setXYZ(i * 2, hook.position.x, hook.position.y - 0.12, hook.position.z);
+      sp.setXYZ(i * 2 + 1, ringPos.x + Math.cos(a) * 0.63, ringPos.y + RING_H, ringPos.z + Math.sin(a) * 0.63);
+    }
+    sp.needsUpdate = true;
+    // beacons blink while the crane works
+    const working = q > 0.02 && q < 0.95 ? 1 : 0;
+    beacons.forEach((b, i) => { b.material.emissiveIntensity = working * (Math.sin(t * 9 + i * Math.PI) > 0.2 ? 2.4 : 0.1); });
+  }
+
+  // ---------- excavator story ----------
+  const PIV_X = 10 + EP.x, CYCLES = 4;
+  function keyLerp(keys, k) {
+    for (let i = 0; i < keys.length - 1; i++) {
+      const [ka, va] = keys[i], [kb, vb] = keys[i + 1];
+      if (k <= kb) { const u = ease(seg(k, ka, kb)); return va.map((v, j) => lerp(v, vb[j], u)); }
+    }
+    return keys[keys.length - 1][1].slice();
+  }
+  function updateExcavator(e, t) {
+    const dug = clamp(e);
+    const xd = T.x1 - (T.x1 - T.x0) * dug;            // front of the dug part
+    lid.visible = xd - T.x0 > 0.02;
+    lid.scale.x = Math.max(0.001, xd - T.x0); lid.position.set((T.x0 + xd) / 2, 0.001, (T.z0 + T.z1) / 2);
+    const k = (e * CYCLES) % 1;
+    const done = e >= 1 || e <= 0;
+    const rd = clamp(xd + 0.25 - PIV_X, 1.0, 3.9);
+    // [r, h, bucketAbsAngle, yaw]
+    const keys = [
+      [0.00, [rd + 0.7, 0.15, -1.2, 0]],
+      [0.12, [rd + 0.55, -0.95, -1.75, 0]],
+      [0.24, [rd - 0.05, -1.05, -3.0, 0]],
+      [0.32, [rd - 0.35, -0.55, -3.6, 0]],
+      [0.44, [2.3, 0.9, -3.6, 0]],
+      [0.58, [2.3, 0.9, -3.6, 1.35]],
+      [0.70, [2.5, 1.0, -0.7, 1.35]],
+      [0.86, [2.6, 0.7, -1.2, 0]],
+      [1.00, [rd + 0.7, 0.15, -1.2, 0]]
+    ];
+    let [r, h, beta, yaw] = done ? [2.4, 0.6, -1.4, 0] : keyLerp(keys, k);
+    if (e <= 0) [r, h, beta, yaw] = [1.6, 0.9, -2.2, 0];
+    house.rotation.y = yaw;
+    const [a1, a2] = ik(r, h, E1, E2);
+    eb1.rotation.z = a1; eb2.rotation.z = a2; eb3.rotation.z = beta - a1 - a2;
+    load.visible = !done && k > 0.26 && k < 0.66;
+    // pile grows with each dump
+    const dumps = Math.floor(e * CYCLES) + (k > 0.66 ? ease(seg(k, 0.6, 0.72)) : 0);
+    const amt = clamp(dumps / CYCLES);
+    const s = 0.35 + 1.1 * Math.sqrt(amt);
+    pile.scale.set(s, 0.25 + 0.75 * Math.sqrt(amt), s);
+    pile.visible = e > 0;
+    pile.position.set(pileBase.x, pile.scale.y / 2, pileBase.z);
+    ex.position.y = 0;
+  }
+  // pile position: where the bucket dumps (yaw 1.35, r≈2.5 from pivot)
+  (function () { const y = 1.35, rr = 2.6; pileBase.set(10 + (EP.x + rr) * Math.cos(y) + EP.z * Math.sin(y), 0, -2 - (EP.x + rr) * Math.sin(y) + EP.z * Math.cos(y)); })();
+
+  // ---------- camera path ----------
+  const camKeys = [
+    [0.00, [-16, 13, 21], [3, 0, 0]],
+    [0.10, [-12, 6.5, 13], [-1, 1.6, 1]],
+    [0.30, [-9.5, 5.2, 11.5], [-0.5, 2.4, 1.5]],
+    [0.50, [-5.5, 4.2, 12.5], [-0.8, 1.6, 3]],
+    [0.58, [3, 6.5, 12], [7, 1.2, 0]],
+    [0.66, [15.5, 4.2, 6.5], [11.6, 0.6, -2]],
+    [0.88, [17.5, 3.6, 3.5], [12.2, 0.2, -2.4]],
+    [1.00, [2, 17, 26], [4, 0, 0]]
+  ];
+  const cPos = new THREE.Vector3(), cLook = new THREE.Vector3(), va = new THREE.Vector3(), vb = new THREE.Vector3();
+  function camAt(p) {
+    for (let i = 0; i < camKeys.length - 1; i++) {
+      const A = camKeys[i], B = camKeys[i + 1];
+      if (p <= B[0] || i === camKeys.length - 2) {
+        const u = ease(seg(p, A[0], B[0]));
+        cPos.copy(va.fromArray(A[1])).lerp(vb.fromArray(B[1]), u);
+        cLook.copy(va.fromArray(A[2])).lerp(vb.fromArray(B[2]), u);
+        return;
+      }
+    }
+  }
+
+  let narrow = false;
+  function resize() {
+    const w = view.clientWidth, h = view.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; narrow = camera.aspect < 0.9;
+    camera.fov = narrow ? 58 : 42; camera.updateProjectionMatrix();
+  }
+  addEventListener('resize', resize); resize();
+
+  function scrollTarget() {
+    const r = track.getBoundingClientRect(), total = r.height - innerHeight;
+    return total > 0 ? clamp(-r.top / total) : 0;
+  }
+  let cur = scrollTarget();
+
+  const ranges = [[-1, 0.075], [0.11, 0.5], [0.6, 0.9], [0.93, 2]];
+  let lastCard = -1;
+  function updateUI(p) {
+    let idx = -1; ranges.forEach(([a, b], i) => { if (p >= a && p < b) idx = i; });
+    if (idx !== lastCard) { cards.forEach((c, i) => c.classList.toggle('off', i !== idx)); lastCard = idx; }
+    ch1.style.width = (seg(p, 0.08, 0.52) * 100).toFixed(1) + '%';
+    ch2.style.width = (seg(p, 0.58, 0.92) * 100).toFixed(1) + '%';
+    hint.style.opacity = p < 0.03 ? 0.85 : 0;
+  }
+
+  let visible = true;
+  new IntersectionObserver(en => { visible = en[0].isIntersecting; }).observe(view);
+  const clock = new THREE.Clock();
+  function frame() {
+    requestAnimationFrame(frame);
+    if (!visible) return;
+    const t = clock.getElapsedTime();
+    const target = scrollTarget();
+    cur = reduced ? target : cur + (target - cur) * 0.1;
+    if (Math.abs(target - cur) < 0.0003) cur = target;
+    const p = cur;
+    updateCrane(seg(p, 0.1, 0.52), t);
+    updateExcavator(seg(p, 0.62, 0.9), t);
+    camAt(p);
+    if (narrow) cPos.sub(cLook).multiplyScalar(1.3).add(cLook);
+    const drift = reduced ? 0 : 0.25;
+    camera.position.set(cPos.x + Math.sin(t * 0.21) * drift, cPos.y + Math.sin(t * 0.17) * drift * 0.4, cPos.z);
+    camera.lookAt(cLook);
+    renderer.render(scene, camera);
+    updateUI(p);
+  }
+  frame();
+})();
+</script>
+
+</html>
