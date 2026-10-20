@@ -320,3 +320,6 @@ h3 { font-size: var(--fs-xl); }
 
 .text-mute { color: var(--c-mute); }
 .mt-0 { margin-top: 0; }
+
+.chips-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; align-content: start; }
+.chips-list li { border: 1px solid var(--c-line); background: var(--c-paper); border-radius: 999px; padding: 6px 14px; font-size: var(--fs-sm); color: var(--c-ink); }

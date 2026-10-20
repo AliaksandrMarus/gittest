@@ -9,11 +9,11 @@ import { contacts } from '../config/site';
 import { breadcrumbSchema } from '../lib/schema';
 ---
 
-<Base title="Цены на услуги манипулятора и мини-экскаватора в Бобруйске" description="Стоимость работы крана-манипулятора и мини-экскаватора в Бобруйске: час работы, минимальный заказ, смена, межгород. Точную цену назовём по телефону +375 44 499-82-22." path="/ceny/" schemas={[breadcrumbSchema([{ label: 'Цены' }])]}>
+<Base title="Цены на услуги манипулятора и мини-экскаватора в Бобруйске" description="Цены на аренду манипулятора и мини-экскаватора в Бобруйске: час, смена, минимальный заказ, межгород. Точную цену назовём по телефону." path="/ceny/" schemas={[breadcrumbSchema([{ label: 'Цены' }])]}>
   <div class="phero">
     <Breadcrumbs items={[{ label: 'Цены' }]} />
     <div class="wrap" style="padding-block:28px 56px;display:grid;gap:18px;max-width:var(--wrap)">
-      <h1>Цены</h1>
+      <h1>Цены на услуги манипулятора и мини-экскаватора</h1>
       <p class="lead" style="color:#d0cec7">Стоимость зависит от груза, расстояния и объёма земляных работ. Назовём точную цену до выезда — бесплатно и за пару минут.</p>
       <div class="hero__cta"><a class="btn btn--primary" href={`tel:${contacts.phoneRaw}`}><Icon name="phone" size={18} />{contacts.phoneHuman}</a></div>
     </div>
