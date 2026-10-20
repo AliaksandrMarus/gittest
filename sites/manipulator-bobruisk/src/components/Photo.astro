@@ -25,9 +25,8 @@ const assets = import.meta.glob<{ default: ImageMetadata }>('/src/assets/photos/
  * вместо заглушки. Как только файл с основным именем появится — встанет он.
  */
 const FALLBACK: Record<string, string> = {
-  'manipulyator-daf-palfinger': 'manipulyator-fbs-razgruzka',
-  'manipulyator-s-ekskavatorom': 'manipulyator-fbs-razgruzka',
-  'bytovka-perevozka': 'manipulyator-fbs-razgruzka',
+  'manipulyator-s-ekskavatorom': 'manipulyator-daf-palfinger',
+  'bytovka-perevozka': 'manipulyator-strela-10m',
   'ekskavator-na-obekte': 'ekskavator-u-doma',
   'septik-kolca': 'montazh-fbs-transheya',
 };
