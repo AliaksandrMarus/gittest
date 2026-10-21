@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CODEFLOW — IT-студия</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Сайты, SEO, реклама в Яндекс и Google, Telegram-боты, AI-агенты и автоматизация бизнеса. Бобруйск и вся Беларусь.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: тёмная «студия» поверх живого холста, где код собирается в продукты; контент — стеклянные панели в колонке 1180px */
+:root{
+  --bg:#060A16;
+  --bg-2:#0A1124;
+  --glass:rgba(10,17,36,.68);
+  --glass-2:rgba(13,22,46,.86);
+  --line:rgba(130,170,255,.15);
+  --fg:#EAF0FF;
+  --muted:#93A0C4;
+  --cyan:#3BE6FF;
+  --amber:#FFB33D;
+  --pink:#FF6FA0;
+  --ok:#5CF5AE;
+  --ink:#1A1204;
+  --f-display:"Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body:"Manrope", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", Consolas, "Courier New", monospace;
+  --r:18px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 17px/1.6 var(--f-body);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
+a{color:inherit}
+img{max-width:100%}
+::selection{background:var(--amber);color:var(--ink)}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:6px}
+
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.veil{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(1200px 600px at 15% 10%, rgba(6,10,22,.15), rgba(6,10,22,.5) 70%),
+    linear-gradient(rgba(130,170,255,.035) 1px, transparent 1px) 0 0/44px 44px,
+    linear-gradient(90deg, rgba(130,170,255,.035) 1px, transparent 1px) 0 0/44px 44px;}
+.page{position:relative;z-index:1}
+
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(20px, env(safe-area-inset-left,0px));padding-right:max(20px, env(safe-area-inset-right,0px))}
+section{padding-block:96px}
+.eyebrow{font:600 13px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);display:inline-flex;gap:10px;align-items:center}
+.eyebrow::before{content:"//";color:var(--muted)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+h2{font-size:clamp(28px,3.6vw,46px);line-height:1.1;letter-spacing:-.01em;font-weight:700}
+h3{font-size:19px;line-height:1.25;font-weight:700}
+.lead{color:var(--muted);font-size:18px;max-width:62ch;margin:0}
+.sec-head{display:grid;gap:16px;margin-bottom:48px;max-width:780px}
+
+/* buttons */
+.btn{--h:56px;display:inline-flex;align-items:center;justify-content:center;gap:10px;height:var(--h);padding:0 26px;border-radius:14px;font:700 16px/1 var(--f-body);text-decoration:none;cursor:pointer;border:0;transition:transform .2s, box-shadow .2s, background .2s;white-space:nowrap}
+.btn-main{background:var(--amber);color:var(--ink);box-shadow:0 10px 40px -10px rgba(255,179,61,.7), inset 0 -3px 0 rgba(0,0,0,.18)}
+.btn-main:hover{transform:translateY(-2px);box-shadow:0 18px 50px -10px rgba(255,179,61,.9), inset 0 -3px 0 rgba(0,0,0,.18)}
+.btn-ghost{background:rgba(59,230,255,.06);color:var(--fg);border:1px solid rgba(59,230,255,.35)}
+.btn-ghost:hover{background:rgba(59,230,255,.14);transform:translateY(-2px)}
+.btn .arr{font-family:var(--f-mono);transition:transform .2s}
+.btn:hover .arr{transform:translateX(4px)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;transition:background .3s, border-color .3s;border-bottom:1px solid transparent}
+.top.scrolled{background:rgba(6,10,22,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:var(--line)}
+.top .wrap{display:flex;align-items:center;gap:28px;height:72px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font:800 19px/1 var(--f-display);letter-spacing:.02em}
+.logo-mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,var(--cyan),#2a7bff);color:var(--bg);font:700 14px/1 var(--f-mono)}
+.logo small{display:block;font:500 11px/1.2 var(--f-mono);color:var(--muted);letter-spacing:.04em;margin-top:3px}
+.nav{display:flex;gap:24px;margin-left:auto}
+.nav a{text-decoration:none;color:var(--muted);font-weight:600;font-size:15px;transition:color .2s}
+.nav a:hover{color:var(--fg)}
+.top-phone{font:600 15px/1 var(--f-mono);text-decoration:none;color:var(--fg);white-space:nowrap}
+.top .btn{--h:44px;padding:0 18px;font-size:15px}
+
+/* hero */
+.hero{padding-block:56px 72px}
+.hero .wrap{display:grid;grid-template-columns:1.12fr .88fr;gap:48px;align-items:center}
+.hero-text{display:grid;gap:26px;min-width:0}
+.badge{justify-self:start;display:inline-flex;align-items:center;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(92,245,174,.08);border:1px solid rgba(92,245,174,.3);font:600 13px/1.2 var(--f-mono);color:var(--ok)}
+.badge i{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(92,245,174,.7);animation:ping 1.8s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 10px rgba(92,245,174,0)}100%{box-shadow:0 0 0 0 rgba(92,245,174,0)}}
+h1{font-size:clamp(34px,5.4vw,70px);line-height:1.04;letter-spacing:-.025em;font-weight:800}
+.hl{color:var(--amber);white-space:nowrap}
+.hl::before,.hl::after{font-family:var(--f-mono);font-weight:400;color:var(--cyan);font-size:.8em}
+.hl::before{content:"{"}
+.hl::after{content:"}"}
+.rotator{font:500 clamp(16px,1.7vw,20px)/1.4 var(--f-mono);color:var(--muted);min-height:1.4em}
+.rotator b{color:var(--cyan);font-weight:600}
+.caret{display:inline-block;width:.6em;height:1.1em;vertical-align:-.18em;background:var(--amber);margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap}
+.trust{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted);font-size:14px;font-weight:600}
+.trust span::before{content:"✓ ";color:var(--ok)}
+
+.term{background:var(--glass-2);border:1px solid rgba(59,230,255,.28);border-radius:var(--r);box-shadow:0 40px 120px -40px rgba(59,230,255,.45), 0 0 0 1px rgba(255,255,255,.02) inset;overflow:hidden;min-width:0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.term-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);font:500 12px/1 var(--f-mono);color:var(--muted)}
+.term-bar i{width:11px;height:11px;border-radius:50%;background:var(--pink)}
+.term-bar i:nth-child(2){background:var(--amber)}
+.term-bar i:nth-child(3){background:var(--ok);margin-right:8px}
+.term-body{padding:18px 18px 22px;font:400 14px/1.75 var(--f-mono);min-height:302px;overflow-x:auto}
+.term-body .l{white-space:pre;display:flex;gap:8px}
+.term-body .cmd{color:var(--fg)}
+.term-body .cmd::before{content:"$";color:var(--ok)}
+.term-body .st{color:var(--muted)}
+.term-body .st .dots{flex:1;overflow:hidden;opacity:.4}
+.term-body .st .ok{color:var(--ok);font-weight:600}
+.term-body .st .spin{color:var(--amber)}
+.term-body .done{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(255,179,61,.12);border:1px solid rgba(255,179,61,.45);color:var(--amber);white-space:normal;animation:pop .4s ease}
+@keyframes pop{from{transform:scale(.96);opacity:.3}}
+.term-foot{display:flex;justify-content:space-between;gap:12px;padding:12px 18px;border-top:1px solid var(--line);font:500 12px/1.3 var(--f-mono);color:var(--muted)}
+.term-foot b{color:var(--ok)}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:56px}
+.stat{padding:20px 22px;border-radius:var(--r);background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.stat b{display:block;font:800 clamp(26px,3vw,36px)/1 var(--f-display);color:var(--cyan);margin-bottom:8px}
+.stat span{color:var(--muted);font-size:15px}
+
+/* marquee */
+.marquee{border-block:1px solid var(--line);background:rgba(10,17,36,.78);overflow:hidden;padding-block:18px}
+.marquee-track{display:flex;gap:44px;width:max-content;animation:mq 38s linear infinite;font:600 15px/1 var(--f-mono);color:var(--muted)}
+.marquee-track span{white-space:nowrap}
+.marquee-track span::before{content:"◆";color:var(--amber);margin-right:44px;font-size:10px;vertical-align:2px}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+/* services */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{position:relative;padding:28px;border-radius:var(--r);background:var(--glass);border:1px solid var(--line);display:flex;flex-direction:column;gap:16px;min-width:0;overflow:hidden;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .25s, border-color .25s}
+.card::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(380px circle at var(--mx,50%) var(--my,0%), rgba(59,230,255,.14), transparent 60%)}
+.card:hover{transform:translateY(-4px);border-color:rgba(59,230,255,.45)}
+.card:hover::before{opacity:1}
+.tag{font:600 13px/1 var(--f-mono);color:var(--cyan);padding:7px 10px;border-radius:8px;background:rgba(59,230,255,.08);border:1px solid rgba(59,230,255,.2);justify-self:start;align-self:flex-start}
+.card p{margin:0;color:var(--muted);font-size:15.5px}
+.card ul{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:15px}
+.card li{display:flex;gap:10px}
+.card li::before{content:"→";color:var(--amber);font-family:var(--f-mono)}
+.card-foot{margin-top:auto;padding-top:18px;border-top:1px dashed var(--line);display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.price{font:700 22px/1 var(--f-display)}
+.price small{display:block;font:500 12px/1.3 var(--f-mono);color:var(--muted);margin-bottom:6px}
+.order{font:700 14px/1 var(--f-body);color:var(--amber);text-decoration:none;background:none;border:0;cursor:pointer;padding:6px 0}
+.order:hover{text-decoration:underline}
+
+/* pains */
+.pains{display:grid;gap:12px}
+.pain{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;padding:20px 24px;border-radius:var(--r);background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pain .was{color:var(--muted);display:flex;gap:12px;align-items:baseline}
+.pain .was::before{content:"✕";color:var(--pink);font-family:var(--f-mono)}
+.pain .now{font-weight:600;display:flex;gap:12px;align-items:baseline}
+.pain .now::before{content:"✓";color:var(--ok);font-family:var(--f-mono)}
+.pain .to{font:600 13px/1 var(--f-mono);color:var(--cyan);padding:8px 10px;border:1px solid rgba(59,230,255,.3);border-radius:8px;white-space:nowrap}
+
+/* ai demo */
+.ai .wrap{display:grid;grid-template-columns:.95fr 1.05fr;gap:56px;align-items:center}
+.ai-text{display:grid;gap:22px;min-width:0}
+.ai-list{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+.ai-list li{display:flex;gap:12px;align-items:baseline}
+.ai-list li b{font:600 13px/1 var(--f-mono);color:var(--amber);min-width:56px}
+.chat{border-radius:22px;background:var(--glass-2);border:1px solid rgba(59,230,255,.28);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 40px 120px -50px rgba(59,230,255,.5);min-width:0}
+.chat-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.ava{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--cyan),#2a7bff);color:var(--bg);font:700 13px/1 var(--f-mono);flex:none}
+.chat-head b{display:block;font-size:15px}
+.chat-head small{color:var(--ok);font:500 12px/1 var(--f-mono)}
+.chat-head .demo{margin-left:auto;font:500 11px/1 var(--f-mono);color:var(--muted);border:1px solid var(--line);padding:5px 8px;border-radius:6px}
+.chat-log{height:340px;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.msg{max-width:84%;padding:11px 15px;border-radius:16px;font-size:15px;line-height:1.5;animation:pop .3s ease}
+.msg.bot{background:rgba(255,255,255,.07);border-bottom-left-radius:4px;align-self:flex-start}
+.msg.me{background:rgba(59,230,255,.2);border:1px solid rgba(59,230,255,.35);border-bottom-right-radius:4px;align-self:flex-end}
+.typing span{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:4px;animation:tdot 1s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes tdot{50%{transform:translateY(-4px);opacity:.4}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:14px 18px 18px;border-top:1px solid var(--line)}
+.chip{font:600 14px/1 var(--f-body);color:var(--fg);background:rgba(59,230,255,.07);border:1px solid rgba(59,230,255,.3);border-radius:999px;padding:10px 14px;cursor:pointer;transition:background .2s}
+.chip:hover{background:rgba(59,230,255,.18)}
+.chip:disabled{opacity:.4;cursor:default}
+
+/* calculator */
+.calc{display:grid;grid-template-columns:1.3fr .7fr;gap:18px}
+.calc-opts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:22px;border-radius:var(--r);background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);min-width:0}
+.opt{position:relative;display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:12px;border:1px solid var(--line);cursor:pointer;transition:border-color .2s, background .2s;min-width:0}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt .box{width:22px;height:22px;border-radius:6px;border:2px solid rgba(147,160,196,.6);flex:none;display:grid;place-items:center;font:700 13px/1 var(--f-mono);color:var(--ink);transition:all .2s}
+.opt .nm{font-weight:600;font-size:15px;line-height:1.3}
+.opt .pr{margin-left:auto;font:500 13px/1 var(--f-mono);color:var(--muted);white-space:nowrap}
+.opt:has(input:checked){border-color:var(--amber);background:rgba(255,179,61,.08)}
+.opt input:checked + .box{background:var(--amber);border-color:var(--amber)}
+.opt input:checked + .box::after{content:"✓"}
+.opt input:focus-visible + .box{outline:2px solid var(--amber);outline-offset:2px}
+.opt.urgent{grid-column:1/-1;border-style:dashed}
+.calc-out{padding:28px;border-radius:var(--r);background:linear-gradient(160deg, rgba(255,179,61,.16), rgba(10,17,36,.9) 55%);border:1px solid rgba(255,179,61,.45);display:flex;flex-direction:column;gap:14px;min-width:0}
+.calc-out .lbl{font:600 12px/1 var(--f-mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.calc-out .old{font:500 16px/1 var(--f-mono);color:var(--muted);text-decoration:line-through;min-height:16px}
+.calc-out .sum{font:800 clamp(34px,4vw,48px)/1 var(--f-display);color:var(--amber);font-variant-numeric:tabular-nums}
+.calc-out .days{font:600 16px/1.3 var(--f-mono);color:var(--fg)}
+.calc-out .note{font-size:13px;color:var(--muted);margin:0}
+.calc-out .btn{margin-top:auto;width:100%}
+
+/* process */
+.steps{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;counter-reset:s}
+.step{position:relative;padding:22px 18px;border-radius:var(--r);background:var(--glass);border:1px solid var(--line);display:grid;gap:10px;align-content:start;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.step::before{counter-increment:s;content:"0" counter(s);font:700 13px/1 var(--f-mono);color:var(--bg);background:var(--cyan);justify-self:start;padding:6px 8px;border-radius:7px}
+.step h3{font-size:16px}
+.step p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.5}
+.step:not(:last-child)::after{content:"";position:absolute;top:34px;right:-15px;width:16px;height:1px;background:linear-gradient(90deg,var(--cyan),transparent)}
+
+/* why */
+.why{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.why .item{padding:26px;border-radius:var(--r);border:1px solid var(--line);background:var(--glass);display:grid;gap:10px;align-content:start;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.why .k{font:600 13px/1 var(--f-mono);color:var(--amber)}
+.why p{margin:0;color:var(--muted);font-size:15.5px}
+
+/* offer */
+.offer-box{position:relative;overflow:hidden;border-radius:28px;padding:56px;border:1px solid rgba(255,179,61,.5);background:radial-gradient(800px 400px at 90% 0%, rgba(255,179,61,.22), transparent 60%), radial-gradient(600px 400px at 0% 100%, rgba(59,230,255,.16), transparent 60%), var(--glass-2);display:grid;grid-template-columns:1.3fr .7fr;gap:32px;align-items:center}
+.offer-box h2{font-size:clamp(28px,3.4vw,44px)}
+.offer-box .lead{margin-top:16px;color:var(--fg)}
+.offer-big{font:800 clamp(64px,9vw,120px)/.9 var(--f-display);color:var(--amber);text-align:center;letter-spacing:-.04em}
+.offer-big small{display:block;font:600 14px/1.3 var(--f-mono);color:var(--muted);letter-spacing:0;margin-top:12px}
+.offer-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
+.offer-box .fine{font-size:12px;color:var(--muted);margin:16px 0 0}
+
+/* faq */
+.faq{display:grid;gap:10px;max-width:880px}
+.faq details{border-radius:14px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.faq summary{list-style:none;cursor:pointer;padding:20px 24px;font-weight:700;font-size:17px;display:flex;gap:16px;justify-content:space-between;align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font:400 24px/1 var(--f-mono);color:var(--cyan);transition:transform .25s;flex:none}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{margin:0;padding:0 24px 22px;color:var(--muted)}
+
+/* contact */
+.contact .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;align-items:start}
+.contact-info{display:grid;gap:22px;min-width:0}
+.contacts{display:grid;gap:12px}
+.contacts .row{display:flex;gap:14px;align-items:center;padding:14px 18px;border-radius:14px;background:var(--glass);border:1px solid var(--line)}
+.contacts .row b{font:600 12px/1 var(--f-mono);color:var(--muted);min-width:84px;text-transform:uppercase;letter-spacing:.05em}
+.contacts .row a, .contacts .row span{font-weight:700;text-decoration:none;word-break:break-word}
+.form{padding:32px;border-radius:24px;background:var(--glass-2);border:1px solid rgba(59,230,255,.3);display:grid;gap:16px;box-shadow:0 40px 120px -50px rgba(59,230,255,.45);min-width:0}
+.form h3{font-size:22px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fld{display:grid;gap:7px;min-width:0}
+.fld label{font:600 12px/1 var(--f-mono);color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+.fld input,.fld select,.fld textarea{width:100%;font:500 16px/1.4 var(--f-body);color:var(--fg);background:rgba(6,10,22,.7);border:1px solid var(--line);border-radius:12px;padding:14px 16px;transition:border-color .2s}
+.fld textarea{min-height:96px;resize:vertical}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--cyan)}
+.fld .err{color:var(--pink);font-size:13px;min-height:0}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted)}
+.consent input{margin-top:3px;accent-color:var(--amber)}
+.form .btn{width:100%}
+.form-ok{display:grid;gap:14px;text-align:center;justify-items:center;padding-block:28px}
+.form-ok .big{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:rgba(92,245,174,.14);border:1px solid var(--ok);color:var(--ok);font:700 30px/1 var(--f-mono)}
+.form-ok p{margin:0;color:var(--muted)}
+
+/* footer */
+footer{border-top:1px solid var(--line);background:rgba(6,10,22,.9);padding-block:36px calc(36px + env(safe-area-inset-bottom,0px))}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px 32px;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+
+.tg-float{position:fixed;z-index:40;right:calc(20px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:#2AABEE;color:#fff;box-shadow:0 12px 40px -8px rgba(42,171,238,.8);text-decoration:none;transition:transform .2s}
+.tg-float:hover{transform:scale(1.08)}
+.tg-float svg{width:28px;height:28px}
+.tg-float::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid #2AABEE;animation:ring 2.2s infinite}
+@keyframes ring{to{transform:scale(1.6);opacity:0}}
+
+.rv{transition:transform .8s cubic-bezier(.2,.7,.2,1)}
+.rv.pre{transform:translateY(28px)}
+
+@media (max-width:1080px){
+  .nav{display:none}
+  .steps{grid-template-columns:repeat(3,1fr)}
+  .step::after{display:none}
+}
+@media (max-width:920px){
+  section{padding-block:72px}
+  .hero .wrap,.ai .wrap,.contact .wrap,.calc,.offer-box{grid-template-columns:1fr}
+  .grid-3,.why{grid-template-columns:repeat(2,1fr)}
+  .offer-box{padding:36px 28px}
+  .offer-big{text-align:left}
+  .top-phone{display:none}
+}
+@media (max-width:640px){
+  body{font-size:16px}
+  section{padding-block:60px}
+  .hero{padding-block:28px 48px}
+  .grid-3,.why,.calc-opts,.f2,.stats{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .stats{margin-top:36px}
+  .pain{grid-template-columns:1fr;gap:10px}
+  .pain .to{justify-self:start}
+  .hero-ctas .btn{width:100%}
+  .term-body{font-size:12.5px;min-height:270px}
+  .form{padding:22px}
+  .card{padding:22px}
+  .top .btn{display:none}
+  .logo small{display:none}
+  .offer-box{padding:28px 20px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  .rv.pre{transform:none}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="veil" aria-hidden="true"></div>
+
+<div class="page">
+
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="logo" href="#hero" aria-label="CODEFLOW — на главную">
+      <span class="logo-mark">&lt;/&gt;</span>
+      <span>CODEFLOW<small>IT-студия · Бобруйск</small></span>
+    </a>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#services">Услуги</a>
+      <a href="#ai">AI-агенты</a>
+      <a href="#calc">Цены</a>
+      <a href="#process">Как работаем</a>
+      <a href="#faq">Вопросы</a>
+    </nav>
+    <a class="top-phone" href="tel:+375290000000">+375 (29) 000-00-00</a>
+    <a class="btn btn-main" href="#contact">Обсудить проект</a>
+  </div>
+</header>
+
+<main>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="wrap">
+    <div class="hero-text">
+      <span class="badge"><i></i>Принимаем заказы · Бобруйск и вся Беларусь</span>
+      <h1>Превращаем код в&nbsp;<span class="hl">клиентов</span> для вашего бизнеса</h1>
+      <div class="rotator" aria-live="off">&gt; сделаем вам <b id="rot">сайт</b><i class="caret"></i></div>
+      <p class="lead">Сайты, SEO, реклама в Яндекс и Google, Telegram-боты, AI-агенты и программы для автоматизации. Собираем всё в одну систему, которая приводит заявки, пока вы занимаетесь делом.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-main" href="#contact">Получить бесплатный разбор <span class="arr">→</span></a>
+        <a class="btn btn-ghost" href="#calc">Рассчитать стоимость</a>
+      </div>
+      <div class="trust"><span>Договор и безнал</span><span>Оплата в BYN этапами</span><span>Гарантия 3 месяца</span></div>
+    </div>
+
+    <div class="term" aria-label="Пример запуска проекта">
+      <div class="term-bar"><i></i><i></i><i></i>codeflow — запуск проекта</div>
+      <div class="term-body" id="term"></div>
+      <div class="term-foot"><span>клиент: <b>ваш бизнес</b></span><span>заявок сегодня: <b id="leads">0</b></span></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><b>от 5 дней</b><span>запуск продающего лендинга</span></div>
+      <div class="stat"><b>24/7</b><span>AI-агент отвечает вашим клиентам без выходных</span></div>
+      <div class="stat"><b>0 BYN</b><span>разбор задачи, прогноз заявок и смета</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track" id="mq">
+    <span>Яндекс Директ</span><span>Google Ads</span><span>Яндекс Метрика</span><span>Telegram Bot API</span><span>AI-агенты</span><span>Python</span><span>React</span><span>Next.js</span><span>WordPress</span><span>Node.js</span><span>ЕРИП</span><span>bePaid</span><span>1С</span><span>amoCRM</span><span>Bitrix24</span><span>Домены .BY</span>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">услуги</span>
+      <h2>Всё, чтобы бизнес продавал онлайн</h2>
+      <p class="lead">Можно заказать одну услугу, а можно всю цепочку: сайт → реклама → бот → AI-агент → CRM. Так каждая заявка доходит до продажи.</p>
+    </div>
+    <div class="grid-3">
+      <article class="card rv">
+        <span class="tag">&lt;web/&gt;</span>
+        <h3>Сайты под ключ</h3>
+        <p>Лендинги, корпоративные сайты и интернет-магазины, которые продают с первого экрана.</p>
+        <ul><li>Дизайн под ваш бренд</li><li>Домен .BY, оплата через ЕРИП и bePaid</li><li>Заявки сразу в Telegram</li></ul>
+        <div class="card-foot"><div class="price"><small>от 5 дней</small>от 590 BYN</div><button class="order" data-service="Сайт">Заказать →</button></div>
+      </article>
+      <article class="card rv">
+        <span class="tag">seo.rank++</span>
+        <h3>SEO-продвижение</h3>
+        <p>Выводим сайт в топ Яндекса и Google по запросам, которые вводят ваши клиенты в Бобруйске и по всей Беларуси.</p>
+        <ul><li>Аудит и сбор семантики</li><li>Тексты и техническая оптимизация</li><li>Отчёт по позициям каждый месяц</li></ul>
+        <div class="card-foot"><div class="price"><small>ежемесячно</small>от 450 BYN</div><button class="order" data-service="SEO-продвижение">Заказать →</button></div>
+      </article>
+      <article class="card rv">
+        <span class="tag">ads.roi()</span>
+        <h3>Реклама в Яндекс и Google</h3>
+        <p>Настраиваем Яндекс Директ и Google Ads так, чтобы бюджет превращался в звонки, а не в клики.</p>
+        <ul><li>Поиск, РСЯ, КМС, ретаргетинг</li><li>Цели и сквозная аналитика</li><li>Минус-слова: не платите за мусорный трафик</li></ul>
+        <div class="card-foot"><div class="price"><small>настройка</small>от 390 BYN</div><button class="order" data-service="Реклама Яндекс / Google">Заказать →</button></div>
+      </article>
+      <article class="card rv">
+        <span class="tag">@telegram_bot</span>
+        <h3>Telegram-боты</h3>
+        <p>Боты для записи, заказов, оплаты и поддержки. Клиент оформляет заказ за минуту, вы сразу получаете уведомление.</p>
+        <ul><li>Каталог, корзина, оплата</li><li>Запись на услуги и напоминания</li><li>Связка с CRM и Google Таблицами</li></ul>
+        <div class="card-foot"><div class="price"><small>от 7 дней</small>от 400 BYN</div><button class="order" data-service="Telegram-бот">Заказать →</button></div>
+      </article>
+      <article class="card rv">
+        <span class="tag">ai.agent()</span>
+        <h3>AI-агенты для бизнеса</h3>
+        <p>Цифровой сотрудник: отвечает клиентам 24/7, знает ваш прайс, отбирает горячие заявки и передаёт их менеджеру.</p>
+        <ul><li>Сайт, Telegram, Instagram, Viber</li><li>Обучение на ваших документах</li><li>Работает ночью и в выходные</li></ul>
+        <div class="card-foot"><div class="price"><small>от 14 дней</small>от 1 200 BYN</div><button class="order" data-service="AI-агент">Заказать →</button></div>
+      </article>
+      <article class="card rv">
+        <span class="tag">auto.run()</span>
+        <h3>Программы и автоматизация</h3>
+        <p>Пишем программы под ваши процессы: CRM, учёт, отчёты, интеграции со складом и бухгалтерией.</p>
+        <ul><li>Убираем ручной ввод и хаос в Excel</li><li>Отчёты собираются сами</li><li>Интеграции с 1С, amoCRM, Bitrix24</li></ul>
+        <div class="card-foot"><div class="price"><small>по ТЗ</small>от 900 BYN</div><button class="order" data-service="Автоматизация / программа">Заказать →</button></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- PAINS -->
+<section id="pains">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">узнаёте себя?</span>
+      <h2>Куда уходят ваши клиенты и как их вернуть</h2>
+    </div>
+    <div class="pains">
+      <div class="pain rv"><div class="was">Сайт есть, а заявок с него нет</div><span class="to">→ fix</span><div class="now">Продающая структура, быстрая загрузка и заявка в два клика</div></div>
+      <div class="pain rv"><div class="was">Реклама съедает бюджет, а звонков мало</div><span class="to">→ fix</span><div class="now">Чистим запросы, настраиваем цели и считаем цену каждой заявки</div></div>
+      <div class="pain rv"><div class="was">Менеджеры не успевают отвечать, клиенты уходят к конкурентам</div><span class="to">→ fix</span><div class="now">AI-агент отвечает за 5 секунд в любое время суток</div></div>
+      <div class="pain rv"><div class="was">Заказы в блокноте, данные в пяти таблицах Excel</div><span class="to">→ fix</span><div class="now">Одна система: CRM, автоотчёты и уведомления в Telegram</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- AI DEMO -->
+<section class="ai" id="ai">
+  <div class="wrap">
+    <div class="ai-text rv">
+      <span class="eyebrow">ai-агенты</span>
+      <h2>Пока вы спите, AI-агент продаёт</h2>
+      <p class="lead">Попробуйте сами: задайте вопрос нашему демо-агенту. Такой же мы обучим на вашем прайсе, документах и скриптах продаж.</p>
+      <ul class="ai-list">
+        <li><b>5 сек</b>среднее время ответа клиенту</li>
+        <li><b>24/7</b>без выходных, больничных и отпусков</li>
+        <li><b>CRM</b>сам заносит заявку и зовёт менеджера, когда клиент готов купить</li>
+      </ul>
+    </div>
+    <div class="chat rv">
+      <div class="chat-head"><span class="ava">AI</span><div><b>Ассистент CODEFLOW</b><small>● онлайн</small></div><span class="demo">демо</span></div>
+      <div class="chat-log" id="chatlog" aria-live="polite">
+        <div class="msg bot">Здравствуйте! Я AI-агент студии CODEFLOW. Выберите вопрос ниже, и я отвечу за пару секунд.</div>
+      </div>
+      <div class="chips" id="chips">
+        <button class="chip" data-q="0">Сколько стоит лендинг?</button>
+        <button class="chip" data-q="1">Работаете по безналу?</button>
+        <button class="chip" data-q="2">Вы только в Бобруйске?</button>
+        <button class="chip" data-q="3">Что умеет AI-агент?</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALC -->
+<section id="calc">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">калькулятор</span>
+      <h2>Посчитайте проект за 10 секунд</h2>
+      <p class="lead">Отметьте, что нужно бизнесу. Точную цену зафиксируем в договоре после бесплатного разбора.</p>
+    </div>
+    <div class="calc rv">
+      <div class="calc-opts" id="opts"></div>
+      <div class="calc-out">
+        <span class="lbl">ориентировочно</span>
+        <span class="old" id="c-old"></span>
+        <span class="sum" id="c-sum">0 BYN</span>
+        <span class="days" id="c-days">Выберите услуги слева</span>
+        <p class="note">Цена указана со скидкой 20% к открытию студии.</p>
+        <button class="btn btn-main" id="c-go">Зафиксировать цену <span class="arr">→</span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">как работаем</span>
+      <h2>От заявки до первых клиентов</h2>
+    </div>
+    <div class="steps">
+      <div class="step rv"><h3>Заявка</h3><p>Оставляете заявку или пишете в Telegram. Перезваниваем за 15 минут в рабочее время.</p></div>
+      <div class="step rv"><h3>Разбор</h3><p>Бесплатно изучаем задачу и конкурентов, предлагаем решение и фиксируем цену.</p></div>
+      <div class="step rv"><h3>Договор</h3><p>Договор, счёт в BYN, предоплата 50%. Сроки прописаны в договоре.</p></div>
+      <div class="step rv"><h3>Разработка</h3><p>Показываем результат каждые 2–3 дня. Правки вносим по ходу работы.</p></div>
+      <div class="step rv"><h3>Запуск</h3><p>Запускаем, подключаем аналитику и рекламу, обучаем вашу команду.</p></div>
+      <div class="step rv"><h3>Поддержка</h3><p>3 месяца гарантии, дальше сопровождение и развитие по желанию.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section id="why">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">почему мы</span>
+      <h2>Студия, с которой спокойно</h2>
+    </div>
+    <div class="why">
+      <div class="item rv"><span class="k">рядом</span><h3>Офис в Бобруйске</h3><p>Встречаемся лично и говорим на одном языке. По Беларуси работаем онлайн.</p></div>
+      <div class="item rv"><span class="k">прозрачно</span><h3>Фиксированная смета</h3><p>Договор, оплата этапами, никаких «а это уже за отдельные деньги».</p></div>
+      <div class="item rv"><span class="k">под РБ</span><h3>Знаем местный рынок</h3><p>Домены .BY, оплата через ЕРИП и bePaid, реклама с учётом белорусского спроса.</p></div>
+      <div class="item rv"><span class="k">в одних руках</span><h3>Одна система продаж</h3><p>Сайт, реклама, бот и AI-агент работают вместе, а не каждый сам по себе.</p></div>
+      <div class="item rv"><span class="k">ваше</span><h3>Доступы у вас</h3><p>Исходный код, домены и рекламные кабинеты оформляем на вас.</p></div>
+      <div class="item rv"><span class="k">в цифрах</span><h3>Видно результат</h3><p>Метрика и Analytics показывают, сколько стоит каждая заявка и откуда она пришла.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- OFFER -->
+<section id="offer">
+  <div class="wrap">
+    <div class="offer-box rv">
+      <div>
+        <span class="eyebrow">открытие студии</span>
+        <h2 style="margin-top:14px">Первым клиентам: скидка 20% и Telegram-бот в подарок</h2>
+        <p class="lead">Закажите сайт и получите бота, который принимает заявки и сразу пересылает их вам в Telegram. Плюс бесплатный аудит вашей текущей рекламы.</p>
+        <div class="offer-ctas">
+          <a class="btn btn-main" href="#contact">Забрать скидку <span class="arr">→</span></a>
+          <a class="btn btn-ghost" href="#calc">Посчитать проект</a>
+        </div>
+        <p class="fine">Условия акции уточняйте у менеджера.</p>
+      </div>
+      <div class="offer-big">−20%<small>на первый проект</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">вопросы</span>
+      <h2>Частые вопросы</h2>
+    </div>
+    <div class="faq">
+      <details class="rv"><summary>Сколько времени займёт разработка сайта?</summary><p>Лендинг делаем за 5–7 дней, корпоративный сайт за 2–4 недели, интернет-магазин за 4–6 недель. Точный срок фиксируем в договоре.</p></details>
+      <details class="rv"><summary>Работаете с клиентами не из Бобруйска?</summary><p>Да, по всей Беларуси. Созваниваемся, ведём общий чат и показываем результат онлайн. Документы подписываем ЭЦП или отправляем почтой.</p></details>
+      <details class="rv"><summary>Можно оплатить по безналу?</summary><p>Да. Работаем по договору с юрлицами и ИП, счёт выставляем в BYN, оплата этапами.</p></details>
+      <details class="rv"><summary>Чем AI-агент отличается от обычного бота?</summary><p>Обычный бот работает по кнопкам и заранее прописанному сценарию. AI-агент понимает свободный текст, отвечает по вашим документам и прайсу, ведёт диалог как живой менеджер и передаёт заявку в CRM.</p></details>
+      <details class="rv"><summary>Какой нужен бюджет на рекламу?</summary><p>Зависит от ниши и региона. На бесплатном разборе посчитаем прогноз заявок и стоимость клиента ещё до запуска, чтобы вы знали, на что идёте.</p></details>
+      <details class="rv"><summary>А если результат не понравится?</summary><p>Мы показываем работу каждые 2–3 дня, поэтому неожиданностей в конце не бывает. Правки в рамках ТЗ бесплатны, на исправление ошибок даём гарантию 3 месяца.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="wrap">
+    <div class="contact-info rv">
+      <span class="eyebrow">заявка</span>
+      <h2>Расскажите о задаче, и мы предложим решение</h2>
+      <p class="lead">Бесплатно разберём ваш бизнес, покажем, где теряются клиенты, и назовём точную цену и сроки.</p>
+      <div class="contacts">
+        <div class="row"><b>Телефон</b><a href="tel:+375290000000">+375 (29) 000-00-00</a></div>
+        <div class="row"><b>Telegram</b><a href="https://t.me/codeflow_by" target="_blank" rel="noopener">@codeflow_by</a></div>
+        <div class="row"><b>E-mail</b><span>hello@codeflow.by</span></div>
+        <div class="row"><b>Офис</b><span>г. Бобруйск · пн–пт 9:00–19:00</span></div>
+      </div>
+    </div>
+
+    <form class="form rv" id="lead" novalidate>
+      <div id="form-body" style="display:grid;gap:16px">
+        <h3>Получить бесплатный разбор</h3>
+        <div class="f2">
+          <div class="fld"><label for="f-name">Имя</label><input id="f-name" name="name" autocomplete="name" placeholder="Как к вам обращаться"><span class="err" id="e-name"></span></div>
+          <div class="fld"><label for="f-phone">Телефон или Telegram</label><input id="f-phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="+375 (__) ___-__-__"><span class="err" id="e-phone"></span></div>
+        </div>
+        <div class="fld"><label for="f-service">Что нужно</label>
+          <select id="f-service" name="service">
+            <option>Сайт</option><option>SEO-продвижение</option><option>Реклама Яндекс / Google</option><option>Telegram-бот</option><option>AI-агент</option><option>Автоматизация / программа</option><option>Комплекс</option><option>Пока не знаю, нужна консультация</option>
+          </select>
+        </div>
+        <div class="fld"><label for="f-msg">Коротко о задаче</label><textarea id="f-msg" name="message" placeholder="Например: нужен сайт для автосервиса и реклама в Яндексе"></textarea></div>
+        <label class="consent" for="f-ok"><input type="checkbox" id="f-ok" checked> Согласен на обработку персональных данных для связи со мной</label>
+        <button class="btn btn-main" type="submit">Отправить заявку <span class="arr">→</span></button>
+      </div>
+      <div class="form-ok" id="form-ok" hidden>
+        <div class="big">✓</div>
+        <h3>Спасибо, заявка принята!</h3>
+        <p>Свяжемся с вами в рабочее время в течение 15 минут.</p>
+      </div>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="logo" href="#hero"><span class="logo-mark">&lt;/&gt;</span><span>CODEFLOW</span></a>
+    <span>ООО «Название» · УНП 000000000 · г. Бобруйск</span>
+    <span>© <span id="yr">2026</span> CODEFLOW. Сайты, реклама, боты и AI для бизнеса в Беларуси.</span>
+  </div>
+</footer>
+
+</div>
+
+<a class="tg-float" href="https://t.me/codeflow_by" target="_blank" rel="noopener" aria-label="Написать в Telegram">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3 18.6 19.8c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.2-8.3c.4-.4-.1-.6-.6-.2L6 13.4l-4.9-1.5c-1.1-.3-1.1-1.1.2-1.6L20.5 3c.9-.3 1.7.2 1.4 1.3z"/></svg>
+</a>
+
+<script>
+/* ===== Фоновая анимация: код набирается и собирается в сайт / приложение / бота / AI-агента / отчёт ===== */
+(function(){
+  var cv=document.getElementById('bg'); if(!cv||!cv.getContext) return;
+  var ctx=cv.getContext('2d');
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var MONO='"JetBrains Mono", Consolas, monospace';
+  var COL={kw:'#3BE6FF',str:'#FFB33D',fn:'#7DF5C4',num:'#FF7AA8',com:'#56658E',txt:'#C8D3F2',pun:'#7C8BB6'};
+  var KW={};('const let var function return async await import from export default class new if else for while def yield lambda SELECT FROM WHERE JOIN GROUP BY AS USING try catch true false None null this extends static Widget').split(' ').forEach(function(k){KW[k]=1});
+  function tok(line){
+    var parts=line.match(/(\/\/.*$|--.*$|'[^']*'|"[^"]*"|\d+(?:\.\d+)?|[A-Za-zА-Яа-яЁё_$][\wА-Яа-яЁё$]*|\s+|[^\w\s])/g)||[];
+    return parts.map(function(p,i){
+      var c=COL.txt;
+      if(/^(\/\/|--)/.test(p))c=COL.com;
+      else if(/^['"]/.test(p))c=COL.str;
+      else if(/^\d/.test(p))c=COL.num;
+      else if(KW[p])c=COL.kw;
+      else if(/^[A-Za-z_$]/.test(p)&&parts[i+1]==='(')c=COL.fn;
+      else if(/^[^\w\s]/.test(p))c=COL.pun;
+      return [p,c];
+    });
+  }
+  var SN={
+    site:{file:'landing.tsx',ar:1.5,fh:220,label:'вашсайт.by — онлайн',lines:[
+      "import { Hero, Button } from './ui'",
+      "export default function Landing() {",
+      "  const leads = useLeads('yandex', 'google')",
+      "  return (",
+      "    <Page theme='neon'>",
+      "      <Hero title='Ваш бизнес онлайн' />",
+      "      <Button onClick={leads.capture}>",
+      "        Оставить заявку",
+      "      </Button>",
+      "      <Services grid={3} />",
+      "    </Page>",
+      "  )",
+      "}"],
+      t:[['acc',.04,.06,.14,.06],['txt',.55,.075,.09,.035],['txt',.67,.075,.09,.035],['txt',.79,.075,.09,.035],
+         ['h',.06,.24,.46,.08],['h',.06,.35,.34,.08],['txt',.06,.48,.42,.03],['txt',.06,.53,.32,.03],
+         ['btn',.06,.62,.21,.09],['img',.58,.2,.36,.5],['card',.06,.78,.27,.16],['card',.365,.78,.27,.16],['card',.67,.78,.27,.16]]},
+    app:{file:'shop_app.dart',ar:.56,fh:300,label:'приложение собрано',lines:[
+      "class ShopApp extends StatelessWidget {",
+      "  Widget build(context) {",
+      "    return Scaffold(",
+      "      appBar: AppBar(title: 'Каталог'),",
+      "      body: ProductGrid(items),",
+      "      floatingActionButton: CartButton(),",
+      "      bottomNavigationBar: Tabs(4),",
+      "    );",
+      "  }",
+      "}"],
+      t:[['h',.08,.04,.5,.045],['card',.08,.11,.84,.065],['img',.08,.21,.4,.2],['img',.52,.21,.4,.2],
+         ['txt',.08,.43,.3,.022],['txt',.52,.43,.3,.022],['acc',.08,.47,.14,.022],['acc',.52,.47,.14,.022],
+         ['img',.08,.53,.4,.2],['img',.52,.53,.4,.2],['fab',.7,.77,.22,0],['card',0,.9,1,.1],
+         ['txt',.1,.935,.1,.03],['txt',.34,.935,.1,.03],['txt',.58,.935,.1,.03],['txt',.82,.935,.1,.03]]},
+    bot:{file:'bot.py',ar:.82,fh:270,label:'бот запущен',lines:[
+      "from aiogram import Bot, Dispatcher",
+      "bot = Bot(token=TOKEN)",
+      "dp = Dispatcher()",
+      "",
+      "@dp.message(Command('start'))",
+      "async def start(msg):",
+      "    await msg.answer('Здравствуйте! Чем помочь?')",
+      "",
+      "@dp.message(F.text == 'Записаться')",
+      "async def book(msg):",
+      "    slot = await crm.free_slot()",
+      "    await msg.answer(f'Свободно: {slot}')"],
+      t:[['bL',.04,.04,.62,.1],['bR',.36,.18,.6,.08],['bL',.04,.3,.56,.12],['card',.04,.46,.44,.075],
+         ['card',.52,.46,.44,.075],['bR',.44,.58,.52,.08],['bL',.04,.7,.4,.08],['card',0,.86,.8,.12],['btn',.84,.86,.16,.12]]},
+    ai:{file:'agent.py',ar:1.35,fh:230,label:'AI-агент на связи',lines:[
+      "agent = Agent(",
+      "    model='claude',",
+      "    tools=[crm, calendar, price_list],",
+      "    memory=VectorStore('faq'),",
+      ")",
+      "async def on_lead(lead):",
+      "    reply = await agent.run(lead.text)",
+      "    if reply.intent == 'buy':",
+      "        await crm.create_deal(lead)",
+      "    return reply"],
+      t:[['node',.42,.28,.16,0],['node',.08,.06,.1,0],['node',.08,.62,.1,0],['node',.82,.06,.1,0],['node',.82,.62,.1,0],
+         ['txt',.36,.82,.28,.04],['acc',.4,.9,.2,.04]]},
+    dash:{file:'report.sql',ar:1.4,fh:220,label:'отчёт отправлен директору',lines:[
+      "-- Ежедневный отчёт продаж",
+      "SELECT day, SUM(total) AS revenue",
+      "FROM orders JOIN clients USING(id)",
+      "WHERE day >= NOW() - 30",
+      "GROUP BY day;",
+      "",
+      "schedule.every().day.at('09:00')",
+      "  .do(send_report, to='director')"],
+      t:[['card',.03,.04,.3,.22],['card',.35,.04,.3,.22],['card',.67,.04,.3,.22],
+         ['bar',.06,.62,.09,.33],['bar',.19,.5,.09,.45],['bar',.32,.56,.09,.39],['bar',.45,.42,.09,.53],['bar',.58,.46,.09,.49],['bar',.71,.36,.09,.59],['bar',.84,.3,.09,.65]]}
+  };
+  var TYPES=['site','bot','app','ai','dash'];
+  var DT=['const','=>','async','await','fetch()','<div>','</>','{ }','return','import','bot.on()','def','SELECT','git push','npm run build','useState','yield','class','if','for','λ','agent.run()','POST /api','deploy','200 OK','.by','crm.sync()','[ ]'];
+  var W,H,S,dpr,builds=[],drift=[],last=0,ti=Math.floor(Math.random()*5),spawnT=.15;
+
+  function rr(x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+  function lerp(a,b,k){return a+(b-a)*k}
+  function cl(v){return v<0?0:v>1?1:v}
+  function ease(k){return k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2}
+  function maxB(){return W<760?1:W<1200?2:3}
+  function baseA(){return W<760?.5:.92}
+
+  function resize(){
+    dpr=Math.min(window.devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+    cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+    S=Math.max(.66,Math.min(1.1,W/1400));
+    var n=Math.round(W*H/24000);drift=[];for(var i=0;i<n;i++)drift.push(nd(true));
+    builds=builds.filter(function(b){return b.cx+b.bw/2<W+20&&b.cy+b.bh/2<H+20});
+  }
+  function nd(any){return {x:Math.random()*W,y:any?Math.random()*H:H+20,v:6+Math.random()*16,s:(10+Math.random()*5)*Math.max(S,.8),a:.04+Math.random()*.1,t:DT[Math.floor(Math.random()*DT.length)],c:Math.random()<.3?COL.kw:COL.txt}}
+
+  function makeBuild(){
+    var type=TYPES[ti++%TYPES.length],sp=SN[type];
+    var fs=11*S,lh=Math.round(fs*1.6);
+    ctx.font=fs+'px '+MONO;var cw=ctx.measureText('M').width;
+    var maxLen=0;sp.lines.forEach(function(l){if(l.length>maxLen)maxLen=l.length});
+    var pw=maxLen*cw+34*S,ph=sp.lines.length*lh+62*S;
+    var fh=sp.fh*S,fw=fh*sp.ar,bw=Math.max(pw,fw),bh=Math.max(ph,fh)+30*S;
+    var cx,cy,ok=false;
+    for(var i=0;i<30&&!ok;i++){
+      cx=bw/2+12+Math.random()*Math.max(1,W-bw-24);
+      cy=bh/2+76+Math.random()*Math.max(1,H-bh-86);
+      ok=builds.every(function(o){return Math.abs(o.cx-cx)>(o.bw+bw)/2+24||Math.abs(o.cy-cy)>(o.bh+bh)/2+24});
+    }
+    if(!ok||bw>W)return null;
+    var px=cx-pw/2,py=cy-ph/2,fx=cx-fw/2,fy=cy-fh/2;
+    var toks=sp.lines.map(tok);
+    var lines=sp.lines.map(function(l,i){var ind=l.match(/^\s*/)[0].length,len=Math.max(2,l.replace(/\s+$/,'').length-ind);var c=COL.txt;for(var j=0;j<toks[i].length;j++){if(toks[i][j][0].trim()){c=toks[i][j][1];break}}return {x:px+16*S+ind*cw,y:py+34*S+i*lh+lh*.25,w:len*cw,h:lh*.5,c:c}});
+    var hdr=type==='app'?18*S:24*S,pad=type==='app'?10*S:9*S;
+    var ca={x:fx+pad,y:fy+hdr,w:fw-pad*2,h:fh-hdr-pad};
+    var tg=sp.t.map(function(d,j){var w=d[3]*ca.w,h=d[4]*ca.h;if(d[0]==='node'||d[0]==='fab')h=w;return {k:d[0],x:ca.x+d[1]*ca.w,y:ca.y+d[2]*ca.h,w:w,h:h,src:lines[j%lines.length]}});
+    var total=0;sp.lines.forEach(function(l){total+=l.length});
+    var T1=total/80+.3,T2=T1+.85,T3=T2+1.15,T4=T3+3.4,T5=T4+.9;
+    return {type:type,sp:sp,toks:toks,fs:fs,lh:lh,cw:cw,cx:cx,cy:cy,pw:pw,ph:ph,px:px,py:py,fw:fw,fh:fh,fx:fx,fy:fy,bw:bw,bh:bh,ca:ca,tg:tg,total:total,t:0,T1:T1,T2:T2,T3:T3,T4:T4,T5:T5};
+  }
+
+  function panelBg(x,y,w,h,r){rr(x,y,w,h,r);ctx.fillStyle='rgba(9,15,32,.9)';ctx.fill();ctx.strokeStyle='rgba(59,230,255,.32)';ctx.lineWidth=1;ctx.stroke();}
+  function dots(x,y){['#FF6FA0','#FFB33D','#5CF5AE'].forEach(function(c,i){ctx.beginPath();ctx.arc(x+i*11*S,y,3.3*S,0,7);ctx.fillStyle=c;ctx.fill()})}
+
+  function drawCode(b,chars,alpha,cursor){
+    var ga=alpha*baseA()*fadeOf(b);
+    ctx.save();ctx.font=b.fs+'px '+MONO;ctx.textBaseline='middle';
+    var left=chars,cx2=null,cy2=null;
+    for(var i=0;i<b.toks.length&&left>=0;i++){
+      var y=b.py+34*S+i*b.lh+b.lh/2,x=b.px+16*S;
+      ctx.globalAlpha=ga*.4;ctx.fillStyle=COL.pun;ctx.fillText(String(i+1),b.px+4*S,y);
+      ctx.globalAlpha=ga;
+      var lt=b.toks[i];
+      for(var j=0;j<lt.length&&left>0;j++){var s=lt[j][0];if(s.length>left)s=s.slice(0,left);ctx.fillStyle=lt[j][1];ctx.fillText(s,x,y);x+=s.length*b.cw;left-=s.length;}
+      cx2=x;cy2=y;left-=1;
+    }
+    if(cursor&&cx2!==null&&Math.floor(b.t*2.5)%2===0){ctx.fillStyle='#FFB33D';ctx.fillRect(cx2+1,cy2-b.fs*.6,b.cw*.6,b.fs*1.2)}
+    ctx.restore();
+  }
+  function fadeOf(b){var a0=cl(b.t/.4),f=b.t>b.T4?1-(b.t-b.T4)/(b.T5-b.T4):1;return a0*cl(f)}
+
+  function paint(r,x,y,w,h,st,b){
+    var R=Math.min(6*S,h/2);
+    switch(r.k){
+      case 'h':rr(x,y,w,h,h/2);ctx.fillStyle='rgba(234,240,255,.85)';ctx.fill();break;
+      case 'txt':rr(x,y,w,h,h/2);ctx.fillStyle='rgba(200,211,242,.38)';ctx.fill();break;
+      case 'acc':rr(x,y,w,h,h/2);ctx.fillStyle='rgba(59,230,255,.8)';ctx.fill();break;
+      case 'btn':
+        if(st!=null){ctx.save();ctx.shadowColor='rgba(255,179,61,.8)';ctx.shadowBlur=(10+8*Math.sin(st*5))*S;}
+        rr(x,y,w,h,R);ctx.fillStyle='#FFB33D';ctx.fill();if(st!=null)ctx.restore();break;
+      case 'img':var g=ctx.createLinearGradient(x,y,x+w,y+h);g.addColorStop(0,'rgba(59,230,255,.55)');g.addColorStop(1,'rgba(255,111,160,.35)');rr(x,y,w,h,R);ctx.fillStyle=g;ctx.fill();break;
+      case 'card':rr(x,y,w,h,R);ctx.fillStyle='rgba(59,230,255,.08)';ctx.fill();ctx.strokeStyle='rgba(59,230,255,.3)';ctx.lineWidth=1;ctx.stroke();break;
+      case 'bL':rr(x,y,w,h,8*S);ctx.fillStyle='rgba(255,255,255,.11)';ctx.fill();break;
+      case 'bR':rr(x,y,w,h,8*S);ctx.fillStyle='rgba(59,230,255,.32)';ctx.fill();break;
+      case 'node':rr(x,y,w,h,Math.min(w,h)/2);ctx.fillStyle='rgba(59,230,255,.16)';ctx.fill();ctx.strokeStyle='rgba(59,230,255,.85)';ctx.lineWidth=1.4;ctx.stroke();break;
+      case 'fab':rr(x,y,w,h,Math.min(w,h)/2);ctx.fillStyle='#FFB33D';ctx.fill();break;
+      case 'bar':var gr=st==null?1:ease(cl(st/.9));var hh=h*gr;rr(x,y+h-hh,w,hh,3*S);ctx.fillStyle='rgba(59,230,255,.75)';ctx.fill();break;
+    }
+  }
+
+  function chrome(b,x,y,w,h,a){
+    ctx.save();ctx.globalAlpha*=a;ctx.font=(9.5*S)+'px '+MONO;ctx.textBaseline='middle';
+    var t=b.type;
+    if(t==='site'){dots(x+12*S,y+12*S);rr(x+50*S,y+6*S,w*.5,12*S,6*S);ctx.fillStyle='rgba(255,255,255,.06)';ctx.fill();ctx.fillStyle='#93A0C4';ctx.fillText('https://вашсайт.by',x+58*S,y+12.5*S);}
+    else if(t==='app'){rr(x+w/2-20*S,y+6*S,40*S,6*S,3*S);ctx.fillStyle='rgba(0,0,0,.6)';ctx.fill();}
+    else if(t==='bot'){ctx.beginPath();ctx.arc(x+16*S,y+12*S,7*S,0,7);ctx.fillStyle='#3BE6FF';ctx.fill();ctx.fillStyle='#EAF0FF';ctx.fillText('Бот компании',x+30*S,y+9*S);ctx.fillStyle='#5CF5AE';ctx.font=(8*S)+'px '+MONO;ctx.fillText('онлайн',x+30*S,y+18*S);}
+    else {ctx.fillStyle='#5CF5AE';ctx.fillText('●',x+10*S,y+12*S);ctx.fillStyle='#EAF0FF';ctx.fillText(t==='ai'?'AI-агент · 24/7':'Отчёт продаж · 09:00',x+22*S,y+12*S);}
+    ctx.restore();
+  }
+
+  function extras(b,st){
+    var tg=b.tg;
+    if(b.type==='ai'){
+      var c=tg[0],cx=c.x+c.w/2,cy=c.y+c.h/2,labels=['CRM','Календарь','Прайс','Почта'];
+      for(var i=1;i<5;i++){var n=tg[i],nx=n.x+n.w/2,ny=n.y+n.h/2;
+        ctx.strokeStyle='rgba(59,230,255,.35)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(nx,ny);ctx.stroke();
+        var p=((st*.7+i*.25)%1);ctx.beginPath();ctx.arc(lerp(cx,nx,p),lerp(cy,ny,p),2.6*S,0,7);ctx.fillStyle='#FFB33D';ctx.fill();
+        ctx.font=(9*S)+'px '+MONO;ctx.fillStyle='#C8D3F2';ctx.textAlign='center';ctx.fillText(labels[i-1],nx,n.y+n.h+11*S);ctx.textAlign='left';}
+      ctx.font='bold '+(11*S)+'px '+MONO;ctx.fillStyle='#EAF0FF';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('AI',cx,cy);ctx.textAlign='left';
+    }
+    if(b.type==='dash'){
+      var vals=['+38%','1 240','97%'],lb=['выручка','заказы','в срок'];
+      for(var k=0;k<3;k++){var r=tg[k];ctx.textBaseline='middle';ctx.font='bold '+(13*S)+'px '+MONO;ctx.fillStyle=k===0?'#5CF5AE':'#EAF0FF';ctx.fillText(vals[k],r.x+8*S,r.y+r.h*.42);ctx.font=(8*S)+'px '+MONO;ctx.fillStyle='#93A0C4';ctx.fillText(lb[k],r.x+8*S,r.y+r.h*.75);}
+    }
+    if(b.type==='bot'){var bb=tg[6];for(var d=0;d<3;d++){ctx.beginPath();ctx.arc(bb.x+14*S+d*9*S,bb.y+bb.h/2+Math.sin(st*7+d)*2*S,2.6*S,0,7);ctx.fillStyle='rgba(234,240,255,.7)';ctx.fill();}}
+    if(b.type==='site'||b.type==='app'){
+      var btn=b.type==='site'?tg[8]:tg[10],tx=btn.x+btn.w*.6,ty=btn.y+btn.h*.6,sx=b.fx+b.fw*.75,sy=b.fy+b.fh*.95;
+      var k2=ease(cl(st/1.2)),mx=lerp(sx,tx,k2),my=lerp(sy,ty,k2);
+      if(st>1.2){var rp=cl((st-1.2)/.7);ctx.beginPath();ctx.arc(tx,ty,rp*26*S,0,7);ctx.strokeStyle='rgba(255,179,61,'+(1-rp)+')';ctx.lineWidth=2;ctx.stroke();}
+      ctx.save();ctx.translate(mx,my);ctx.scale(S,S);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,15);ctx.lineTo(4,11);ctx.lineTo(7,18);ctx.lineTo(9.5,17);ctx.lineTo(6.5,10);ctx.lineTo(12,10);ctx.closePath();ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#060A16';ctx.lineWidth=1;ctx.stroke();ctx.restore();
+    }
+  }
+
+  function stamp(b,st){
+    var a=cl(st/.35);if(a<=0)return;
+    ctx.save();ctx.globalAlpha*=a;ctx.font='600 '+(10.5*S)+'px '+MONO;ctx.textBaseline='middle';
+    var txt='✓ '+b.sp.label,w=ctx.measureText(txt).width+18*S,h=20*S,x=b.fx+b.fw-w,y=b.fy+b.fh+8*S+(1-a)*6*S;
+    rr(x,y,w,h,h/2);ctx.fillStyle='rgba(92,245,174,.14)';ctx.fill();ctx.strokeStyle='rgba(92,245,174,.6)';ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle='#5CF5AE';ctx.fillText(txt,x+9*S,y+h/2+.5);ctx.restore();
+  }
+
+  function draw(b){
+    var t=b.t;ctx.save();ctx.globalAlpha=baseA()*fadeOf(b);
+    if(t<b.T2){
+      panelBg(b.px,b.py,b.pw,b.ph,10*S);dots(b.px+14*S,b.py+14*S);
+      ctx.font=(9.5*S)+'px '+MONO;ctx.fillStyle='#93A0C4';ctx.textBaseline='middle';ctx.fillText(b.sp.file,b.px+52*S,b.py+14.5*S);
+      drawCode(b,t<b.T1?Math.floor((t/b.T1)*b.total):b.total,1,t<b.T1);
+      if(t>=b.T1){var p=(t-b.T1)/(b.T2-b.T1),yb=b.py+b.ph-16*S;
+        ctx.font=(9.5*S)+'px '+MONO;ctx.fillStyle=p>=.98?'#5CF5AE':'#FFB33D';ctx.fillText((p>=.98?'✓ build ok':'▸ npm run build')+'  '+Math.round(cl(p)*100)+'%',b.px+16*S,yb-9*S);
+        rr(b.px+16*S,yb,b.pw-32*S,3*S,1.5*S);ctx.fillStyle='rgba(255,255,255,.08)';ctx.fill();
+        rr(b.px+16*S,yb,(b.pw-32*S)*cl(p),3*S,1.5*S);ctx.fillStyle='#3BE6FF';ctx.fill();}
+    } else if(t<b.T3){
+      var pp=(t-b.T2)/(b.T3-b.T2),k=ease(pp),R=lerp(10*S,b.type==='app'?24*S:12*S,k);
+      panelBg(lerp(b.px,b.fx,k),lerp(b.py,b.fy,k),lerp(b.pw,b.fw,k),lerp(b.ph,b.fh,k),R);
+      if(pp<.45)drawCode(b,b.total,1-pp/.45,false);
+      var n=b.tg.length;
+      b.tg.forEach(function(r,j){var kj=ease(cl((pp-j/n*.3)/.7)),s=r.src;
+        var x=lerp(s.x,r.x,kj),y=lerp(s.y,r.y,kj),w=lerp(s.w,r.w,kj),h=lerp(s.h,r.h,kj);
+        ctx.save();ctx.globalAlpha*=kj;paint(r,x,y,w,h,null,b);ctx.restore();
+        ctx.save();ctx.globalAlpha*=(1-kj)*.8;rr(x,y,w,h,h/2);ctx.fillStyle=s.c;ctx.fill();ctx.restore();});
+      if(k>.7)chrome(b,b.fx,b.fy,b.fw,b.fh,(k-.7)/.3);
+    } else {
+      var st=t-b.T3;
+      ctx.save();ctx.shadowColor='rgba(59,230,255,.35)';ctx.shadowBlur=30*S;panelBg(b.fx,b.fy,b.fw,b.fh,b.type==='app'?24*S:12*S);ctx.restore();
+      chrome(b,b.fx,b.fy,b.fw,b.fh,1);
+      if(b.type==='ai')extras(b,st);
+      b.tg.forEach(function(r){paint(r,r.x,r.y,r.w,r.h,st,b)});
+      if(b.type!=='ai')extras(b,st);
+      stamp(b,st);
+    }
+    ctx.restore();
+  }
+
+  function drawDrift(dt){
+    for(var i=0;i<drift.length;i++){var d=drift[i];d.y-=d.v*dt;if(d.y<-20)drift[i]=d=nd(false);
+      ctx.globalAlpha=d.a;ctx.font=d.s+'px '+MONO;ctx.fillStyle=d.c;ctx.fillText(d.t,d.x,d.y);}
+    ctx.globalAlpha=1;
+  }
+
+  function frame(now){
+    var dt=last?Math.min(.05,(now-last)/1000):0;last=now;
+    ctx.clearRect(0,0,W,H);drawDrift(dt);
+    spawnT-=dt;
+    if(spawnT<=0&&builds.length<maxB()){var b=makeBuild();if(b)builds.push(b);spawnT=1.4+Math.random()*1.6;}
+    builds.forEach(function(b){b.t+=dt;draw(b)});
+    builds=builds.filter(function(b){return b.t<b.T5});
+    requestAnimationFrame(frame);
+  }
+
+  function still(){
+    ctx.clearRect(0,0,W,H);drawDrift(0);builds=[];
+    for(var i=0;i<maxB();i++){var b=makeBuild();if(b){b.t=b.T3+2;builds.push(b);draw(b);}}
+  }
+
+  resize();
+  window.addEventListener('resize',function(){resize();if(reduce)still();});
+  if(reduce){still();}
+  else requestAnimationFrame(frame);
+})();
+
+/* ===== Шапка ===== */
+(function(){var top=document.getElementById('top');function f(){top.classList.toggle('scrolled',scrollY>10)}addEventListener('scroll',f,{passive:true});f();})();
+
+/* ===== Бегущая строка: дублируем содержимое для бесшовной прокрутки ===== */
+(function(){var m=document.getElementById('mq');m.innerHTML+=m.innerHTML;})();
+
+/* ===== Ротатор в герое ===== */
+(function(){
+  var el=document.getElementById('rot');
+  var words=['сайт','лендинг','рекламу в Яндексе','рекламу в Google','Telegram-бота','AI-агента','CRM-систему','программу для бизнеса'];
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=words[0];return;}
+  var wi=0,ci=words[0].length,del=true;
+  function tick(){var w=words[wi];
+    if(del){ci--;el.textContent=w.slice(0,ci);if(ci<=0){del=false;wi=(wi+1)%words.length;}setTimeout(tick,35);}
+    else{ci++;el.textContent=words[wi].slice(0,ci);if(ci>=words[wi].length){del=true;setTimeout(tick,1700);}else setTimeout(tick,70);}
+  }
+  setTimeout(tick,1700);
+})();
+
+/* ===== Терминал в герое ===== */
+(function(){
+  var term=document.getElementById('term'),leadsEl=document.getElementById('leads'),leads=0;
+  var steps=['анализ ниши и конкурентов','дизайн и вёрстка сайта','Яндекс Директ + Google Ads','Telegram-бот для заявок','AI-агент на связи 24/7'];
+  var cmd=' codeflow start --город=Бобруйск';
+  var quotes=['«Хочу заказать!»','«Сколько стоит доставка?»','«Запишите меня на пятницу»','«Пришлите счёт на оплату»'];
+  function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+  function line(cls){var d=document.createElement('div');d.className='l '+cls;term.appendChild(d);return d}
+  function stepLine(s){var d=line('st');d.innerHTML='<span>▸ '+s+'</span><span class="dots">'+'.'.repeat(60)+'</span><span class="spin">…</span>';return d}
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){
+    line('cmd').textContent=cmd;steps.forEach(function(s){stepLine(s).lastChild.outerHTML='<span class="ok">ok</span>'});
+    var dn=line('done');dn.textContent='✓ Новая заявка с сайта: '+quotes[0];leadsEl.textContent='1';return;
+  }
+  async function run(){
+    for(;;){
+      term.innerHTML='';
+      var c=line('cmd');for(var i=0;i<=cmd.length;i++){c.textContent=cmd.slice(0,i);await sleep(32)}
+      await sleep(300);
+      for(var j=0;j<steps.length;j++){var d=stepLine(steps[j]);await sleep(520+Math.random()*300);d.lastChild.outerHTML='<span class="ok">ok</span>'}
+      await sleep(350);
+      for(var q=0;q<2;q++){
+        var dn=line('done');dn.textContent='✓ Новая заявка с сайта: '+quotes[(leads)%quotes.length];leads++;leadsEl.textContent=leads;
+        await sleep(1600);
+        if(q===0){dn.remove();}
+      }
+      await sleep(2200);
+    }
+  }
+  run();
+})();
+
+/* ===== Подсветка карточек за курсором ===== */
+document.querySelectorAll('.card').forEach(function(c){c.addEventListener('pointermove',function(e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px')})});
+
+/* ===== Мягкое появление блоков при прокрутке (видимы и без него) ===== */
+(function(){
+  if(!('IntersectionObserver' in window)||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  var els=[].slice.call(document.querySelectorAll('.rv'));
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.remove('pre');io.unobserve(e.target)}})},{rootMargin:'0px 0px -8% 0px'});
+  els.forEach(function(el){if(el.getBoundingClientRect().top>innerHeight){el.classList.add('pre');io.observe(el)}});
+})();
+
+/* ===== Демо AI-агента ===== */
+(function(){
+  var log=document.getElementById('chatlog'),chips=document.getElementById('chips'),busy=false;
+  var Q=['Сколько стоит лендинг?','Работаете по безналу?','Вы только в Бобруйске?','Что умеет AI-агент?'];
+  var A=[
+    'Лендинг стоит от 590 BYN, запуск за 5–7 дней. В цену входят дизайн, адаптив под телефоны, форма заявок с отправкой в Telegram и подключение Яндекс Метрики. Сейчас к открытию действует скидка 20%.',
+    'Да. Заключаем договор, выставляем счёт в BYN, оплата этапами: 50% на старте и 50% после запуска. Работаем с ИП и юрлицами.',
+    'Офис в Бобруйске, можно встретиться лично. По всей Беларуси работаем онлайн: созвон, общий чат и показ результата каждые 2–3 дня.',
+    'Отвечаю клиентам на сайте, в Telegram, Instagram и Viber круглосуточно, знаю прайс, записываю на услуги, заношу заявки в CRM и зову менеджера, когда клиент готов купить. Примерно как сейчас с вами :)'
+  ];
+  function add(cls,html){var d=document.createElement('div');d.className='msg '+cls;d.innerHTML=html;log.appendChild(d);log.scrollTop=log.scrollHeight;return d}
+  chips.addEventListener('click',function(e){
+    var b=e.target.closest('.chip');if(!b||busy)return;busy=true;
+    var i=+b.dataset.q;b.disabled=true;add('me',Q[i]);
+    var t=add('bot typing','<span></span><span></span><span></span>');
+    setTimeout(function(){
+      t.className='msg bot';t.textContent='';var s=A[i],k=0;
+      (function type(){k+=3;t.textContent=s.slice(0,k);log.scrollTop=log.scrollHeight;if(k<s.length)setTimeout(type,18);else{busy=false;
+        if(!chips.querySelector('.chip:not(:disabled)')){var c=document.createElement('a');c.className='chip';c.href='#contact';c.textContent='Хочу такого агента →';c.style.textDecoration='none';chips.appendChild(c);}}})();
+    },900);
+  });
+})();
+
+/* ===== Калькулятор ===== */
+var CALC=[
+  {id:'land',name:'Лендинг',p:590,d:7},
+  {id:'site',name:'Корпоративный сайт',p:1500,d:21},
+  {id:'shop',name:'Интернет-магазин',p:2900,d:35},
+  {id:'seo',name:'SEO (1-й месяц)',p:450,d:30},
+  {id:'ads',name:'Реклама Яндекс + Google',p:390,d:5},
+  {id:'tg',name:'Telegram-бот',p:400,d:7},
+  {id:'ai',name:'AI-агент',p:1200,d:14},
+  {id:'auto',name:'Автоматизация / CRM',p:900,d:21}
+];
+(function(){
+  var box=document.getElementById('opts');
+  box.innerHTML=CALC.map(function(s,i){return '<label class="opt" for="c-'+s.id+'"><input type="checkbox" id="c-'+s.id+'" data-i="'+i+'"'+(s.id==='land'||s.id==='ads'?' checked':'')+'><span class="box"></span><span class="nm">'+s.name+'</span><span class="pr">'+s.p.toLocaleString('ru-RU')+' BYN</span></label>'}).join('')+
+    '<label class="opt urgent" for="c-urg"><input type="checkbox" id="c-urg"><span class="box"></span><span class="nm">Срочно: сделать быстрее в 1,5 раза</span><span class="pr">+30%</span></label>';
+  var sumEl=document.getElementById('c-sum'),oldEl=document.getElementById('c-old'),daysEl=document.getElementById('c-days');
+  function fmt(n){return Math.round(n/10)*10}
+  function picked(){return [].slice.call(box.querySelectorAll('input[data-i]:checked')).map(function(x){return CALC[+x.dataset.i]})}
+  function calc(){
+    var ps=picked(),urg=document.getElementById('c-urg').checked;
+    if(!ps.length){sumEl.textContent='0 BYN';oldEl.textContent='';daysEl.textContent='Выберите услуги слева';return}
+    var sum=ps.reduce(function(a,s){return a+s.p},0);if(urg)sum*=1.3;
+    var ds=ps.map(function(s){return s.d}).sort(function(a,b){return b-a});
+    var days=ds[0]+ds.slice(1).reduce(function(a,d){return a+d*.25},0);if(urg)days/=1.5;
+    oldEl.textContent=fmt(sum).toLocaleString('ru-RU')+' BYN';
+    sumEl.textContent='от '+fmt(sum*.8).toLocaleString('ru-RU')+' BYN';
+    daysEl.textContent='Срок: ~'+Math.max(3,Math.round(days))+' дней';
+  }
+  box.addEventListener('change',calc);calc();
+  document.getElementById('c-go').addEventListener('click',function(){
+    var ps=picked();
+    document.getElementById('f-service').value=ps.length>1?'Комплекс':ps.length===1?mapSvc(ps[0].id):'Пока не знаю, нужна консультация';
+    if(ps.length)document.getElementById('f-msg').value='Из калькулятора: '+ps.map(function(s){return s.name}).join(', ')+(document.getElementById('c-urg').checked?' (срочно)':'')+'. Оценка: '+sumEl.textContent+', '+daysEl.textContent.toLowerCase()+'.';
+    document.getElementById('contact').scrollIntoView({behavior:'smooth'});
+    setTimeout(function(){document.getElementById('f-name').focus({preventScroll:true})},600);
+  });
+  function mapSvc(id){return {land:'Сайт',site:'Сайт',shop:'Сайт',seo:'SEO-продвижение',ads:'Реклама Яндекс / Google',tg:'Telegram-бот',ai:'AI-агент',auto:'Автоматизация / программа'}[id]}
+})();
+
+/* ===== Кнопки «Заказать» в карточках ===== */
+document.querySelectorAll('.order').forEach(function(b){b.addEventListener('click',function(){
+  document.getElementById('f-service').value=b.dataset.service;
+  document.getElementById('contact').scrollIntoView({behavior:'smooth'});
+  setTimeout(function(){document.getElementById('f-name').focus({preventScroll:true})},600);
+})});
+
+/* ===== Форма заявки ===== */
+/* Подключение: замените sendLead на отправку на ваш сервер
+   (например, PHP/Node-скрипт, который пересылает заявку в Telegram-бот или на почту).
+   Токен бота нельзя хранить в этом файле — только на сервере. */
+function sendLead(data){
+  return Promise.resolve(data);
+}
+(function(){
+  var f=document.getElementById('lead');
+  f.addEventListener('submit',function(e){
+    e.preventDefault();
+    var el=f.elements,name=el['name'].value.trim(),phone=el['phone'].value.trim(),ok=true;
+    document.getElementById('e-name').textContent=name?'':'Введите имя';
+    if(!name)ok=false;
+    var digits=phone.replace(/\D/g,'');
+    var good=digits.length>=9||/^@\w{4,}$/.test(phone);
+    document.getElementById('e-phone').textContent=good?'':'Укажите телефон (+375…) или ник в Telegram (@имя)';
+    if(!good)ok=false;
+    if(!document.getElementById('f-ok').checked){ok=false;document.getElementById('e-phone').textContent='Отметьте согласие на обработку данных'}
+    if(!ok)return;
+    var btn=f.querySelector('button[type=submit]');btn.disabled=true;btn.textContent='Отправляем…';
+    sendLead({name:name,phone:phone,service:el['service'].value,message:el['message'].value.trim()}).then(function(){
+      document.getElementById('form-body').hidden=true;document.getElementById('form-ok').hidden=false;
+    }).catch(function(){btn.disabled=false;btn.textContent='Отправить заявку →';document.getElementById('e-phone').textContent='Не удалось отправить. Позвоните или напишите нам в Telegram.'});
+  });
+})();
+
+document.getElementById('yr').textContent=new Date().getFullYear();
+</script>
+</body>
+</html>
