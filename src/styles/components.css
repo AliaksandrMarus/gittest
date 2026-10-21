@@ -378,7 +378,35 @@
 
 .hero {
   position: relative;
+  /* Свой z-index — свой слой наложения: видео внутри (z:-1) гарантированно
+     остаётся позади содержимого именно этой секции и не спорит за порядок
+     отрисовки с общим фоном .rays (тот живёт в контексте body). */
+  z-index: 0;
   padding-block: clamp(3.5rem, 9vw, 7rem) var(--sp-9);
+}
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.hero-video__el {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-video__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgb(6 8 11 / 0.9) 0%,
+    rgb(6 8 11 / 0.68) 45%,
+    rgb(6 8 11 / 0.85) 100%
+  );
 }
 
 .hero__grid {

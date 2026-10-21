@@ -168,6 +168,14 @@ console.log(
     ? '✓ Прожектор не следит за курсором при reduced-motion'
     : '✗ Прожектор сдвинулся вопреки prefers-reduced-motion',
 );
+
+// Фоновое видео на главной не должно грузиться при reduced-motion — только постер.
+const heroVideoBlockedRM = await rmPage.locator('[data-hero-video] source').count();
+console.log(
+  heroVideoBlockedRM === 0
+    ? '✓ Фоновое видео не грузится при reduced-motion'
+    : '✗ Фоновое видео загрузилось вопреки prefers-reduced-motion',
+);
 await rmCtx.close();
 
 // Без reduced-motion и с точным указателем — прожектор должен следовать за курсором.
@@ -180,7 +188,21 @@ const spotMoved = await spotPage.evaluate(
   () => getComputedStyle(document.documentElement).getPropertyValue('--spot-x').trim() === '600px',
 );
 console.log(spotMoved ? '✓ Прожектор следует за курсором' : '✗ Прожектор не реагирует на курсор');
+
+// В обычном режиме на широком экране видео должно подключиться.
+const heroVideoOn = await spotPage.locator('[data-hero-video] source').count();
+console.log(heroVideoOn > 0 ? '✓ Фоновое видео подключилось' : '✗ Фоновое видео не подключилось');
 await spotCtx.close();
+
+// На узком экране видео не грузится, даже без reduced-motion — экономим трафик мобильных.
+const mobileCtx = await shots.newContext({ viewport: { width: 390, height: 844 } });
+const mobilePage = await mobileCtx.newPage();
+await mobilePage.goto(BASE + '/', { waitUntil: 'networkidle' });
+const heroVideoBlockedMobile = await mobilePage.locator('[data-hero-video] source').count();
+console.log(
+  heroVideoBlockedMobile === 0 ? '✓ Фоновое видео не грузится на мобильном экране' : '✗ Фоновое видео загрузилось на мобильном',
+);
+await mobileCtx.close();
 
 await shots.close();
 

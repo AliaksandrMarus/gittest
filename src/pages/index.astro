@@ -6,6 +6,7 @@ import BeforeAfter from '../components/BeforeAfter.astro';
 import LeadForm from '../components/LeadForm.astro';
 import Faq from '../components/Faq.astro';
 import ReviewsWidget from '../components/ReviewsWidget.astro';
+import HeroVideo from '../components/HeroVideo.astro';
 import OpenStatus from '../components/OpenStatus.astro';
 import Icon from '../components/Icon.astro';
 import { site, contacts, scheduleHuman } from '../config/site';
@@ -72,6 +73,7 @@ const faq = [
   schemas={[faqSchema(faq)]}
 >
   <section class="hero">
+    <HeroVideo />
     <div class="wrap">
       <div class="hero__grid">
         <div>

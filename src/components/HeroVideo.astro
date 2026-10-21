@@ -1,0 +1,51 @@
+---
+import { link } from '../lib/url';
+
+/**
+ * Фон первого экрана — видео вместо статичного изображения.
+ *
+ * Без тега <source> в разметке: до проверок в скрипте браузер не скачивает
+ * ни байта видео, посетитель видит только постер (атрибут poster — это
+ * обычная картинка). Источник подставляется через JS, и только если
+ * экран не мобильный, нет reduced-motion и нет экономии трафика —
+ * ровно те же условия, что уже отсекают тяжёлую canvas-пыль в LightRays.
+ */
+---
+
+<div class="hero-video" aria-hidden="true">
+  <video
+    class="hero-video__el"
+    data-hero-video
+    data-src={link('/video/hero.mp4')}
+    muted
+    loop
+    playsinline
+    preload="none"
+    poster={link('/video/hero-poster.jpg')}
+  ></video>
+  <div class="hero-video__scrim"></div>
+</div>
+
+<script>
+  const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+
+  type NavigatorWithConnection = Navigator & { connection?: { saveData?: boolean } };
+  const saveData = (navigator as NavigatorWithConnection).connection?.saveData ?? false;
+
+  const allowed =
+    video &&
+    !matchMedia('(prefers-reduced-motion: reduce)').matches &&
+    innerWidth >= 768 &&
+    !saveData;
+
+  if (allowed) {
+    const source = document.createElement('source');
+    source.src = video!.dataset.src ?? '';
+    source.type = 'video/mp4';
+    video!.append(source);
+    video!.load();
+    // Автовоспроизведение браузер иногда всё равно блокирует — тогда
+    // просто остаётся постер, ничего не ломается.
+    video!.play().catch(() => {});
+  }
+</script>
