@@ -156,7 +156,31 @@ await rmPage.goto(BASE + '/', { waitUntil: 'networkidle' });
 await rmPage.waitForTimeout(600);
 const canvasOn = await rmPage.locator('.rays__canvas').evaluate((c) => c.classList.contains('is-on'));
 console.log(canvasOn ? '✗ Canvas запустился вопреки prefers-reduced-motion' : '✓ Canvas не стартует при reduced-motion');
+
+// Пятно-прожектор не должно реагировать на курсор при reduced-motion.
+await rmPage.mouse.move(600, 400);
+await rmPage.waitForTimeout(100);
+const spotUntouched = await rmPage.evaluate(
+  () => getComputedStyle(document.documentElement).getPropertyValue('--spot-x').trim() === '',
+);
+console.log(
+  spotUntouched
+    ? '✓ Прожектор не следит за курсором при reduced-motion'
+    : '✗ Прожектор сдвинулся вопреки prefers-reduced-motion',
+);
 await rmCtx.close();
+
+// Без reduced-motion и с точным указателем — прожектор должен следовать за курсором.
+const spotCtx = await shots.newContext({ viewport: { width: 1440, height: 900 } });
+const spotPage = await spotCtx.newPage();
+await spotPage.goto(BASE + '/', { waitUntil: 'networkidle' });
+await spotPage.mouse.move(600, 400);
+await spotPage.waitForTimeout(100);
+const spotMoved = await spotPage.evaluate(
+  () => getComputedStyle(document.documentElement).getPropertyValue('--spot-x').trim() === '600px',
+);
+console.log(spotMoved ? '✓ Прожектор следует за курсором' : '✗ Прожектор не реагирует на курсор');
+await spotCtx.close();
 
 await shots.close();
 

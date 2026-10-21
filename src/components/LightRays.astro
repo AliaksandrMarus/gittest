@@ -6,6 +6,9 @@
  * работа уходит на композитор и главный поток не трогается вовсе.
  * Слой 2 — пылинки в луче на canvas. Включается только на достаточно
  * мощных широких экранах и замирает, когда вкладка неактивна.
+ * Слой 3 — интерактивное пятно света: на точном указателе следует за
+ * курсором (посетитель как будто держит фонарь в боксе), на тач-экранах
+ * медленно дрейфует само по себе, при reduced-motion остаётся статичным.
  */
 ---
 
@@ -13,18 +16,61 @@
   <div class="rays__beam"></div>
   <div class="rays__beam rays__beam--b"></div>
   <div class="rays__beam rays__beam--c"></div>
+  <div class="rays__spot" data-spot></div>
   <canvas class="rays__canvas" data-rays></canvas>
   <div class="rays__grain"></div>
 </div>
 
 <script>
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Пятно света: дешевле пыли на canvas — только две CSS-переменные на
+  // каждый тик, браузер лишь перекомпоновывает уже готовый градиент.
+  // Переменные задаёт сам JS (и на курсоре, и в дрейфе) — анимировать их
+  // через @keyframes нельзя без @property: без него браузер не умеет
+  // плавно интерполировать custom property и просто дёргает её рывком.
+  const spot = document.querySelector<HTMLElement>('[data-spot]');
+  if (spot && !reducedMotion) {
+    const root = document.documentElement;
+    if (matchMedia('(any-pointer: fine)').matches) {
+      let raf = 0;
+      addEventListener(
+        'pointermove',
+        (e) => {
+          if (raf) return;
+          raf = requestAnimationFrame(() => {
+            root.style.setProperty('--spot-x', `${e.clientX}px`);
+            root.style.setProperty('--spot-y', `${e.clientY}px`);
+            raf = 0;
+          });
+        },
+        { passive: true },
+      );
+    } else {
+      // Без точного указателя курсору взяться неоткуда — пятно медленно
+      // кружит само, 5 обновлений в секунду плавности хватает с запасом.
+      let raf = 0;
+      let last = 0;
+      function drift(t: number) {
+        raf = requestAnimationFrame(drift);
+        if (t - last < 200) return;
+        last = t;
+        const angle = t / 9000;
+        root.style.setProperty('--spot-x', `${50 + Math.sin(angle) * 22}%`);
+        root.style.setProperty('--spot-y', `${35 + Math.cos(angle * 0.8) * 14}%`);
+      }
+      raf = requestAnimationFrame(drift);
+      document.addEventListener('visibilitychange', () => {
+        cancelAnimationFrame(raf);
+        if (!document.hidden) raf = requestAnimationFrame(drift);
+      });
+      addEventListener('pagehide', () => cancelAnimationFrame(raf));
+    }
+  }
+
   const canvas = document.querySelector<HTMLCanvasElement>('[data-rays]');
 
-  const allowed =
-    canvas &&
-    !matchMedia('(prefers-reduced-motion: reduce)').matches &&
-    innerWidth >= 768 &&
-    (navigator.hardwareConcurrency ?? 2) >= 4;
+  const allowed = canvas && !reducedMotion && innerWidth >= 768 && (navigator.hardwareConcurrency ?? 2) >= 4;
 
   if (allowed) {
     const ctx = canvas.getContext('2d', { alpha: true });

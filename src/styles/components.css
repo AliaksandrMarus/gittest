@@ -319,6 +319,21 @@
   animation-duration: 41s;
 }
 
+/* Пятно света следует за курсором (десктоп) или медленно дрейфует (тач) —
+   поверх лучей, усиливает их, а не спорит: тот же оттенок, мягкий screen.
+   Позицию в обоих режимах двигает JS (см. LightRays.astro): без него
+   градиент остаётся на дефолтной точке — статичный блик по центру. */
+.rays__spot {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    28rem 28rem at var(--spot-x, 50%) var(--spot-y, 35%),
+    rgb(94 231 255 / 0.14),
+    transparent 70%
+  );
+  mix-blend-mode: screen;
+}
+
 .rays__grain {
   position: absolute;
   inset: 0;
@@ -383,13 +398,41 @@
   text-transform: uppercase;
 }
 
-.hero h1 em {
+/* Хромовый блик: тёплый отсвет бежит по холодному градиенту заголовка —
+   тот же приём, что у металлической типографики люксовых автобрендов.
+   Чистый CSS, background-position — анимация нативно поддерживается,
+   в отличие от custom properties (см. .rays__spot выше). */
+.hero h1 em,
+.page-title {
   display: block;
   font-style: normal;
-  background: linear-gradient(100deg, var(--c-beam), var(--c-beam-deep) 70%);
+  background: linear-gradient(
+    100deg,
+    var(--c-text) 0%,
+    var(--c-beam) 35%,
+    var(--c-warm) 50%,
+    var(--c-beam) 65%,
+    var(--c-text) 100%
+  );
+  background-size: 220% auto;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  animation: chrome-sweep 7s linear infinite;
+}
+
+@keyframes chrome-sweep {
+  to {
+    background-position: -220% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero h1 em,
+  .page-title {
+    animation: none;
+    background-position: 0 0;
+  }
 }
 
 .hero__lead {
