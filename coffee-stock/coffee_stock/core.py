@@ -44,10 +44,16 @@ def set_sales_for_date(conn: sqlite3.Connection, day: str, counts: dict[int, int
     Повторный импорт того же дня ничего не задваивает: старые продажи и
     старое списание за день удаляются и пишутся заново по текущим рецептам.
     """
+    # Цена фиксируется в день первой загрузки: файл продаж перечитывается целиком,
+    # и после подорожания старые дни не должны переоцениться
+    kept = {r["drink_id"]: r["price"] for r in
+            conn.execute("SELECT drink_id, price FROM sales WHERE date = ?", (day,))}
+    current = {r["id"]: r["price"] for r in conn.execute("SELECT id, price FROM drinks")}
     conn.execute("DELETE FROM sales WHERE date = ?", (day,))
     conn.executemany(
-        "INSERT INTO sales(date, drink_id, count) VALUES (?, ?, ?)",
-        [(day, drink_id, n) for drink_id, n in counts.items() if n],
+        "INSERT INTO sales(date, drink_id, count, price) VALUES (?, ?, ?, ?)",
+        [(day, drink_id, n, kept.get(drink_id, current.get(drink_id, 0)))
+         for drink_id, n in counts.items() if n],
     )
     _rewrite_sale_movements(conn, day)
 
@@ -163,42 +169,82 @@ def portions_left(conn: sqlite3.Connection) -> list[tuple[str, int, str]]:
 
 def report_sales_by_drink(conn: sqlite3.Connection, d1: str, d2: str) -> tuple[list[str], list[list]]:
     rows = conn.execute(
-        "SELECT d.name, SUM(s.count) AS n FROM sales s JOIN drinks d ON d.id = s.drink_id "
-        "WHERE s.date BETWEEN ? AND ? GROUP BY d.id ORDER BY n DESC",
+        "SELECT d.name, SUM(s.count) AS n, SUM(s.count * s.price) AS money FROM sales s "
+        "JOIN drinks d ON d.id = s.drink_id WHERE s.date BETWEEN ? AND ? GROUP BY d.id ORDER BY money DESC, n DESC",
         (d1, d2),
     ).fetchall()
-    total = sum(r["n"] for r in rows) or 1
     days = (date.fromisoformat(d2) - date.fromisoformat(d1)).days + 1
-    data = [[r["name"], r["n"], round(r["n"] / days, 1), f"{r['n'] * 100 / total:.1f}%"] for r in rows]
+    total_n = sum(r["n"] for r in rows)
+    total_money = sum(r["money"] for r in rows)
+    data = [[r["name"], r["n"], round(r["money"], 2), round(r["money"] / r["n"], 2) if r["n"] else 0,
+             round(r["n"] / days, 1), f"{r['money'] * 100 / total_money:.1f}%" if total_money else "—"]
+            for r in rows]
     if rows:
-        data.append(["Итого", sum(r["n"] for r in rows), round(sum(r["n"] for r in rows) / days, 1), "100%"])
-    return ["Напиток", "Продано, шт", "В среднем в день", "Доля"], data
+        data.append(["Итого", total_n, round(total_money, 2),
+                     round(total_money / total_n, 2) if total_n else 0, round(total_n / days, 1), "100%"])
+    return ["Напиток", "Продано, шт", "Выручка, руб.", "Средняя цена", "Порций в день", "Доля выручки"], data
 
 
 def report_sales_by_day(conn: sqlite3.Connection, d1: str, d2: str) -> tuple[list[str], list[list]]:
     drinks = conn.execute("SELECT id, name FROM drinks ORDER BY name").fetchall()
     by_day: dict[str, dict[int, int]] = {}
-    for r in conn.execute("SELECT date, drink_id, count FROM sales WHERE date BETWEEN ? AND ? ORDER BY date",
-                          (d1, d2)):
+    money: dict[str, float] = {}
+    for r in conn.execute("SELECT date, drink_id, count, price FROM sales WHERE date BETWEEN ? AND ? "
+                          "ORDER BY date", (d1, d2)):
         by_day.setdefault(r["date"], {})[r["drink_id"]] = r["count"]
-    header = ["Дата"] + [d["name"] for d in drinks] + ["Всего"]
+        money[r["date"]] = money.get(r["date"], 0) + r["count"] * r["price"]
+    header = ["Дата"] + [d["name"] for d in drinks] + ["Всего, шт", "Выручка, руб."]
     data = []
     for day, counts in by_day.items():
         row = [day] + [counts.get(d["id"], 0) for d in drinks]
-        data.append(row + [sum(row[1:])])
+        data.append(row + [sum(row[1:]), round(money[day], 2)])
+    if data:
+        data.append(["Итого"] + [sum(r[i] for r in data) for i in range(1, len(header) - 1)]
+                    + [round(sum(r[-1] for r in data), 2)])
     return header, data
 
 
 def report_receipts(conn: sqlite3.Connection, d1: str, d2: str) -> tuple[list[str], list[list]]:
+    """Все строки накладных за период — дата, №, поставщик, товар, количество, цена, НДС, с НДС."""
     rows = conn.execute(
-        "SELECT m.date, i.name, i.unit, m.qty, COALESCE(v.doc_number, ''), COALESCE(v.supplier, ''), "
-        "COALESCE(v.file_name, m.note, '') FROM movements m JOIN ingredients i ON i.id = m.ingredient_id "
-        "LEFT JOIN invoices v ON v.id = m.invoice_id "
-        "WHERE m.kind = 'receipt' AND m.date BETWEEN ? AND ? ORDER BY m.date, i.name",
+        "SELECT v.doc_date, v.doc_number, v.supplier, l.raw_name, l.raw_qty, l.raw_unit, l.price, l.vat, "
+        "l.total, CASE v.status WHEN 'posted' THEN 'Проведена' ELSE 'Не проведена' END "
+        "FROM invoice_lines l JOIN invoices v ON v.id = l.invoice_id "
+        "WHERE v.status != 'error' AND COALESCE(NULLIF(v.doc_date, ''), date(v.created_at)) BETWEEN ? AND ? "
+        "ORDER BY v.doc_date, v.id, l.id",
         (d1, d2),
     ).fetchall()
-    return (["Дата", "Ингредиент", "Ед.", "Количество", "№ накладной", "Поставщик", "Источник"],
-            [list(r) for r in rows])
+    data = [[r[0] or "", r[1] or "", r[2] or "", r[3], r[4], r[5] or "", r[6], r[7], r[8], r[9]] for r in rows]
+    if data:
+        data.append(["Итого", "", "", "", "", "", None,
+                     round(sum(r[7] or 0 for r in data), 2), round(sum(r[8] or 0 for r in data), 2), ""])
+    return (["Дата", "№", "Поставщик", "Наименование", "Количество", "Ед.", "Цена", "НДС", "С НДС", "Статус"],
+            data)
+
+
+@dataclass
+class Summary:
+    last_day: str | None
+    last_day_money: float
+    last_day_count: int
+    month_money: float
+    month_count: int
+    low_count: int
+
+
+def summary(conn: sqlite3.Connection, window_days: int) -> Summary:
+    """Цифры для карточек на главной вкладке."""
+    last = last_sales_date(conn)
+    day_money = day_count = 0
+    if last:
+        r = conn.execute("SELECT COALESCE(SUM(count * price), 0), COALESCE(SUM(count), 0) FROM sales "
+                         "WHERE date = ?", (last,)).fetchone()
+        day_money, day_count = r[0], r[1]
+    month_start = date.today().replace(day=1).isoformat()
+    r = conn.execute("SELECT COALESCE(SUM(count * price), 0), COALESCE(SUM(count), 0) FROM sales "
+                     "WHERE date >= ?", (month_start,)).fetchone()
+    low = sum(1 for f in forecast(conn, window_days) if f.low)
+    return Summary(last, day_money, day_count, r[0], r[1], low)
 
 
 def report_movement(conn: sqlite3.Connection, d1: str, d2: str) -> tuple[list[str], list[list]]:
@@ -233,6 +279,6 @@ def report_forecast(conn: sqlite3.Connection, window_days: int) -> tuple[list[st
 REPORTS = {
     "Продажи по видам напитков": report_sales_by_drink,
     "Продажи по дням": report_sales_by_day,
-    "Приход": report_receipts,
+    "Накладные (приход)": report_receipts,
     "Движение ингредиентов (оборотка)": report_movement,
 }

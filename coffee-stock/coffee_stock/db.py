@@ -19,8 +19,9 @@ CREATE TABLE IF NOT EXISTS ingredients (
 );
 
 CREATE TABLE IF NOT EXISTS drinks (
-    id   INTEGER PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
+    id    INTEGER PRIMARY KEY,
+    name  TEXT NOT NULL UNIQUE,
+    price REAL NOT NULL DEFAULT 0  -- цена порции сейчас
 );
 
 -- Норма ингредиента на одну порцию напитка
@@ -35,6 +36,7 @@ CREATE TABLE IF NOT EXISTS sales (
     date     TEXT NOT NULL,
     drink_id INTEGER NOT NULL REFERENCES drinks(id) ON DELETE CASCADE,
     count    INTEGER NOT NULL,
+    price    REAL NOT NULL DEFAULT 0,  -- цена порции в этот день
     PRIMARY KEY (date, drink_id)
 );
 
@@ -57,6 +59,9 @@ CREATE TABLE IF NOT EXISTS invoice_lines (
     raw_name      TEXT NOT NULL,
     raw_qty       REAL NOT NULL,
     raw_unit      TEXT,
+    price         REAL,
+    vat           REAL,  -- сумма НДС
+    total         REAL,  -- стоимость с НДС
     ingredient_id INTEGER REFERENCES ingredients(id),
     factor        REAL,
     ignored       INTEGER NOT NULL DEFAULT 0
@@ -100,6 +105,8 @@ DEFAULT_INGREDIENTS = [
     ("Палочки для размешивания", "шт", 100),
 ]
 
+DEFAULT_PRICES = {"Эспрессо": 2.5, "Американо": 2.5, "Капучино": 3.5, "Латте": 3.5, "Горячий шоколад": 3.0}
+
 DEFAULT_RECIPES = {
     "Эспрессо": {"Кофе в зёрнах": 8, "Сахар": 5, "Стаканчики": 1, "Палочки для размешивания": 1},
     "Американо": {"Кофе в зёрнах": 8, "Сахар": 5, "Стаканчики": 1, "Палочки для размешивания": 1},
@@ -112,8 +119,14 @@ DEFAULT_RECIPES = {
 
 DEFAULT_SETTINGS = {
     "forecast_days": "14",
-    "api_key": "",
-    "model": "claude-opus-5-5",
+    "tesseract_path": "",
+}
+
+# Столбцы, добавленные после первой версии: старая база дополняется при запуске
+MIGRATIONS = {
+    "drinks": [("price", "REAL NOT NULL DEFAULT 0")],
+    "sales": [("price", "REAL NOT NULL DEFAULT 0")],
+    "invoice_lines": [("price", "REAL"), ("vat", "REAL"), ("total", "REAL")],
 }
 
 
@@ -122,9 +135,19 @@ def connect(path: str | Path) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.executescript(SCHEMA)
+    _migrate(conn)
     if conn.execute("SELECT COUNT(*) FROM settings").fetchone()[0] == 0:
         _seed(conn)
     return conn
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    for table, columns in MIGRATIONS.items():
+        have = {r["name"] for r in conn.execute(f"PRAGMA table_info({table})")}
+        for name, decl in columns:
+            if name not in have:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
+    conn.commit()
 
 
 def _seed(conn: sqlite3.Connection) -> None:
@@ -135,7 +158,8 @@ def _seed(conn: sqlite3.Connection) -> None:
         )
         ing = {r["name"]: r["id"] for r in conn.execute("SELECT id, name FROM ingredients")}
         for drink, parts in DEFAULT_RECIPES.items():
-            drink_id = conn.execute("INSERT INTO drinks(name) VALUES (?)", (drink,)).lastrowid
+            drink_id = conn.execute("INSERT INTO drinks(name, price) VALUES (?, ?)",
+                                    (drink, DEFAULT_PRICES.get(drink, 0))).lastrowid
             conn.executemany(
                 "INSERT INTO recipe(drink_id, ingredient_id, qty) VALUES (?, ?, ?)",
                 [(drink_id, ing[name], qty) for name, qty in parts.items()],

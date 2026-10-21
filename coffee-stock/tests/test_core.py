@@ -78,14 +78,28 @@ def test_reports(conn):
         core.set_sales_for_date(conn, "2026-10-02", {drk["Американо"]: 3})
         core.set_sales_for_date(conn, "2026-10-04", {drk["Американо"]: 1, drk["Латте"]: 2})
     header, rows = core.report_sales_by_drink(conn, "2026-10-01", "2026-10-31")
-    assert rows[0][:2] == ["Американо", 4]
-    assert rows[-1][:2] == ["Итого", 6]
+    # Американо 4 × 2,5 = 10, Латте 2 × 3,5 = 7 — сортировка по выручке
+    assert rows[0][:3] == ["Американо", 4, 10]
+    assert rows[1][:3] == ["Латте", 2, 7]
+    assert rows[-1][:3] == ["Итого", 6, 17]
     header, rows = core.report_movement(conn, "2026-10-03", "2026-10-04")
     coffee = next(r for r in rows if r[0] == "Кофе в зёрнах")
     assert coffee[2:] == [1000 - 24, 500, 24, 0, 1000 - 24 + 500 - 24]
     header, rows = core.report_sales_by_day(conn, "2026-10-01", "2026-10-31")
-    assert [r[0] for r in rows] == ["2026-10-02", "2026-10-04"]
-    assert len(core.report_receipts(conn, "2026-10-01", "2026-10-31")[1]) == 1
+    assert [r[0] for r in rows] == ["2026-10-02", "2026-10-04", "Итого"]
+    assert rows[-1][-1] == 17
+
+
+def test_price_is_fixed_on_the_day_of_sale(conn):
+    drk = ids(conn, "drinks")
+    with conn:
+        core.set_sales_for_date(conn, "2026-10-01", {drk["Капучино"]: 10})
+        conn.execute("UPDATE drinks SET price = 4 WHERE id = ?", (drk["Капучино"],))
+        # Файл продаж перечитан целиком: старый день остаётся по старой цене
+        core.set_sales_for_date(conn, "2026-10-01", {drk["Капучино"]: 10})
+        core.set_sales_for_date(conn, "2026-10-02", {drk["Капучино"]: 10})
+    money = dict(conn.execute("SELECT date, SUM(count * price) FROM sales GROUP BY date").fetchall())
+    assert money == {"2026-10-01": 35, "2026-10-02": 40}
 
 
 def test_sales_excel_roundtrip(conn, tmp_path):

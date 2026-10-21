@@ -35,6 +35,13 @@ class Folders:
     def failed(self) -> Path:
         return self.root / "Накладные" / "Ошибки"
 
+    def stored_pdf(self, file_name: str) -> Path | None:
+        """Где теперь лежит файл накладной (после переноса из «Входящих»)."""
+        for folder in (self.done, self.failed, self.incoming):
+            if (folder / file_name).is_file():
+                return folder / file_name
+        return None
+
     @property
     def sales_file(self) -> Path:
         return self.root / "Продажи.xlsx"
@@ -85,14 +92,10 @@ def process_file(conn: sqlite3.Connection, path: Path, folders: Folders, extract
         invoice.delete_invoice(conn, existing["id"])
     try:
         extracted = extractor(path)
-    except invoice.RecognitionError as e:
-        invoice.save_error(conn, path.name, digest, str(e))
-        _move(path, folders.failed)
-        return Processed(path.name, "error", str(e))
     except Exception as e:  # noqa: BLE001 — любой сбой разбора не должен ронять программу
-        message = f"Ошибка при чтении файла: {e}"
-        invoice.save_error(conn, path.name, digest, message)
-        _move(path, folders.failed)
+        message = str(e) if isinstance(e, invoice.RecognitionError) else f"Ошибка при чтении файла: {e}"
+        stored = _move(path, folders.failed)
+        invoice.save_error(conn, stored.name, digest, message)
         return Processed(path.name, "error", message)
     # Повторный скан той же бумаги даёт другой файл, поэтому сверяем ещё и реквизиты
     same = invoice.find_same_document(conn, extracted)
@@ -100,8 +103,8 @@ def process_file(conn: sqlite3.Connection, path: Path, folders: Folders, extract
         _move(path, folders.done)
         return Processed(path.name, "duplicate", f"Накладная № {extracted.number} от {extracted.date} "
                                                  f"уже загружена (файл «{same['file_name']}»)")
-    _, status = invoice.save_extracted(conn, path.name, digest, extracted)
-    _move(path, folders.done)
+    stored = _move(path, folders.done)
+    _, status = invoice.save_extracted(conn, stored.name, digest, extracted)
     return Processed(path.name, status)
 
 

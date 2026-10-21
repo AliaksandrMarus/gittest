@@ -1,4 +1,4 @@
-"""Окно программы: вкладки «Остатки», «Продажи», «Накладные», «Рецепты», «Отчёты», «Настройки»."""
+"""Окно программы: вкладки «Остатки», «Продажи», «Накладные», «Рецепты и цены», «Отчёты», «Настройки»."""
 
 from __future__ import annotations
 
@@ -10,20 +10,22 @@ from datetime import date
 from pathlib import Path
 
 from PySide6.QtCore import QDate, QThread, QTimer, QUrl, Qt, Signal
-from PySide6.QtGui import QBrush, QColor, QDesktopServices
+from PySide6.QtGui import QBrush, QColor, QDesktopServices, QFont
 from PySide6.QtWidgets import (
     QAbstractItemView, QApplication, QComboBox, QDateEdit, QDialog, QDialogButtonBox,
-    QDoubleSpinBox, QFileDialog, QFormLayout, QHBoxLayout, QHeaderView, QInputDialog, QLabel,
+    QDoubleSpinBox, QFileDialog, QFormLayout, QFrame, QHBoxLayout, QHeaderView, QInputDialog, QLabel,
     QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton, QSpinBox,
-    QSplitter, QTableWidget, QTableWidgetItem, QTabWidget, QTextEdit, QVBoxLayout, QWidget,
+    QSplitter, QStyleFactory, QTableWidget, QTableWidgetItem, QTabWidget, QTextEdit, QVBoxLayout, QWidget,
 )
 
-from . import core, db, export, inbox, invoice, sales_excel
+from . import core, db, export, inbox, invoice, ocr, sales_excel, style
 
 STATUS_NAMES = {"posted": "Проведена", "review": "Нужна проверка", "error": "Не распознана",
                 "duplicate": "Повтор"}
-RED, YELLOW, GREEN = QColor("#f8d0cc"), QColor("#fbeec1"), QColor("#d7efd2")
+STATUS_COLORS = {"posted": style.GREEN, "review": style.YELLOW, "error": style.RED}
+RED, YELLOW = QColor(style.RED), QColor(style.YELLOW)
 CHECK_INTERVAL_MS = 10_000
+MONEY_WORDS = ("руб", "Цена", "цена", "НДС", "Выручка")
 
 
 def data_root() -> Path:
@@ -35,35 +37,57 @@ def data_root() -> Path:
     return Path.cwd() / "data"
 
 
-def fmt(value) -> str:
+def fmt(value, money: bool = False) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, (int, float)) and money:
+        return f"{value:,.2f}".replace(",", " ").replace(".", ",")
     if isinstance(value, float):
         if abs(value - round(value)) < 1e-9:
             return f"{int(round(value)):,}".replace(",", " ")
-        return f"{value:,.2f}".replace(",", " ").replace(".", ",")
+        return f"{value:,.3f}".rstrip("0").replace(",", " ").replace(".", ",")
     if isinstance(value, int):
         return f"{value:,}".replace(",", " ")
-    return "" if value is None else str(value)
+    if isinstance(value, str) and len(value) == 10 and value[4] == "-" and value[7] == "-":
+        try:
+            return date.fromisoformat(value).strftime("%d.%m.%Y")
+        except ValueError:
+            pass
+    return str(value)
 
 
-def fill_table(table: QTableWidget, header: list[str], rows: list[list]) -> None:
+def money(value) -> str:
+    return fmt(value or 0.0, money=True) + " руб."
+
+
+def fill_table(table: QTableWidget, header: list[str], rows: list[list], bold_last: bool = False) -> None:
+    money_cols = {i for i, h in enumerate(header) if any(w in h for w in MONEY_WORDS) and "%" not in h}
     table.clear()
     table.setColumnCount(len(header))
     table.setHorizontalHeaderLabels(header)
     table.setRowCount(len(rows))
     for r, row in enumerate(rows):
         for c, value in enumerate(row):
-            item = QTableWidgetItem(fmt(value))
+            item = QTableWidgetItem(fmt(value, c in money_cols))
             item.setFlags(item.flags() & ~Qt.ItemIsEditable)
             if isinstance(value, (int, float)):
                 item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
             table.setItem(r, c, item)
+    if bold_last and rows and str(rows[-1][0]).startswith("Итого"):
+        font = QFont()
+        font.setBold(True)
+        for c in range(len(header)):
+            if item := table.item(len(rows) - 1, c):
+                item.setFont(font)
+                item.setBackground(QBrush(QColor(style.CREAM)))
     table.resizeColumnsToContents()
 
 
-def color_row(table: QTableWidget, row: int, color: QColor) -> None:
+def color_row(table: QTableWidget, row: int, color: QColor | str) -> None:
+    brush = QBrush(QColor(color))
     for c in range(table.columnCount()):
         if item := table.item(row, c):
-            item.setBackground(QBrush(color))
+            item.setBackground(brush)
 
 
 def make_table() -> QTableWidget:
@@ -71,22 +95,62 @@ def make_table() -> QTableWidget:
     t.setSelectionBehavior(QAbstractItemView.SelectRows)
     t.setAlternatingRowColors(True)
     t.verticalHeader().setVisible(False)
+    t.verticalHeader().setDefaultSectionSize(30)
     t.horizontalHeader().setStretchLastSection(True)
     return t
 
 
-def qdate(iso: str) -> QDate:
-    return QDate.fromString(iso, "yyyy-MM-dd")
+def button(text: str, slot, kind: str = "") -> QPushButton:
+    b = QPushButton(text)
+    if kind:
+        b.setProperty(kind, True)
+    b.clicked.connect(slot)
+    b.setCursor(Qt.PointingHandCursor)
+    return b
+
+
+def label(text: str, kind: str = "") -> QLabel:
+    lab = QLabel(text)
+    lab.setWordWrap(True)
+    if kind:
+        lab.setProperty(kind, True)
+    return lab
 
 
 def open_path(path: Path) -> None:
     QDesktopServices.openUrl(QUrl.fromLocalFile(str(path)))
 
 
+class Card(QFrame):
+    """Цветная карточка с крупной цифрой."""
+
+    def __init__(self, title: str):
+        super().__init__()
+        self.setProperty("card", True)
+        self.setMinimumHeight(86)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 10, 16, 10)
+        self.title = QLabel(title)
+        self.value = QLabel("—")
+        self.note = QLabel("")
+        layout.addWidget(self.title)
+        layout.addWidget(self.value)
+        layout.addWidget(self.note)
+
+    def show_value(self, value: str, note: str, colors: str) -> None:
+        bg, fg = style.CARD_COLORS[colors]
+        self.setStyleSheet(f"QFrame[card='true'] {{ background: {bg}; }}"
+                           f"QLabel {{ background: transparent; color: {fg}; }}")
+        self.title.setStyleSheet(f"font-weight: 600; color: {fg};")
+        self.value.setStyleSheet(f"font-size: 19pt; font-weight: 800; color: {fg};")
+        self.value.setText(value)
+        self.note.setText(note)
+
+
 # ---- Фоновая обработка накладных ------------------------------------------
 
 class InboxWorker(QThread):
-    """Распознавание идёт в отдельном потоке: запрос к Claude длится секунды."""
+    """Распознавание идёт в отдельном потоке: OCR скана занимает несколько секунд."""
 
     done = Signal(list)
 
@@ -97,10 +161,9 @@ class InboxWorker(QThread):
     def run(self) -> None:
         conn = db.connect(self.db_path)
         try:
-            api_key = db.get_setting(conn, "api_key").strip()
-            model = db.get_setting(conn, "model").strip() or db.DEFAULT_SETTINGS["model"]
+            tesseract = db.get_setting(conn, "tesseract_path").strip()
             results = inbox.process_incoming(conn, self.folders,
-                                             lambda p: invoice.extract(p, api_key, model), self.settle)
+                                             lambda p: invoice.extract(p, tesseract), self.settle)
         except Exception as e:  # noqa: BLE001
             results = [inbox.Processed("—", "error", f"Сбой обработки папки: {e}")]
         finally:
@@ -110,11 +173,13 @@ class InboxWorker(QThread):
 
 # ---- Диалоги ---------------------------------------------------------------
 
-class MovementDialog(QDialog):
-    def __init__(self, conn: sqlite3.Connection, title: str, qty_label: str, parent=None):
+class InventoryDialog(QDialog):
+    def __init__(self, conn: sqlite3.Connection, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(title)
+        self.setWindowTitle("Инвентаризация")
         form = QFormLayout(self)
+        form.addRow(label("Укажите, сколько ингредиента есть на самом деле — программа поправит остаток.",
+                          "hint"))
         self.ingredient = QComboBox()
         for r in conn.execute("SELECT id, name, unit FROM ingredients ORDER BY name"):
             self.ingredient.addItem(f"{r['name']} ({r['unit']})", r["id"])
@@ -127,7 +192,7 @@ class MovementDialog(QDialog):
         self.note = QLineEdit()
         form.addRow("Ингредиент", self.ingredient)
         form.addRow("Дата", self.day)
-        form.addRow(qty_label, self.qty)
+        form.addRow("Фактический остаток", self.qty)
         form.addRow("Комментарий", self.note)
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
@@ -139,6 +204,228 @@ class MovementDialog(QDialog):
                 self.qty.value(), self.note.text().strip())
 
 
+class InvoiceEditor(QDialog):
+    """Карточка накладной: реквизиты и строки, всё можно исправить вручную."""
+
+    COLS = ["Наименование", "Ед.", "Количество", "Цена", "НДС", "С НДС", "Ингредиент", "Коэфф.", "Приход"]
+    NAME, UNIT, QTY, PRICE, VAT, TOTAL, ING, FACTOR, RESULT = range(9)
+    IGNORE = -1
+
+    def __init__(self, win: "MainWindow", invoice_id: int | None):
+        super().__init__(win)
+        self.win, self.invoice_id = win, invoice_id
+        conn = win.conn
+        self.setWindowTitle("Новая накладная" if invoice_id is None else "Накладная")
+        self.resize(1180, 620)
+        self.ingredients = conn.execute("SELECT id, name, unit FROM ingredients ORDER BY name").fetchall()
+        self.units = {r["id"]: r["unit"] for r in self.ingredients}
+        layout = QVBoxLayout(self)
+
+        head = conn.execute("SELECT * FROM invoices WHERE id = ?", (invoice_id,)).fetchone() if invoice_id else None
+        form = QHBoxLayout()
+        self.day = QDateEdit()
+        self.day.setCalendarPopup(True)
+        self.day.setDisplayFormat("dd.MM.yyyy")
+        doc_date = head["doc_date"] if head and head["doc_date"] else core.today()
+        self.day.setDate(QDate.fromString(doc_date, "yyyy-MM-dd"))
+        self.doc_number = QLineEdit(head["doc_number"] or "" if head else "")
+        self.supplier = QLineEdit(head["supplier"] or "" if head else "")
+        self.supplier.setMinimumWidth(320)
+        for text, w in (("Дата", self.day), ("№", self.doc_number), ("Поставщик", self.supplier)):
+            form.addWidget(QLabel(text))
+            form.addWidget(w)
+        form.addStretch()
+        self.pdf_path = win.folders.stored_pdf(head["file_name"]) if head else None
+        if self.pdf_path:
+            form.addWidget(button("Открыть PDF", lambda: open_path(self.pdf_path), "secondary"))
+        layout.addLayout(form)
+        if head and head["note"]:
+            layout.addWidget(label(f"Распознавание: {head['note']}", "hint"))
+        layout.addWidget(label(
+            "Проверьте строки и исправьте, если что-то распознано неверно. «Ингредиент» — что это из ваших "
+            "ингредиентов, «Коэфф.» — сколько его единиц в одной единице накладной (1 кг = 1000 г, "
+            "1 уп = 100 шт). Услуги и доставку отметьте «Не учитывать».", "hint"))
+
+        self.table = QTableWidget(0, len(self.COLS))
+        self.table.setHorizontalHeaderLabels(self.COLS)
+        self.table.verticalHeader().setDefaultSectionSize(32)
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(self.NAME, QHeaderView.Stretch)
+        for col, width in ((self.UNIT, 50), (self.QTY, 90), (self.PRICE, 80), (self.VAT, 80), (self.TOTAL, 90),
+                           (self.ING, 240), (self.FACTOR, 90), (self.RESULT, 130)):
+            self.table.setColumnWidth(col, width)
+        self.table.itemChanged.connect(self.item_changed)
+        layout.addWidget(self.table)
+
+        row = QHBoxLayout()
+        row.addWidget(button("Добавить строку", lambda: self.add_row(), "secondary"))
+        row.addWidget(button("Удалить строку", self.delete_row, "secondary"))
+        row.addWidget(button("Посчитать «С НДС» = кол-во × цена + НДС", self.recalc, "secondary"))
+        row.addStretch()
+        self.totals = QLabel()
+        self.totals.setProperty("title", True)
+        row.addWidget(self.totals)
+        layout.addLayout(row)
+
+        buttons = QHBoxLayout()
+        buttons.addStretch()
+        buttons.addWidget(button("Отмена", self.reject, "secondary"))
+        buttons.addWidget(button("Сохранить", lambda: self.save(False), "secondary"))
+        buttons.addWidget(button("Сохранить и провести", lambda: self.save(True)))
+        layout.addLayout(buttons)
+
+        self.loading = True
+        if invoice_id:
+            for line in conn.execute("SELECT * FROM invoice_lines WHERE invoice_id = ? ORDER BY id", (invoice_id,)):
+                self.add_row(line)
+        if self.table.rowCount() == 0:
+            self.add_row()
+        self.loading = False
+        self.update_results()
+
+    def add_row(self, line=None) -> None:
+        was_loading, self.loading = self.loading, True
+        r = self.table.rowCount()
+        self.table.insertRow(r)
+        values = {self.NAME: "", self.UNIT: "", self.QTY: None, self.PRICE: None, self.VAT: None, self.TOTAL: None}
+        if line is not None:
+            values = {self.NAME: line["raw_name"], self.UNIT: line["raw_unit"] or "", self.QTY: line["raw_qty"],
+                      self.PRICE: line["price"], self.VAT: line["vat"], self.TOTAL: line["total"]}
+        for c, v in values.items():
+            item = QTableWidgetItem(v if isinstance(v, str) else fmt(v, c in (self.PRICE, self.VAT, self.TOTAL)))
+            if c >= self.QTY:
+                item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.table.setItem(r, c, item)
+        combo = QComboBox()
+        combo.addItem("— выберите —", None)
+        combo.addItem("Не учитывать (услуга, доставка)", self.IGNORE)
+        for ing in self.ingredients:
+            combo.addItem(f"{ing['name']} ({ing['unit']})", ing["id"])
+        spin = QDoubleSpinBox()
+        spin.setRange(0, 1_000_000)
+        spin.setDecimals(3)
+        if line is not None:
+            combo.setCurrentIndex(1 if line["ignored"] else max(0, combo.findData(line["ingredient_id"])))
+            spin.setValue(line["factor"] or 0)
+        combo.currentIndexChanged.connect(lambda _=0, c=combo: self.ingredient_changed(c))
+        spin.valueChanged.connect(lambda _=0: self.update_results())
+        self.table.setCellWidget(r, self.ING, combo)
+        self.table.setCellWidget(r, self.FACTOR, spin)
+        result = QTableWidgetItem("")
+        result.setFlags(result.flags() & ~Qt.ItemIsEditable)
+        self.table.setItem(r, self.RESULT, result)
+        self.loading = was_loading
+        if line is None and not self.loading:
+            self.table.setCurrentCell(r, self.NAME)
+            self.update_results()
+
+    def delete_row(self) -> None:
+        rows = sorted({i.row() for i in self.table.selectedIndexes()} | {self.table.currentRow()}, reverse=True)
+        for r in rows:
+            if r >= 0:
+                self.table.removeRow(r)
+        self.update_results()
+
+    def row_of(self, widget) -> int:
+        for r in range(self.table.rowCount()):
+            if self.table.cellWidget(r, self.ING) is widget:
+                return r
+        return -1
+
+    def ingredient_changed(self, combo: QComboBox) -> None:
+        r = self.row_of(combo)
+        spin: QDoubleSpinBox = self.table.cellWidget(r, self.FACTOR)
+        ing = combo.currentData()
+        if ing not in (None, self.IGNORE) and spin.value() == 0:
+            spin.setValue(invoice.unit_factor(self.text(r, self.UNIT), self.units[ing]) or 0)
+        self.update_results()
+
+    def text(self, r: int, c: int) -> str:
+        item = self.table.item(r, c)
+        return item.text().strip() if item else ""
+
+    def number(self, r: int, c: int) -> float | None:
+        return invoice.parse_number(self.text(r, c)) if self.text(r, c) else None
+
+    def item_changed(self, item: QTableWidgetItem) -> None:
+        if not self.loading and item.column() != self.RESULT:
+            self.update_results()
+
+    def recalc(self) -> None:
+        self.loading = True
+        for r in range(self.table.rowCount()):
+            qty, price = self.number(r, self.QTY), self.number(r, self.PRICE)
+            if qty is not None and price is not None:
+                total = round(qty * price + (self.number(r, self.VAT) or 0), 2)
+                self.table.item(r, self.TOTAL).setText(fmt(total, money=True))
+        self.loading = False
+        self.update_results()
+
+    def update_results(self) -> None:
+        self.loading = True
+        vat_sum = total_sum = 0.0
+        for r in range(self.table.rowCount()):
+            combo: QComboBox = self.table.cellWidget(r, self.ING)
+            spin: QDoubleSpinBox = self.table.cellWidget(r, self.FACTOR)
+            ing, qty = combo.currentData(), self.number(r, self.QTY)
+            spin.setEnabled(ing != self.IGNORE)
+            vat_sum += self.number(r, self.VAT) or 0
+            total_sum += self.number(r, self.TOTAL) or 0
+            ok = True
+            if not self.text(r, self.NAME) or qty is None or qty <= 0:
+                text, ok = "заполните название и количество", False
+            elif ing == self.IGNORE:
+                text = "не учитывается"
+            elif ing is None or spin.value() <= 0:
+                text, ok = "выберите ингредиент и коэффициент", False
+            else:
+                text = f"{fmt(qty * spin.value())} {self.units[ing]}"
+            self.table.item(r, self.RESULT).setText(text)
+            for c in range(self.table.columnCount()):
+                if item := self.table.item(r, c):
+                    item.setBackground(QBrush(QColor("white" if ok else style.YELLOW)))
+        self.totals.setText(f"НДС: {money(vat_sum)}    Итого с НДС: {money(total_sum)}")
+        self.loading = False
+
+    def collect(self) -> list[invoice.EditedLine] | None:
+        lines = []
+        for r in range(self.table.rowCount()):
+            name, qty = self.text(r, self.NAME), self.number(r, self.QTY)
+            if not name and qty is None:
+                continue  # пустая строка
+            if not name or qty is None or qty <= 0:
+                QMessageBox.warning(self, "Накладная", f"Строка {r + 1}: укажите наименование и количество.")
+                return None
+            for c in (self.PRICE, self.VAT, self.TOTAL):
+                if self.text(r, c) and self.number(r, c) is None:
+                    QMessageBox.warning(self, "Накладная", f"Строка {r + 1}: «{self.text(r, c)}» — не число.")
+                    return None
+            ing = self.table.cellWidget(r, self.ING).currentData()
+            factor = self.table.cellWidget(r, self.FACTOR).value() or None
+            lines.append(invoice.EditedLine(
+                name, qty, self.text(r, self.UNIT), self.number(r, self.PRICE), self.number(r, self.VAT),
+                self.number(r, self.TOTAL), None if ing in (None, self.IGNORE) else ing, factor,
+                ing == self.IGNORE))
+        return lines
+
+    def save(self, post: bool) -> None:
+        lines = self.collect()
+        if lines is None:
+            return
+        if not lines:
+            QMessageBox.warning(self, "Накладная", "В накладной нет ни одной строки.")
+            return
+        self.invoice_id = invoice.save_invoice(
+            self.win.conn, self.invoice_id, self.doc_number.text().strip(),
+            self.day.date().toString("yyyy-MM-dd"), self.supplier.text().strip(), lines, post)
+        if post and invoice.unresolved_lines(self.win.conn, self.invoice_id):
+            QMessageBox.information(self, "Накладная", "Сохранено, но не проведено: не у всех строк выбран "
+                                                       "ингредиент и коэффициент (подсвечены жёлтым).")
+            self.win.refresh_all()
+            return
+        self.accept()
+
+
 # ---- Вкладки ---------------------------------------------------------------
 
 class StockTab(QWidget):
@@ -146,32 +433,50 @@ class StockTab(QWidget):
         super().__init__()
         self.win = win
         layout = QVBoxLayout(self)
+        cards = QHBoxLayout()
+        self.card_day = Card("Выручка за последний день")
+        self.card_month = Card("Выручка за месяц")
+        self.card_cups = Card("Продано за месяц")
+        self.card_low = Card("Заканчивается")
+        for c in (self.card_day, self.card_month, self.card_cups, self.card_low):
+            cards.addWidget(c)
+        layout.addLayout(cards)
+
         buttons = QHBoxLayout()
-        for text, slot in (("Обновить", self.refresh), ("Приход вручную…", self.manual_receipt),
-                           ("Инвентаризация (факт. остаток)…", self.inventory)):
-            b = QPushButton(text)
-            b.clicked.connect(slot)
-            buttons.addWidget(b)
+        title = label("Остатки ингредиентов", "title")
+        buttons.addWidget(title)
         buttons.addStretch()
+        buttons.addWidget(button("Инвентаризация…", self.inventory, "secondary"))
+        buttons.addWidget(button("Обновить", self.win_refresh, "secondary"))
         layout.addLayout(buttons)
-        self.info = QLabel()
+        self.info = label("", "hint")
         layout.addWidget(self.info)
         self.table = make_table()
         layout.addWidget(self.table, 3)
-        layout.addWidget(QLabel("Сколько порций ещё можно приготовить:"))
+        layout.addWidget(label("Сколько порций ещё можно приготовить", "title"))
         self.portions = make_table()
         layout.addWidget(self.portions, 2)
+
+    def win_refresh(self) -> None:
+        self.win.refresh_all()
 
     def refresh(self) -> None:
         conn = self.win.conn
         days = int(db.get_setting(conn, "forecast_days") or 14)
+        s = core.summary(conn, days)
+        self.card_day.show_value(money(s.last_day_money),
+                                 f"{fmt(s.last_day)} · {s.last_day_count} порц." if s.last_day else "продаж ещё нет",
+                                 "money")
+        self.card_month.show_value(money(s.month_money), f"{date.today():%m.%Y}", "month")
+        self.card_cups.show_value(f"{s.month_count} порц.", "с начала месяца", "cups")
+        self.card_low.show_value(str(s.low_count), "ингредиентов на исходе" if s.low_count else "всё в порядке",
+                                 "alert" if s.low_count else "ok")
+
         rows = core.forecast(conn, days)
         fill_table(self.table, ["Ингредиент", "Ед.", "Остаток", "Мин. запас", "Расход в день",
                                 "Хватит на дней", "Закончится примерно"],
                    [[r.name, r.unit, r.stock, r.min_stock, round(r.per_day, 2),
-                     "—" if r.days_left is None else int(r.days_left),
-                     "—" if r.run_out is None else date.fromisoformat(r.run_out).strftime("%d.%m.%Y")]
-                    for r in rows])
+                     "—" if r.days_left is None else int(r.days_left), r.run_out or "—"] for r in rows])
         for i, r in enumerate(rows):
             if r.low:
                 color_row(self.table, i, RED)
@@ -180,23 +485,13 @@ class StockTab(QWidget):
         last = core.last_sales_date(conn)
         self.info.setText(
             f"Прогноз по среднему расходу за {days} дн. "
-            + (f"Продажи внесены по {date.fromisoformat(last):%d.%m.%Y}." if last else "Продаж пока нет.")
-            + "  Красным — меньше минимального запаса или на 1–2 дня, жёлтым — меньше недели."
-        )
+            + (f"Продажи внесены по {fmt(last)}. " if last else "Продаж пока нет. ")
+            + "Красным — меньше минимального запаса или на 1–2 дня, жёлтым — меньше чем на неделю.")
         fill_table(self.portions, ["Напиток", "Порций", "Первым закончится"],
                    [list(p) for p in core.portions_left(conn)])
 
-    def manual_receipt(self) -> None:
-        dlg = MovementDialog(self.win.conn, "Приход вручную", "Количество", self)
-        if dlg.exec():
-            ing, day, qty, note = dlg.values()
-            if qty > 0:
-                with self.win.conn:
-                    core.add_movement(self.win.conn, day, ing, qty, "receipt", note or "Приход вручную")
-                self.win.refresh_all()
-
     def inventory(self) -> None:
-        dlg = MovementDialog(self.win.conn, "Инвентаризация", "Фактический остаток", self)
+        dlg = InventoryDialog(self.win.conn, self)
         if dlg.exec():
             ing, day, qty, note = dlg.values()
             with self.win.conn:
@@ -210,19 +505,18 @@ class SalesTab(QWidget):
         super().__init__()
         self.win = win
         layout = QVBoxLayout(self)
-        layout.addWidget(QLabel(
+        layout.addWidget(label("Продажи", "title"))
+        layout.addWidget(label(
             f"Файл продаж: {win.folders.sales_file}\n"
-            "Каждый день впишите количество проданных напитков и сохраните файл — программа "
-            "подхватит изменения сама (или нажмите «Загрузить продажи сейчас»)."))
+            "Каждый день впишите количество проданных напитков и сохраните файл — программа подхватит "
+            "изменения сама. Сумма считается по цене напитка на вкладке «Рецепты и цены».", "hint"))
         buttons = QHBoxLayout()
-        for text, slot in (("Открыть файл продаж", self.open_file),
-                           ("Загрузить продажи сейчас", lambda: self.win.import_sales(manual=True))):
-            b = QPushButton(text)
-            b.clicked.connect(slot)
-            buttons.addWidget(b)
+        buttons.addWidget(button("Открыть файл продаж", self.open_file))
+        buttons.addWidget(button("Загрузить продажи сейчас", lambda: self.win.import_sales(manual=True),
+                                 "secondary"))
         buttons.addStretch()
         layout.addLayout(buttons)
-        layout.addWidget(QLabel("Продажи за последние 31 день:"))
+        layout.addWidget(label("Последние 31 день", "title"))
         self.table = make_table()
         layout.addWidget(self.table)
 
@@ -234,29 +528,25 @@ class SalesTab(QWidget):
         end = date.today()
         start = date.fromordinal(end.toordinal() - 30)
         header, rows = core.report_sales_by_day(self.win.conn, start.isoformat(), end.isoformat())
-        fill_table(self.table, header, list(reversed(rows)))
+        total = rows[-1:] if rows else []
+        fill_table(self.table, header, list(reversed(rows[:-1])) + total, bold_last=True)
 
 
 class InvoicesTab(QWidget):
-    IGNORE = -1
-
     def __init__(self, win: "MainWindow"):
         super().__init__()
         self.win = win
-        self.loading = False
         layout = QVBoxLayout(self)
-        layout.addWidget(QLabel(
-            f"Сканируйте накладную в PDF в папку:\n{win.folders.incoming}\n"
-            "Программа проверяет папку каждые 10 секунд, распознаёт накладную и добавляет приход к остаткам. "
-            "Если в накладной встретится незнакомый товар, укажите один раз, какой это ингредиент, — "
-            "программа запомнит."))
+        layout.addWidget(label("Накладные", "title"))
+        layout.addWidget(label(
+            f"Сканируйте накладную в PDF в папку {win.folders.incoming}. Программа проверяет её каждые "
+            "10 секунд, распознаёт таблицу (дата, №, поставщик, наименование, количество, цена, НДС, с НДС) "
+            "и добавляет приход к остаткам. Если что-то распознано неверно — «Редактировать».", "hint"))
         buttons = QHBoxLayout()
-        for text, slot in (("Открыть папку входящих", lambda: open_path(win.folders.incoming)),
-                           ("Выбрать PDF вручную…", self.pick_pdf),
-                           ("Проверить папку сейчас", lambda: win.check_inbox(settle=0))):
-            b = QPushButton(text)
-            b.clicked.connect(slot)
-            buttons.addWidget(b)
+        buttons.addWidget(button("Новая накладная вручную…", self.new_invoice))
+        buttons.addWidget(button("Выбрать PDF…", self.pick_pdf, "secondary"))
+        buttons.addWidget(button("Открыть папку входящих", lambda: open_path(win.folders.incoming), "secondary"))
+        buttons.addWidget(button("Проверить папку сейчас", lambda: win.check_inbox(settle=0), "secondary"))
         buttons.addStretch()
         layout.addLayout(buttons)
 
@@ -264,33 +554,36 @@ class InvoicesTab(QWidget):
         self.invoices = make_table()
         self.invoices.setSelectionMode(QAbstractItemView.SingleSelection)
         self.invoices.itemSelectionChanged.connect(self.show_lines)
+        self.invoices.itemDoubleClicked.connect(lambda *_: self.edit(self.selected_invoice()))
         splitter.addWidget(self.invoices)
 
         lower = QWidget()
         lower_layout = QVBoxLayout(lower)
-        lower_layout.setContentsMargins(0, 0, 0, 0)
-        self.lines_title = QLabel("Выберите накладную, чтобы увидеть её строки")
+        lower_layout.setContentsMargins(0, 6, 0, 0)
+        self.lines_title = label("Выберите накладную", "title")
         lower_layout.addWidget(self.lines_title)
         self.lines = make_table()
+        self.lines.itemDoubleClicked.connect(lambda *_: self.edit(self.selected_invoice()))
         lower_layout.addWidget(self.lines)
         actions = QHBoxLayout()
-        self.post_btn = QPushButton("Провести")
-        self.post_btn.clicked.connect(self.post)
-        self.unpost_btn = QPushButton("Отменить проведение")
-        self.unpost_btn.clicked.connect(self.unpost)
-        self.delete_btn = QPushButton("Удалить накладную")
-        self.delete_btn.clicked.connect(self.delete)
-        for b in (self.post_btn, self.unpost_btn, self.delete_btn):
+        self.edit_btn = button("Редактировать…", lambda: self.edit(self.selected_invoice()))
+        self.pdf_btn = button("Открыть PDF", self.open_pdf, "secondary")
+        self.post_btn = button("Провести", self.post, "secondary")
+        self.unpost_btn = button("Отменить проведение", self.unpost, "secondary")
+        self.delete_btn = button("Удалить", self.delete, "danger")
+        for b in (self.edit_btn, self.pdf_btn, self.post_btn, self.unpost_btn):
             actions.addWidget(b)
         actions.addStretch()
+        actions.addWidget(self.delete_btn)
         lower_layout.addLayout(actions)
         splitter.addWidget(lower)
+        splitter.setSizes([300, 300])
         layout.addWidget(splitter, 3)
 
         layout.addWidget(QLabel("Журнал:"))
         self.log = QTextEdit()
         self.log.setReadOnly(True)
-        self.log.setMaximumHeight(90)
+        self.log.setMaximumHeight(80)
         layout.addWidget(self.log)
 
     def pick_pdf(self) -> None:
@@ -312,16 +605,16 @@ class InvoicesTab(QWidget):
     def refresh(self) -> None:
         keep = self.selected_invoice()
         rows = self.win.conn.execute(
-            "SELECT id, created_at, file_name, doc_number, doc_date, supplier, status, note "
-            "FROM invoices ORDER BY id DESC LIMIT 500").fetchall()
-        fill_table(self.invoices, ["Загружена", "Файл", "№", "Дата накладной", "Поставщик", "Статус",
+            "SELECT v.*, COUNT(l.id) AS n, SUM(l.vat) AS vat, SUM(l.total) AS total FROM invoices v "
+            "LEFT JOIN invoice_lines l ON l.invoice_id = v.id GROUP BY v.id "
+            "ORDER BY COALESCE(NULLIF(v.doc_date, ''), date(v.created_at)) DESC, v.id DESC LIMIT 1000").fetchall()
+        fill_table(self.invoices, ["Дата", "№", "Поставщик", "Строк", "НДС", "С НДС", "Статус", "Файл",
                                    "Примечание"],
-                   [[r["created_at"], r["file_name"], r["doc_number"],
-                     date.fromisoformat(r["doc_date"]).strftime("%d.%m.%Y") if r["doc_date"] else "",
-                     r["supplier"], STATUS_NAMES.get(r["status"], r["status"]), r["note"]] for r in rows])
+                   [[r["doc_date"] or "", r["doc_number"] or "", r["supplier"] or "", r["n"], r["vat"], r["total"],
+                     STATUS_NAMES.get(r["status"], r["status"]), r["file_name"], r["note"] or ""] for r in rows])
         for i, r in enumerate(rows):
             self.invoices.item(i, 0).setData(Qt.UserRole, r["id"])
-            color_row(self.invoices, i, {"posted": GREEN, "review": YELLOW}.get(r["status"], RED))
+            color_row(self.invoices, i, STATUS_COLORS.get(r["status"], style.RED))
             if r["id"] == keep:
                 self.invoices.selectRow(i)
         self.show_lines()
@@ -329,80 +622,66 @@ class InvoicesTab(QWidget):
     def show_lines(self) -> None:
         invoice_id = self.selected_invoice()
         conn = self.win.conn
-        self.loading = True
-        self.lines.clear()
-        self.lines.setRowCount(0)
-        for b in (self.post_btn, self.unpost_btn, self.delete_btn):
+        for b in (self.edit_btn, self.pdf_btn, self.post_btn, self.unpost_btn, self.delete_btn):
             b.setEnabled(invoice_id is not None)
         if invoice_id is None:
-            self.lines_title.setText("Выберите накладную, чтобы увидеть её строки")
-            self.loading = False
+            self.lines_title.setText("Выберите накладную")
+            fill_table(self.lines, [], [])
             return
-        status = conn.execute("SELECT status FROM invoices WHERE id = ?", (invoice_id,)).fetchone()["status"]
-        posted = status == "posted"
-        self.post_btn.setEnabled(status == "review")
-        self.unpost_btn.setEnabled(posted)
+        head = conn.execute("SELECT * FROM invoices WHERE id = ?", (invoice_id,)).fetchone()
+        self.post_btn.setEnabled(head["status"] == "review")
+        self.unpost_btn.setEnabled(head["status"] == "posted")
+        self.pdf_btn.setEnabled(self.win.folders.stored_pdf(head["file_name"]) is not None)
         self.lines_title.setText(
-            "Строки накладной (проведена — для правки сначала отмените проведение)" if posted else
-            "Строки накладной: укажите ингредиент и сколько его единиц в одной единице из накладной, "
-            "затем нажмите «Провести»")
-        ingredients = conn.execute("SELECT id, name, unit FROM ingredients ORDER BY name").fetchall()
-        units = {r["id"]: r["unit"] for r in ingredients}
-        lines = conn.execute("SELECT * FROM invoice_lines WHERE invoice_id = ? ORDER BY id",
-                             (invoice_id,)).fetchall()
-        self.lines.setColumnCount(6)
-        self.lines.setHorizontalHeaderLabels(["Наименование в накладной", "Кол-во", "Ед.", "Ингредиент",
-                                              "Коэффициент", "Будет оприходовано"])
-        self.lines.setRowCount(len(lines))
-        for i, line in enumerate(lines):
-            for c, v in enumerate((line["raw_name"], line["raw_qty"], line["raw_unit"])):
-                item = QTableWidgetItem(fmt(v))
-                item.setFlags(item.flags() & ~Qt.ItemIsEditable)
-                self.lines.setItem(i, c, item)
-            combo = QComboBox()
-            combo.addItem("— выберите —", None)
-            combo.addItem("Не учитывать (не ингредиент)", self.IGNORE)
-            for r in ingredients:
-                combo.addItem(f"{r['name']} ({r['unit']})", r["id"])
-            combo.setCurrentIndex(1 if line["ignored"] else max(0, combo.findData(line["ingredient_id"])))
-            combo.setEnabled(not posted)
-            spin = QDoubleSpinBox()
-            spin.setRange(0, 1_000_000)
-            spin.setDecimals(3)
-            spin.setValue(line["factor"] or 0)
-            spin.setEnabled(not posted and not line["ignored"])
-            combo.currentIndexChanged.connect(lambda _=0, lid=line["id"], row=i: self.line_changed(lid, row, True))
-            spin.valueChanged.connect(lambda _=0, lid=line["id"], row=i: self.line_changed(lid, row, False))
-            self.lines.setCellWidget(i, 3, combo)
-            self.lines.setCellWidget(i, 4, spin)
-            if line["ignored"]:
-                total = "не учитывается"
-            elif line["ingredient_id"] and line["factor"]:
-                total = f"{fmt(line['raw_qty'] * line['factor'])} {units.get(line['ingredient_id'], '')}"
+            f"Накладная № {head['doc_number'] or '—'} от {fmt(head['doc_date']) or '—'}"
+            f" · {head['supplier'] or 'поставщик не указан'} · {STATUS_NAMES.get(head['status'], '')}")
+        lines = conn.execute(
+            "SELECT l.*, i.name AS ing, i.unit AS ing_unit FROM invoice_lines l "
+            "LEFT JOIN ingredients i ON i.id = l.ingredient_id WHERE l.invoice_id = ? ORDER BY l.id",
+            (invoice_id,)).fetchall()
+        data, bad = [], []
+        for i, l in enumerate(lines):
+            if l["ignored"]:
+                what, result = "не учитывается", ""
+            elif l["ing"] and l["factor"]:
+                what, result = l["ing"], f"{fmt(l['raw_qty'] * l['factor'])} {l['ing_unit']}"
             else:
-                total = "?"
-            self.lines.setItem(i, 5, QTableWidgetItem(total))
-            if not line["ignored"] and not (line["ingredient_id"] and line["factor"]):
-                color_row(self.lines, i, YELLOW)
-        self.lines.resizeColumnsToContents()
-        self.loading = False
+                what, result = "не выбран", "?"
+                bad.append(i)
+            data.append([l["raw_name"], l["raw_unit"] or "", l["raw_qty"], l["price"], l["vat"], l["total"],
+                         what, result])
+        if data:
+            data.append(["Итого", "", None, None, round(sum(l["vat"] or 0 for l in lines), 2),
+                         round(sum(l["total"] or 0 for l in lines), 2), "", ""])
+        fill_table(self.lines, ["Наименование", "Ед.", "Количество", "Цена", "НДС", "С НДС", "Ингредиент",
+                                "Приход"], data, bold_last=True)
+        for i in bad:
+            color_row(self.lines, i, YELLOW)
+        self.lines.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
 
-    def line_changed(self, line_id: int, row: int, ingredient_changed: bool) -> None:
-        if self.loading:
+    def new_invoice(self) -> None:
+        self._open_editor(None)
+
+    def edit(self, invoice_id: int | None) -> None:
+        if invoice_id is not None:
+            self._open_editor(invoice_id)
+
+    def _open_editor(self, invoice_id: int | None) -> None:
+        dlg = InvoiceEditor(self.win, invoice_id)
+        dlg.exec()
+        self.win.refresh_all()
+        if dlg.invoice_id is not None:
+            for r in range(self.invoices.rowCount()):
+                if self.invoices.item(r, 0).data(Qt.UserRole) == dlg.invoice_id:
+                    self.invoices.selectRow(r)
+
+    def open_pdf(self) -> None:
+        invoice_id = self.selected_invoice()
+        if invoice_id is None:
             return
-        conn = self.win.conn
-        combo: QComboBox = self.lines.cellWidget(row, 3)
-        spin: QDoubleSpinBox = self.lines.cellWidget(row, 4)
-        data = combo.currentData()
-        ignored = data == self.IGNORE
-        ingredient_id = None if ignored or data is None else data
-        factor = spin.value() or None
-        if ingredient_changed and ingredient_id:
-            unit = conn.execute("SELECT unit FROM ingredients WHERE id = ?", (ingredient_id,)).fetchone()["unit"]
-            raw_unit = conn.execute("SELECT raw_unit FROM invoice_lines WHERE id = ?", (line_id,)).fetchone()[0]
-            factor = invoice.unit_factor(raw_unit, unit) or factor
-        invoice.update_line(conn, line_id, ingredient_id, factor, ignored)
-        self.show_lines()
+        name = self.win.conn.execute("SELECT file_name FROM invoices WHERE id = ?", (invoice_id,)).fetchone()[0]
+        if path := self.win.folders.stored_pdf(name):
+            open_path(path)
 
     def post(self) -> None:
         invoice_id = self.selected_invoice()
@@ -410,8 +689,10 @@ class InvoicesTab(QWidget):
             return
         try:
             invoice.post_invoice(self.win.conn, invoice_id)
-        except ValueError as e:
-            QMessageBox.warning(self, "Накладная", str(e))
+        except ValueError:
+            QMessageBox.information(self, "Накладная", "Не у всех строк выбран ингредиент — откроется "
+                                                       "карточка накладной.")
+            self.edit(invoice_id)
             return
         self.win.refresh_all()
 
@@ -443,39 +724,44 @@ class RecipesTab(QWidget):
         layout = QHBoxLayout(self)
 
         left = QVBoxLayout()
-        left.addWidget(QLabel("Напитки:"))
+        left.addWidget(label("Напитки и цены", "title"))
         self.drinks = QListWidget()
         self.drinks.currentItemChanged.connect(lambda *_: self.show_recipe())
         left.addWidget(self.drinks)
+        price_row = QHBoxLayout()
+        price_row.addWidget(QLabel("Цена порции:"))
+        self.price = QDoubleSpinBox()
+        self.price.setRange(0, 100_000)
+        self.price.setDecimals(2)
+        self.price.setSuffix(" руб.")
+        self.price.editingFinished.connect(self.save_price)
+        price_row.addWidget(self.price)
+        left.addLayout(price_row)
         row = QHBoxLayout()
-        for text, slot in (("Добавить", self.add_drink), ("Переименовать", self.rename_drink),
-                           ("Удалить", self.delete_drink)):
-            b = QPushButton(text)
-            b.clicked.connect(slot)
-            row.addWidget(b)
+        row.addWidget(button("Добавить", self.add_drink))
+        row.addWidget(button("Переименовать", self.rename_drink, "secondary"))
+        row.addWidget(button("Удалить", self.delete_drink, "danger"))
         left.addLayout(row)
         layout.addLayout(left, 1)
 
         right = QVBoxLayout()
-        self.recipe_title = QLabel()
+        self.recipe_title = label("", "title")
         right.addWidget(self.recipe_title)
+        right.addWidget(label("Расход на одну порцию; 0 — ингредиент не используется. Щёлкните по числу, "
+                              "чтобы изменить.", "hint"))
         self.recipe = make_table()
         self.recipe.itemChanged.connect(self.recipe_edited)
         right.addWidget(self.recipe, 2)
-        recompute = QPushButton("Пересчитать расход за все дни по текущим рецептам")
-        recompute.clicked.connect(self.recompute)
-        right.addWidget(recompute)
+        right.addWidget(button("Пересчитать расход за все дни по текущим рецептам", self.recompute, "secondary"))
 
-        right.addWidget(QLabel("Ингредиенты (двойной щелчок — изменить название, единицу, мин. запас):"))
+        right.addWidget(label("Ингредиенты", "title"))
+        right.addWidget(label("Двойной щелчок — изменить название, единицу или минимальный запас.", "hint"))
         self.ingredients = make_table()
         self.ingredients.itemChanged.connect(self.ingredient_edited)
         right.addWidget(self.ingredients, 2)
         row = QHBoxLayout()
-        for text, slot in (("Добавить ингредиент", self.add_ingredient),
-                           ("Удалить ингредиент", self.delete_ingredient)):
-            b = QPushButton(text)
-            b.clicked.connect(slot)
-            row.addWidget(b)
+        row.addWidget(button("Добавить ингредиент", self.add_ingredient))
+        row.addWidget(button("Удалить ингредиент", self.delete_ingredient, "danger"))
         row.addStretch()
         right.addLayout(row)
         layout.addLayout(right, 3)
@@ -483,15 +769,18 @@ class RecipesTab(QWidget):
     def refresh(self) -> None:
         current = self.current_drink()
         self.loading = True
+        self.drinks.blockSignals(True)
         self.drinks.clear()
-        for r in self.win.conn.execute("SELECT id, name FROM drinks ORDER BY name"):
-            item = QListWidgetItem(r["name"])
+        for r in self.win.conn.execute("SELECT id, name, price FROM drinks ORDER BY name"):
+            item = QListWidgetItem(f"{r['name']}  —  {money(r['price'])}")
             item.setData(Qt.UserRole, r["id"])
+            item.setData(Qt.UserRole + 1, r["name"])
             self.drinks.addItem(item)
             if r["id"] == current:
                 self.drinks.setCurrentItem(item)
         if self.drinks.currentItem() is None and self.drinks.count():
             self.drinks.setCurrentRow(0)
+        self.drinks.blockSignals(False)
         rows = self.win.conn.execute("SELECT id, name, unit, min_stock FROM ingredients ORDER BY name").fetchall()
         self.ingredients.clear()
         self.ingredients.setColumnCount(3)
@@ -519,8 +808,11 @@ class RecipesTab(QWidget):
         if drink_id is None:
             self.loading = was_loading
             return
-        self.recipe_title.setText(f"Рецепт «{self.drinks.currentItem().text()}» — расход на одну порцию "
-                                  "(0 — ингредиент не используется):")
+        drink = self.win.conn.execute("SELECT name, price FROM drinks WHERE id = ?", (drink_id,)).fetchone()
+        self.recipe_title.setText(f"Рецепт: {drink['name']}")
+        self.price.blockSignals(True)
+        self.price.setValue(drink["price"])
+        self.price.blockSignals(False)
         rows = self.win.conn.execute(
             "SELECT i.id, i.name, i.unit, COALESCE(r.qty, 0) AS qty FROM ingredients i "
             "LEFT JOIN recipe r ON r.ingredient_id = i.id AND r.drink_id = ? ORDER BY i.name",
@@ -536,9 +828,22 @@ class RecipesTab(QWidget):
             item = QTableWidgetItem(fmt(r["qty"]))
             item.setData(Qt.UserRole, r["id"])
             item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            if r["qty"]:
+                item.setBackground(QBrush(QColor(style.CREAM)))
             self.recipe.setItem(i, 2, item)
         self.recipe.resizeColumnsToContents()
         self.loading = was_loading
+
+    def save_price(self) -> None:
+        drink_id = self.current_drink()
+        if drink_id is None:
+            return
+        with self.win.conn:
+            self.win.conn.execute("UPDATE drinks SET price = ? WHERE id = ?", (self.price.value(), drink_id))
+        self.win.statusBar().showMessage(
+            "Цена сохранена. Она применяется к дням продаж, загружаемым с этого момента; прошлые дни "
+            "остаются по своей цене.", 10000)
+        self.win.refresh_all()
 
     def recipe_edited(self, item: QTableWidgetItem) -> None:
         if self.loading or item.column() != 2:
@@ -596,21 +901,25 @@ class RecipesTab(QWidget):
 
     def add_drink(self) -> None:
         name, ok = QInputDialog.getText(self, "Новый напиток", "Название:")
-        if ok and name.strip():
-            try:
-                with self.win.conn:
-                    self.win.conn.execute("INSERT INTO drinks(name) VALUES (?)", (name.strip(),))
-            except sqlite3.IntegrityError:
-                QMessageBox.warning(self, "Напиток", "Такой напиток уже есть")
-            sales_excel.ensure_template(self.win.conn, self.win.folders.sales_file)
-            self.win.refresh_all()
+        if not (ok and name.strip()):
+            return
+        price, ok = QInputDialog.getDouble(self, "Новый напиток", "Цена порции, руб.:", 0, 0, 100_000, 2)
+        if not ok:
+            return
+        try:
+            with self.win.conn:
+                self.win.conn.execute("INSERT INTO drinks(name, price) VALUES (?, ?)", (name.strip(), price))
+        except sqlite3.IntegrityError:
+            QMessageBox.warning(self, "Напиток", "Такой напиток уже есть")
+        sales_excel.ensure_template(self.win.conn, self.win.folders.sales_file)
+        self.win.refresh_all()
 
     def rename_drink(self) -> None:
         drink_id = self.current_drink()
         if drink_id is None:
             return
         name, ok = QInputDialog.getText(self, "Переименовать", "Новое название:",
-                                        text=self.drinks.currentItem().text())
+                                        text=self.drinks.currentItem().data(Qt.UserRole + 1))
         if ok and name.strip():
             try:
                 with self.win.conn:
@@ -666,11 +975,15 @@ class RecipesTab(QWidget):
 
 class ReportsTab(QWidget):
     FORECAST = "Прогноз: на сколько хватит остатков"
+    SHEETS = {"Продажи по видам напитков": "Продажи по напиткам", "Продажи по дням": "Продажи по дням",
+              "Накладные (приход)": "Накладные", "Движение ингредиентов (оборотка)": "Движение ингредиентов",
+              FORECAST: "Прогноз"}
 
     def __init__(self, win: "MainWindow"):
         super().__init__()
         self.win = win
         layout = QVBoxLayout(self)
+        layout.addWidget(label("Отчёты", "title"))
         row = QHBoxLayout()
         today = QDate.currentDate()
         self.d1 = QDateEdit(QDate(today.year(), today.month(), 1))
@@ -678,16 +991,17 @@ class ReportsTab(QWidget):
         for d in (self.d1, self.d2):
             d.setCalendarPopup(True)
             d.setDisplayFormat("dd.MM.yyyy")
+            d.dateChanged.connect(self.refresh)
         self.kind = QComboBox()
         self.kind.addItems(list(core.REPORTS) + [self.FORECAST])
-        show = QPushButton("Показать")
-        show.clicked.connect(self.refresh)
-        save = QPushButton("Экспорт в Excel…")
-        save.clicked.connect(self.export)
-        for w in (QLabel("С"), self.d1, QLabel("по"), self.d2, QLabel("Отчёт:"), self.kind, show, save):
+        self.kind.setMinimumWidth(280)
+        for w in (QLabel("Период с"), self.d1, QLabel("по"), self.d2, QLabel("   Отчёт:"), self.kind):
             row.addWidget(w)
         row.addStretch()
+        row.addWidget(button("Экспорт в Excel…", self.export))
         layout.addLayout(row)
+        self.total = label("", "title")
+        layout.addWidget(self.total)
         self.table = make_table()
         layout.addWidget(self.table)
         self.kind.currentIndexChanged.connect(self.refresh)
@@ -701,17 +1015,28 @@ class ReportsTab(QWidget):
         return core.REPORTS[name](self.win.conn, *self.period())
 
     def refresh(self) -> None:
-        fill_table(self.table, *self.build(self.kind.currentText()))
+        name = self.kind.currentText()
+        header, rows = self.build(name)
+        fill_table(self.table, header, rows, bold_last=True)
+        text = ""
+        if rows and rows[-1][0] == "Итого":
+            if name == "Продажи по видам напитков":
+                text = f"Выручка за период: {money(rows[-1][2])} · продано {rows[-1][1]} порц."
+            elif name == "Продажи по дням":
+                text = f"Выручка за период: {money(rows[-1][-1])}"
+            elif name == "Накладные (приход)":
+                text = f"Поступило на сумму {money(rows[-1][8])}, в т.ч. НДС {money(rows[-1][7])}"
+        self.total.setText(text)
+        self.total.setVisible(bool(text))
 
     def export(self) -> None:
         d1, d2 = self.period()
-        default = str(self.win.folders.root / f"Отчёт {d1} — {d2}.xlsx")
+        default = str(self.win.folders.root / f"Отчёт {fmt(d1)} — {fmt(d2)}.xlsx")
         path, _ = QFileDialog.getSaveFileName(self, "Сохранить отчёт", default, "Excel (*.xlsx)")
         if not path:
             return
-        names = list(core.REPORTS) + [self.FORECAST]
-        sheets = [(n.split(":")[0].replace("(", "").replace(")", ""), *self.build(n)) for n in names]
-        title = f"Кофейный автомат: период {date.fromisoformat(d1):%d.%m.%Y} — {date.fromisoformat(d2):%d.%m.%Y}"
+        sheets = [(self.SHEETS[n], *self.build(n)) for n in list(core.REPORTS) + [self.FORECAST]]
+        title = f"Кофейный автомат: период {fmt(d1)} — {fmt(d2)}"
         try:
             export.save_reports(Path(path), sheets, title)
         except PermissionError:
@@ -724,35 +1049,45 @@ class SettingsTab(QWidget):
     def __init__(self, win: "MainWindow"):
         super().__init__()
         self.win = win
-        form = QFormLayout(self)
-        self.api_key = QLineEdit()
-        self.api_key.setEchoMode(QLineEdit.Password)
-        self.model = QLineEdit()
+        outer = QVBoxLayout(self)
+        outer.addWidget(label("Настройки", "title"))
+        form = QFormLayout()
+        outer.addLayout(form)
+        outer.addStretch()
         self.days = QSpinBox()
         self.days.setRange(1, 365)
-        save = QPushButton("Сохранить")
-        save.clicked.connect(self.save)
-        folder = QPushButton(str(win.folders.root))
-        folder.clicked.connect(lambda: open_path(win.folders.root))
-        form.addRow("Рабочая папка", folder)
-        form.addRow("Ключ Claude API", self.api_key)
-        form.addRow("", QLabel("Нужен для распознавания сканов (картинок). Получить: console.anthropic.com. "
-                               "Без ключа читаются только PDF с текстом."))
-        form.addRow("Модель Claude", self.model)
-        form.addRow("Прогноз по расходу за, дней", self.days)
-        form.addRow(save)
+        self.days.setSuffix(" дн.")
+        self.tesseract = QLineEdit()
+        self.tesseract.setPlaceholderText("пусто — использовать встроенный")
+        browse = button("Выбрать…", self.browse, "secondary")
+        tess_row = QHBoxLayout()
+        tess_row.addWidget(self.tesseract)
+        tess_row.addWidget(browse)
+        self.ocr_status = label("", "hint")
+        form.addRow("Рабочая папка", button(str(win.folders.root), lambda: open_path(win.folders.root),
+                                            "secondary"))
+        form.addRow("Прогноз по расходу за", self.days)
+        form.addRow("Распознавание сканов (Tesseract)", tess_row)
+        form.addRow("", self.ocr_status)
+        form.addRow(button("Сохранить", self.save))
+
+    def browse(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(self, "tesseract.exe", "", "tesseract.exe (tesseract.exe)")
+        if path:
+            self.tesseract.setText(path)
 
     def refresh(self) -> None:
         conn = self.win.conn
-        self.api_key.setText(db.get_setting(conn, "api_key"))
-        self.model.setText(db.get_setting(conn, "model"))
         self.days.setValue(int(db.get_setting(conn, "forecast_days") or 14))
+        self.tesseract.setText(db.get_setting(conn, "tesseract_path"))
+        exe = ocr.find_tesseract(self.tesseract.text().strip())
+        self.ocr_status.setText(f"Найден: {exe}" if exe else
+                                "Tesseract не найден — сканы-картинки распознаваться не будут, только PDF с текстом.")
 
     def save(self) -> None:
         conn = self.win.conn
-        db.set_setting(conn, "api_key", self.api_key.text().strip())
-        db.set_setting(conn, "model", self.model.text().strip() or db.DEFAULT_SETTINGS["model"])
         db.set_setting(conn, "forecast_days", str(self.days.value()))
+        db.set_setting(conn, "tesseract_path", self.tesseract.text().strip())
         self.win.refresh_all()
         self.win.statusBar().showMessage("Настройки сохранены", 5000)
 
@@ -769,19 +1104,25 @@ class MainWindow(QMainWindow):
         self.worker: InboxWorker | None = None
 
         self.setWindowTitle("Учёт кофейного автомата")
-        self.resize(1100, 720)
+        self.setWindowIcon(style.app_icon())
+        self.resize(1200, 780)
         self.tabs = QTabWidget()
+        self.tabs.setDocumentMode(False)
         self.stock_tab = StockTab(self)
         self.sales_tab = SalesTab(self)
         self.invoices_tab = InvoicesTab(self)
         self.recipes_tab = RecipesTab(self)
         self.reports_tab = ReportsTab(self)
         self.settings_tab = SettingsTab(self)
-        for tab, title in ((self.stock_tab, "Остатки"), (self.sales_tab, "Продажи"),
-                           (self.invoices_tab, "Накладные"), (self.recipes_tab, "Рецепты"),
+        for tab, title in ((self.stock_tab, "☕  Остатки"), (self.sales_tab, "Продажи"),
+                           (self.invoices_tab, "Накладные"), (self.recipes_tab, "Рецепты и цены"),
                            (self.reports_tab, "Отчёты"), (self.settings_tab, "Настройки")):
             self.tabs.addTab(tab, title)
-        self.setCentralWidget(self.tabs)
+        container = QWidget()
+        box = QVBoxLayout(container)
+        box.setContentsMargins(12, 10, 12, 6)
+        box.addWidget(self.tabs)
+        self.setCentralWidget(container)
         for w in (self.stock_tab.table, self.invoices_tab.invoices):
             w.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
 
@@ -822,7 +1163,7 @@ class MainWindow(QMainWindow):
         db.set_setting(self.conn, "sales_mtime", mtime)
         msg = f"Продажи загружены: дней {len(result.days)}"
         if result.days:
-            msg += f" (по {date.fromisoformat(result.days[-1]):%d.%m.%Y})"
+            msg += f" (по {fmt(result.days[-1])})"
         self.statusBar().showMessage(msg, 10000)
         if result.errors:
             text = "\n".join(result.errors[:20])
@@ -864,7 +1205,8 @@ class MainWindow(QMainWindow):
         if review:
             self.tabs.setCurrentWidget(self.invoices_tab)
             # Немодальное окно: таймер и остальная программа продолжают работать
-            box = QMessageBox(QMessageBox.Information, "Накладные требуют внимания", "\n".join(review),
+            box = QMessageBox(QMessageBox.Information, "Накладные требуют внимания",
+                              "\n".join(review) + "\n\nОткройте накладную и проверьте строки.",
                               QMessageBox.Ok, self)
             box.setModal(False)
             box.setAttribute(Qt.WA_DeleteOnClose)
@@ -872,7 +1214,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event) -> None:
         if self.worker is not None:
-            self.worker.wait(30_000)
+            self.worker.wait(60_000)
         self.conn.close()
         super().closeEvent(event)
 
@@ -880,6 +1222,9 @@ class MainWindow(QMainWindow):
 def main() -> int:
     app = QApplication(sys.argv)
     app.setApplicationName("Учёт кофейного автомата")
+    app.setStyle(QStyleFactory.create("Fusion"))
+    app.setStyleSheet(style.QSS)
+    app.setWindowIcon(style.app_icon())
     root = data_root()
     root.mkdir(parents=True, exist_ok=True)
     win = MainWindow(root)

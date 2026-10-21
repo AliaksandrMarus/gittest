@@ -1,7 +1,8 @@
-name: Учёт кофейного автомата — сборка CoffeeStock.exe
+name: Учёт кофейного автомата — сборка CoffeeStock
 
-# Прогоняет тесты и собирает один exe-файл для Windows.
-# Готовый файл — во вкладке Actions → этот запуск → Artifacts → CoffeeStock.
+# Прогоняет тесты и собирает программу для Windows вместе с Tesseract
+# (распознавание сканов накладных без интернета).
+# Готовая программа — во вкладке Actions → этот запуск → Artifacts → CoffeeStock.
 
 on:
   push:
@@ -28,19 +29,31 @@ jobs:
           cache: pip
           cache-dependency-path: coffee-stock/requirements*.txt
 
+      - name: Tesseract с русским языком
+        run: |
+          choco install tesseract -y --no-progress
+          $tess = "C:\Program Files\Tesseract-OCR"
+          Invoke-WebRequest "https://github.com/tesseract-ocr/tessdata/raw/main/rus.traineddata" -OutFile "$tess\tessdata\rus.traineddata"
+          & "$tess\tesseract.exe" --list-langs
+
       - name: Зависимости
         run: pip install -r requirements-dev.txt
 
       - name: Тесты
-        run: python -m pytest -q
+        run: python -m pytest -q -rs
 
-      - name: Сборка exe
-        run: >
-          pyinstaller --noconfirm --onefile --windowed --name CoffeeStock
-          --collect-data pdfminer --collect-data pdfplumber
-          run.py
+      - name: Сборка
+        run: |
+          pyinstaller --noconfirm --onedir --windowed --name CoffeeStock --collect-data pdfminer run.py
+          Copy-Item -Recurse "C:\Program Files\Tesseract-OCR" dist\CoffeeStock\tesseract
+          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dist\CoffeeStock\tesseract\doc
+          Get-ChildItem dist\CoffeeStock\tesseract\tessdata
+
+      - name: Проверка, что собранная программа видит Tesseract
+        run: |
+          python -c "import sys; sys.frozen=True; sys.executable=r'dist\CoffeeStock\CoffeeStock.exe'; from coffee_stock import ocr; p=ocr.find_tesseract(); print(p); assert p and 'CoffeeStock' in str(p)"
 
       - uses: actions/upload-artifact@v4
         with:
           name: CoffeeStock
-          path: coffee-stock/dist/CoffeeStock.exe
+          path: coffee-stock/dist/CoffeeStock/
