@@ -1,0 +1,46 @@
+name: Учёт кофейного автомата — сборка CoffeeStock.exe
+
+# Прогоняет тесты и собирает один exe-файл для Windows.
+# Готовый файл — во вкладке Actions → этот запуск → Artifacts → CoffeeStock.
+
+on:
+  push:
+    paths:
+      - "coffee-stock/**"
+      - ".github/workflows/coffee-stock.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: coffee-stock
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: coffee-stock/requirements*.txt
+
+      - name: Зависимости
+        run: pip install -r requirements-dev.txt
+
+      - name: Тесты
+        run: python -m pytest -q
+
+      - name: Сборка exe
+        run: >
+          pyinstaller --noconfirm --onefile --windowed --name CoffeeStock
+          --collect-data pdfminer --collect-data pdfplumber
+          run.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CoffeeStock
+          path: coffee-stock/dist/CoffeeStock.exe

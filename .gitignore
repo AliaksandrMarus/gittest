@@ -12,3 +12,11 @@ public/api/leads.log
 # Промежуточные выгрузки фото — в репозиторий не идут
 src/assets/yandex/
 src/assets/wp/
+
+# Учёт кофейного автомата: рабочие данные и сборка
+coffee-stock/data/
+coffee-stock/build/
+coffee-stock/dist/
+coffee-stock/*.spec
+__pycache__/
+.pytest_cache/
