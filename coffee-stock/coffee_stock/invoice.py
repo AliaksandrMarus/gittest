@@ -63,7 +63,7 @@ UNITS = {
     "мл": "мл", "ml": "мл",
     "шт": "шт", "штук": "шт", "штука": "шт", "pcs": "шт", "ед": "шт",
     # Латинские двойники, которые выдаёт распознавание сканов
-    "kr": "кг", "r": "г", "wt": "шт", "mn": "мл",
+    "kr": "кг", "kt": "кг", "r": "г", "wt": "шт", "ut": "шт", "lut": "шт", "mn": "мл", "mr": "мл",
 }
 # Сколько базовых единиц в одной единице накладной
 FACTORS = {("кг", "г"): 1000, ("г", "кг"): 0.001, ("л", "мл"): 1000, ("мл", "л"): 0.001}
@@ -164,6 +164,8 @@ def find_requisites(text: str, result: Extracted) -> None:
 def classify_header(label: str) -> str | None:
     """По заголовку колонки определяет, что в ней: name, unit, qty, price, vat, total, amount."""
     low = " " + re.sub(r"\s+", " ", label.lower().replace("ё", "е")) + " "
+    if re.fullmatch(r" (№|n|no|nn)\.?( п/п)? ", low) or "п/п" in low:
+        return "num"  # порядковый номер строки — не часть названия
     if "наимен" in low or "товар" in low and "кол" not in low:
         return "name"
     if "кол" in low:
@@ -186,7 +188,8 @@ def classify_header(label: str) -> str | None:
 
 
 def _make_line(cells: dict[str, str]) -> Line | None:
-    name = (cells.get("name") or "").strip(" |")
+    # Порядковый номер, прилипший к названию, если колонку «№» не распознали
+    name = re.sub(r"^\d{1,3}[.)]?\s+(?=\D)", "", (cells.get("name") or "").strip(" |"))
     qty = parse_number(cells.get("qty"))
     if not name or qty is None or qty <= 0 or name.lower().startswith(("итого", "всего")):
         return None

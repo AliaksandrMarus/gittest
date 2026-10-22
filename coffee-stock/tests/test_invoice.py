@@ -213,3 +213,12 @@ def test_fresh_file_is_left_for_later(conn, tmp_path):
     folders.create()
     (folders.incoming / "пишется.pdf").write_bytes(b"%PDF")
     assert inbox.process_incoming(conn, folders, invoice.extract) == []
+
+
+def test_ocr_cleanups():
+    assert ocr.fix_lookalikes("3 Caxap-necok") == "3 Сахар-песок"
+    assert ocr.fix_lookalikes("Lavazza Crema") == "Lavazza Crema"
+    assert invoice.classify_header("№ п/п") == "num"
+    assert invoice.unit_factor("lut", "шт") == 1 and invoice.unit_factor("kt", "г") == 1000
+    line = invoice._make_line({"name": "2 Стакан бумажный 250 мл", "qty": "10"})
+    assert line.name == "Стакан бумажный 250 мл"

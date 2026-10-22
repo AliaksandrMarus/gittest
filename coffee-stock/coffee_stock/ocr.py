@@ -8,6 +8,7 @@ Tesseract ищется так: путь из настроек → папка tes
 from __future__ import annotations
 
 import csv
+import re
 import io
 import os
 import shutil
@@ -16,7 +17,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-DPI = 300
+DPI = 400
 
 
 class OcrUnavailable(Exception):
@@ -127,6 +128,22 @@ def remove_table_lines(image):
     return Image.fromarray(pixels)
 
 
+# Латинские буквы, неотличимые от русских на скане
+LOOKALIKES = str.maketrans("aceknopxyABCEHKMOPTX", "асекпорхуАВСЕНКМОРТХ")
+LOOKALIKE_SET = set("aceknopxyABCEHKMOPTX")
+
+
+def fix_lookalikes(text: str) -> str:
+    """«Caxap-necok» → «Сахар-песок»: слово целиком из латинских двойников — русское.
+
+    Слова, где есть буквы без русского двойника (Lavazza, Crema), не трогаем.
+    """
+    def fix(m: re.Match) -> str:
+        word = m.group(0)
+        return word.translate(LOOKALIKES) if len(word) >= 3 and set(word) <= LOOKALIKE_SET else word
+    return re.sub(r"[A-Za-z]+", fix, text)
+
+
 def _parse_tsv(tsv: str, scale: float) -> list[dict]:
     words = []
     for row in csv.DictReader(io.StringIO(tsv), delimiter="\t", quoting=csv.QUOTE_NONE):
@@ -140,5 +157,5 @@ def _parse_tsv(tsv: str, scale: float) -> list[dict]:
             width, height = int(row["width"]) / scale, int(row["height"]) / scale
         except (KeyError, ValueError):
             continue
-        words.append({"text": text, "x0": left, "x1": left + width, "top": top, "bottom": top + height})
+        words.append({"text": fix_lookalikes(text), "x0": left, "x1": left + width, "top": top, "bottom": top + height})
     return words
