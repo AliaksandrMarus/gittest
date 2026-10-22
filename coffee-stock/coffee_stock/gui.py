@@ -1108,9 +1108,10 @@ class SettingsTab(QWidget):
         form.addRow(button("Сохранить", self.save))
 
     def load_seed(self) -> None:
-        if not seed.needed(self.win.conn):
-            QMessageBox.warning(self, "Начальные данные", "В программе уже есть накладные или продажи — начальные "
-                                                          "данные загружаются только в пустую базу.")
+        if not seed.needed(self.win.conn) and QMessageBox.question(
+                self, "Начальные данные",
+                "В программе уже есть накладные или продажи. Заменить текущие накладные, продажи и остатки "
+                "данными из файла?") != QMessageBox.Yes:
             return
         path, _ = QFileDialog.getOpenFileName(self, "Файл начальных данных", "", "Начальные данные (*.json)")
         if not path:

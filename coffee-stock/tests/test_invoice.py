@@ -278,3 +278,15 @@ def test_merged_columns_are_split_not_glued():
     line = invoice._make_line({"name": "Кофе", "qty": "12", "price": "38.50", "amount": "462.00 20 92.40",
                                "total": "554.40"})
     assert (line.qty, line.vat) == (12, 92.4)
+
+
+def test_russian_ocr_word_cleanup():
+    assert ocr.fix_lookalikes("Кофе в 3ерНах") == "Кофе в зернах"
+    for keep in ("1000х5", "HB80-280V", "0-80мм", "3шт", "6кг", 'ООО "КОФЕСНАБ"', "58002/14"):
+        assert ocr.fix_lookalikes(keep) == keep
+
+
+def test_error_invoices_do_not_block_initial_data(conn):
+    from coffee_stock import seed
+    invoice.save_error(conn, "скан.pdf", "abc", "не распознан")
+    assert seed.needed(conn)

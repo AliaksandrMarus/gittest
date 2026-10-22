@@ -249,7 +249,42 @@ def fix_lookalikes(text: str) -> str:
     def fix(m: re.Match) -> str:
         word = m.group(0)
         return word.translate(LOOKALIKES) if len(word) >= 3 and set(word) <= LOOKALIKE_SET else word
-    return re.sub(r"[A-Za-z]+", fix, text)
+    text = re.sub(r"[A-Za-z]+", fix, text)
+    return re.sub(r"[А-Яа-яЁё0-9]+", _fix_russian_word, text)
+
+
+# Цифры, которые скан путает с русскими буквами
+DIGIT_LOOKALIKES = {"3": "з", "0": "о", "6": "б"}
+CYR = "А-Яа-яЁё"
+
+
+def _fix_russian_word(m: re.Match) -> str:
+    """«3ерНах» → «зернах»: цифра-двойник внутри русского слова и заглавная буква посреди слова.
+
+    Числа, коды и «3шт»/«6кг» (число + единица) не трогаются.
+    """
+    word = m.group(0)
+    letters = re.sub(rf"[^{CYR}]", "", word)
+    if len(letters) < 3:
+        return word
+    chars = list(word)
+    for i, ch in enumerate(chars):
+        if ch not in DIGIT_LOOKALIKES:
+            continue
+        prev_ch = chars[i - 1] if i > 0 else ""
+        next_ch = chars[i + 1] if i + 1 < len(chars) else ""
+        if prev_ch.isdigit() or next_ch.isdigit():
+            continue  # часть числа
+        if not (re.match(rf"[{CYR}]", prev_ch) or re.match(rf"[{CYR}]", next_ch)):
+            continue
+        if i == 0 and len(word) - 1 < 4:
+            continue  # «3шт», «6кг» — число и единица
+        chars[i] = DIGIT_LOOKALIKES[ch]
+    word = "".join(chars)
+    # «зерНах»: начинается со строчной, а внутри заглавная — регистр перепутан
+    if word[:1].islower() and any(c.isupper() for c in word[1:]) and not word.isupper():
+        word = word.lower()
+    return word
 
 
 def _parse_tsv(tsv: str, scale: float) -> list[dict]:

@@ -56,14 +56,19 @@ def load(path: Path) -> dict:
 
 
 def needed(conn: sqlite3.Connection) -> bool:
-    """В базе ещё нет ни накладных, ни продаж — только пример, созданный при первом запуске."""
-    busy = conn.execute("SELECT (SELECT COUNT(*) FROM invoices) + (SELECT COUNT(*) FROM sales)").fetchone()[0]
+    """В базе ещё нет ни продаж, ни нормальных накладных — только пример первого запуска.
+
+    Накладные «Не распознана» (например, от старой версии) не мешают: при загрузке они удаляются.
+    """
+    busy = conn.execute("SELECT (SELECT COUNT(*) FROM invoices WHERE status != 'error') "
+                        "+ (SELECT COUNT(*) FROM sales)").fetchone()[0]
     return busy == 0
 
 
 def apply(conn: sqlite3.Connection, data: dict, sales_file: Path | None = None) -> None:
     with conn:
-        for table in ("recipe", "movements", "invoice_lines", "invoices", "aliases", "drinks", "ingredients"):
+        for table in ("recipe", "movements", "invoice_lines", "invoices", "aliases", "sales", "drinks",
+                      "ingredients"):
             conn.execute(f"DELETE FROM {table}")
         conn.executemany("INSERT INTO ingredients(name, unit, min_stock) VALUES (?, ?, ?)",
                          [(i["name"], i["unit"], i.get("min_stock", 0)) for i in data["ingredients"]])
