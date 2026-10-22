@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
     QSplitter, QStyleFactory, QTableWidget, QTableWidgetItem, QTabWidget, QTextEdit, QVBoxLayout, QWidget,
 )
 
-from . import core, db, export, inbox, invoice, ocr, sales_excel, style, updater
+from . import core, db, export, inbox, invoice, ocr, sales_excel, seed_ds152, style, updater
 from ._version import VERSION
 
 STATUS_NAMES = {"posted": "Проведена", "review": "Нужна проверка", "error": "Не распознана",
@@ -1137,6 +1137,8 @@ class MainWindow(QMainWindow):
         self.folders = inbox.Folders(root)
         self.folders.create()
         self.conn = db.connect(self.folders.db_file)
+        if seed_ds152.needed(self.conn):
+            seed_ds152.apply(self.conn, self.folders.sales_file)
         sales_excel.ensure_template(self.conn, self.folders.sales_file)
         self.worker: InboxWorker | None = None
         self.update_worker: UpdateCheckWorker | None = None

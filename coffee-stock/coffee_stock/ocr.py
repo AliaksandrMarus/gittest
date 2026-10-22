@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 
 DPI = 400
@@ -76,8 +77,14 @@ def _languages(exe: Path) -> str:
     raise OcrUnavailable("для Tesseract не установлен русский язык (rus.traineddata)")
 
 
-def ocr_pdf(path: Path, configured: str = "") -> list[list[dict]]:
-    """Слова каждой страницы: [{'text', 'x0', 'x1', 'top', 'bottom'}], координаты в точках PDF."""
+@dataclass
+class OcrPage:
+    words: list[dict]  # {'text', 'x0', 'x1', 'top', 'bottom'} в точках PDF
+    vlines: list[tuple[float, float, float]]  # вертикальные линии таблицы: (x, верх, низ)
+
+
+def ocr_pdf(path: Path, configured: str = "") -> list[OcrPage]:
+    """Распознаёт каждую страницу скана: слова с координатами и вертикальные линии таблицы."""
     import pypdfium2 as pdfium
 
     exe = find_tesseract(configured)
@@ -85,47 +92,147 @@ def ocr_pdf(path: Path, configured: str = "") -> list[list[dict]]:
         raise OcrUnavailable("не найден Tesseract для распознавания сканов")
     lang = _languages(exe)
     scale = DPI / 72
-    pages: list[list[dict]] = []
+    pages: list[OcrPage] = []
     pdf = pdfium.PdfDocument(str(path))
     try:
         with tempfile.TemporaryDirectory() as tmp:
             for n in range(len(pdf)):
-                image = remove_table_lines(pdf[n].render(scale=scale).to_pil().convert("L"))
+                image, vlines = remove_table_lines(deskew(pdf[n].render(scale=scale).to_pil().convert("L")))
                 png = Path(tmp) / f"p{n}.png"
                 image.save(png)
                 # psm 11 — «разрозненный текст»: каждое слово отдельно со своими координатами,
-                # колонки потом восстанавливаются по шапке таблицы
+                # колонки потом восстанавливаются по линиям и шапке таблицы
                 tsv = _run(exe, [str(png), "stdout", "-l", lang, "--psm", "11", "tsv"])
-                pages.append(_parse_tsv(tsv, scale))
+                pages.append(OcrPage(_parse_tsv(tsv, scale),
+                                     [(x / scale, y0 / scale, y1 / scale) for x, y0, y1 in vlines]))
     finally:
         pdf.close()
     return pages
 
 
-def _long_runs(dark, min_len: int):
+def skew_angle(image) -> float:
+    """Угол перекоса скана в градусах: при верном повороте строки дают самые резкие пики яркости."""
+    import numpy as np
+
+    small = image.copy()
+    small.thumbnail((1200, 1200))
+    best_angle, best_score = 0.0, -1.0
+    for angle in np.arange(-3, 3.01, 0.1):
+        rotated = np.array(small.rotate(angle, fillcolor=255)) < 160
+        profile = rotated.sum(axis=1).astype(float)
+        score = float(np.sum(np.diff(profile) ** 2))
+        if score > best_score:
+            best_angle, best_score = float(angle), score
+    # Уточнение шагом 0,02° вокруг лучшего
+    for angle in np.arange(best_angle - 0.1, best_angle + 0.101, 0.02):
+        rotated = np.array(small.rotate(angle, fillcolor=255)) < 160
+        profile = rotated.sum(axis=1).astype(float)
+        score = float(np.sum(np.diff(profile) ** 2))
+        if score > best_score:
+            best_angle, best_score = float(angle), score
+    return best_angle
+
+
+def deskew(image):
+    """Выравнивает перекошенный скан, иначе линии таблицы и строки идут наискосок."""
+    from PIL import Image
+
+    angle = skew_angle(image)
+    if abs(angle) < 0.05:
+        return image
+    return image.rotate(angle, resample=Image.BICUBIC, fillcolor=255)
+
+
+def _runs(row, min_len: int, gap: int = 0):
+    """Отрезки [x0, x1) тёмных пикселей строки длиной ≥ min_len; разрывы до gap склеиваются."""
+    import numpy as np
+
+    xs = np.flatnonzero(row)
+    if len(xs) < (min_len if gap == 0 else min_len // 4):
+        return []
+    breaks = np.flatnonzero(np.diff(xs) > gap + 1)
+    starts = np.concatenate(([xs[0]], xs[breaks + 1]))
+    ends = np.concatenate((xs[breaks], [xs[-1]])) + 1
+    return [(a, b) for a, b in zip(starts, ends) if b - a >= min_len]
+
+
+def _long_runs(dark, min_len: int, gap: int = 0):
     """Маска пикселей, входящих в горизонтальные отрезки длиной не меньше min_len."""
     import numpy as np
 
     mask = np.zeros_like(dark)
-    for i in np.flatnonzero(dark.sum(axis=1) >= min_len):
-        edges = np.diff(np.concatenate(([0], dark[i].astype(np.int8), [0])))
-        for x0, x1 in zip(np.flatnonzero(edges == 1), np.flatnonzero(edges == -1)):
-            if x1 - x0 >= min_len:
-                mask[i, x0:x1] = True
+    for i in range(dark.shape[0]):
+        for a, b in _runs(dark[i], min_len, gap):
+            mask[i, a:b] = True
     return mask
 
 
+def _thin_bands(mask, max_height: int):
+    """Оставляет только тонкие (по высоте) полосы маски — линии, а не строки текста."""
+    import numpy as np
+
+    rows = np.flatnonzero(mask.any(axis=1))
+    keep = np.zeros_like(mask)
+    if len(rows) == 0:
+        return keep
+    bands = np.split(rows, np.flatnonzero(np.diff(rows) > 1) + 1)
+    for band in bands:
+        if len(band) <= max_height:
+            keep[band] = mask[band]
+    return keep
+
+
 def remove_table_lines(image):
-    """Стирает линии таблицы: с ними Tesseract путает буквы и теряет короткие числа."""
+    """Стирает линии таблицы (сплошные и пунктирные) и возвращает вертикальные линии.
+
+    С линиями Tesseract путает буквы, а пунктир между строками ТТН читает как
+    «текст-мусор». Вертикальные линии нужны, чтобы разделить колонки шапки,
+    подписи которых стоят вплотную друг к другу.
+    """
     import numpy as np
     from PIL import Image
 
     pixels = np.array(image)
     dark = pixels < 140
     height, width = dark.shape
-    lines = _long_runs(dark, max(width // 15, 40)) | _long_runs(dark.T.copy(), max(height // 40, 40)).T
-    pixels[lines] = 255
-    return Image.fromarray(pixels)
+    horizontal = _long_runs(dark, max(width // 15, 40))
+    # Пунктир: точки с промежутками; склеиваем разрывы и берём только тонкие полосы
+    dotted = _thin_bands(_long_runs(dark & ~horizontal, max(width // 6, 60), gap=12), max_height=8)
+    vertical_t = _long_runs(dark.T.copy(), max(height // 40, 40))
+    # Края точек и линий светлее порога — стираем полосу с запасом ±2 пикселя
+    erase = _grow(horizontal | dotted, axis=0) | _grow(vertical_t.T, axis=1)
+    pixels[erase & (pixels < 235)] = 255
+    # Светлый защитный узор бланка (сетка, «гильош») — в белый, текст заметно темнее
+    pixels[pixels > 185] = 255
+
+    vlines = []
+    for x in np.flatnonzero(vertical_t.any(axis=1)):
+        for a, b in _runs(vertical_t[x], max(height // 40, 40)):
+            vlines.append((int(x), int(a), int(b)))
+    return Image.fromarray(pixels), _merge_vlines(vlines)
+
+
+def _grow(mask, axis: int, by: int = 2):
+    """Расширяет маску на by пикселей вдоль оси (0 — вверх/вниз, 1 — влево/вправо)."""
+    import numpy as np
+
+    out = mask.copy()
+    for shift in range(1, by + 1):
+        out |= np.roll(mask, shift, axis=axis) | np.roll(mask, -shift, axis=axis)
+    return out
+
+
+def _merge_vlines(vlines: list[tuple[int, int, int]]) -> list[tuple[int, int, int]]:
+    """Соседние пиксельные столбцы одной толстой линии — в одну линию."""
+    merged: list[list[int]] = []
+    for x, a, b in sorted(vlines):
+        for m in merged:
+            if abs(m[0] - x) <= 6 and a <= m[2] + 10 and b >= m[1] - 10:
+                m[1], m[2] = min(m[1], a), max(m[2], b)
+                break
+        else:
+            merged.append([x, a, b])
+    return [tuple(m) for m in merged]
 
 
 # Латинские буквы, неотличимые от русских на скане

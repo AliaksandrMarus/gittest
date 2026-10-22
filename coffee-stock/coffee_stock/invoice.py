@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import difflib
 import hashlib
 import re
 import sqlite3
@@ -103,6 +104,17 @@ def match_line(conn: sqlite3.Connection, raw_name: str, raw_unit: str) -> tuple[
                          (alias_key(raw_name, raw_unit),)).fetchone()
     if alias:
         return alias["ingredient_id"], alias["factor"], bool(alias["ignored"])
+    # Скан читает название каждый раз чуть по-разному («80мм» / «8Омм») — ищем похожее
+    key = alias_key(raw_name, raw_unit)
+    name_part, unit_part = key.rsplit("|", 1)
+    best, best_ratio = None, 0.0
+    for a in conn.execute("SELECT raw_name, ingredient_id, factor, ignored FROM aliases WHERE raw_name LIKE ?",
+                          (f"%|{unit_part}",)):
+        ratio = difflib.SequenceMatcher(None, name_part, a["raw_name"].rsplit("|", 1)[0]).ratio()
+        if ratio > best_ratio:
+            best, best_ratio = a, ratio
+    if best is not None and best_ratio >= 0.85:
+        return best["ingredient_id"], best["factor"], bool(best["ignored"])
     ingredient_id = guess_ingredient(conn, raw_name)
     if ingredient_id is None:
         return None, None, False
@@ -142,21 +154,78 @@ def parse_date(text: str) -> str:
     return ""
 
 
-def find_requisites(text: str, result: Extracted) -> None:
-    if m := re.search(r"№\s*([A-ZА-Я]{0,4}\s?[0-9][0-9A-ZА-Я\-/]*)", text, re.I):
-        result.number = m.group(1).replace(" ", "")
-    if m := re.search(r"\b(\d{1,2}[./]\d{1,2}[./]\d{2,4})\b", text):
-        result.date = parse_date(m.group(1).replace("/", "."))
-    if not result.date and (m := re.search(r"\b(\d{1,2})\s+([а-я]+)\s+(\d{4})", text.lower())):
+ORG = r"(?:ООО|ОАО|ЗАО|ОДО|СООО|ЧУП|ЧТУП|ЧПУП|УП|ИП|000)"
+# Строки бланка, где встречаются чужие даты и номера (договор, постановление, путевой лист)
+NOT_DOCUMENT = re.compile(r"договор|постановлен|доверенност|путевому|листу|основание", re.I)
+
+
+def _textual_date(line: str) -> str:
+    for d, month_word, year in re.findall(r"\b(\d{1,2})\s+([а-я]+)\s+(\d{4})", line.lower()):
         for stem, month in MONTHS.items():
-            if m.group(2).startswith(stem) and (stem != "ма" or m.group(2) in ("мая", "май")):
+            if month_word.startswith(stem) and (stem != "ма" or month_word in ("мая", "май")):
                 try:
-                    result.date = datetime(int(m.group(3)), month, int(m.group(1))).date().isoformat()
+                    return datetime(int(year), month, int(d)).date().isoformat()
                 except ValueError:
-                    pass
+                    return ""
+    return ""
+
+
+def find_requisites(text: str, result: Extracted) -> None:
+    lines = [l for l in text.splitlines() if l.strip()]
+    doc_lines = [l for l in lines if not NOT_DOCUMENT.search(l)]
+
+    # Номер: в строке с «накладная» (или следующей) — «№ …» либо номер бланка из 6–8 цифр
+    for i, line in enumerate(lines):
+        if "накладн" in line.lower():
+            for cand in (line, lines[i + 1] if i + 1 < len(lines) else ""):
+                if m := re.search(r"№\s*([A-ZА-Я]{0,4}\s?[0-9][0-9A-ZА-Я\-/]*)", cand, re.I):
+                    result.number = m.group(1).replace(" ", "")
+                elif m := re.search(r"\b(\d{6,8})\b", cand):
+                    result.number = m.group(1)
+                if result.number:
+                    break
+        if result.number:
+            break
+    if not result.number:
+        for line in doc_lines:
+            if m := re.search(r"№\s*([A-ZА-Я]{0,4}\s?[0-9][0-9A-ZА-Я\-/]*)", line, re.I):
+                result.number = m.group(1).replace(" ", "")
                 break
-    if m := re.search(r"(?:Поставщик|Грузоотправитель|Продавец)[:\s]+(.+)", text):
-        result.supplier = m.group(1).strip()[:120]
+
+    # Дата: «17 июня 2026 г.» надёжнее; числовая — только свежая и не из договора/бланка
+    for line in doc_lines:
+        if day := _textual_date(line):
+            result.date = day
+            break
+    if not result.date:
+        for line in doc_lines:
+            for cand in re.findall(r"\b(\d{1,2}[./]\d{1,2}[./]\d{2,4})\b", line):
+                day = parse_date(cand.replace("/", "."))
+                if day and day >= "2020-01-01":
+                    result.date = day
+                    break
+            if result.date:
+                break
+
+    # Поставщик: после «Поставщик/Грузоотправитель/Продавец», если там есть организация;
+    # иначе первая организация в кавычках, которая не получатель
+    for line in lines:
+        if m := re.search(r"(?:Поставщик|Грузоотправитель|Продавец)[:\s]+(.+)", line):
+            value = m.group(1).strip()
+            if re.search(ORG + r"|[«\"“]", value) and not re.match(r"Грузополуч|Покупател", value):
+                if q := re.search(ORG + r"\s*[«\"“]([^»\"”]{2,60})[»\"”]", value):
+                    org = re.match(ORG, q.group(0)).group(0).replace("000", "ООО")
+                    value = f'{org} "{q.group(1).strip()}"'  # без адреса
+                result.supplier = value[:120]
+                break
+    if not result.supplier:
+        for line in lines:
+            if re.search(r"получател|плательщик|заказчик|покупател", line, re.I):
+                continue
+            if m := re.search(ORG + r"\s*[«\"“]([^»\"”]{2,60})[»\"”]", line):
+                org = re.match(ORG, m.group(0)).group(0).replace("000", "ООО")
+                result.supplier = f'{org} "{m.group(1).strip()}"'
+                break
 
 
 # ---- Колонки таблицы --------------------------------------------------------
@@ -164,11 +233,17 @@ def find_requisites(text: str, result: Extracted) -> None:
 def classify_header(label: str) -> str | None:
     """По заголовку колонки определяет, что в ней: name, unit, qty, price, vat, total, amount."""
     low = " " + re.sub(r"\s+", " ", label.lower().replace("ё", "е")) + " "
+    low = low.translate(str.maketrans("aceopxyk", "асеорхук"))  # латинские двойники из скана
+    low = re.sub(r"\bн[оo]с\b", "ндс", low)  # «НДС», прочитанный как «НОС»
+    if "цена" in low:
+        return "price"
+    if re.search(r"мест|грузов|масс|примеч", low):
+        return "skip"  # «Количество грузовых мест», «Масса груза» — не количество товара
     if re.fullmatch(r" (№|n|no|nn)\.?( п/п)? ", low) or "п/п" in low:
         return "num"  # порядковый номер строки — не часть названия
     if "наимен" in low or "товар" in low and "кол" not in low:
         return "name"
-    if "кол" in low:
+    if "кол" in low or "чество" in low:  # «Коли-чество» в шапке часто разорвано переносом
         return "qty"
     if "цена" in low:
         return "price"
@@ -190,14 +265,21 @@ def classify_header(label: str) -> str | None:
 def _make_line(cells: dict[str, str]) -> Line | None:
     # Порядковый номер, прилипший к названию, если колонку «№» не распознали
     name = re.sub(r"^\d{1,3}[.)]?\s+(?=\D)", "", (cells.get("name") or "").strip(" |"))
-    qty = parse_number(cells.get("qty"))
-    if not name or qty is None or qty <= 0 or name.lower().startswith(("итого", "всего")):
+    if not name or not re.search(r"[A-Za-zА-Яа-яЁё]{2}", name) or name.lower().startswith(("итого", "всего")):
         return None
+    qty = parse_number(cells.get("qty"))
     price, vat = parse_number(cells.get("price")), parse_number(cells.get("vat"))
     total, amount = parse_number(cells.get("total")), parse_number(cells.get("amount"))
     if amount is None and total is not None and vat is not None:
         # Без колонки НДС нельзя понять, есть ли он в сумме, — тогда не сверяем
         amount = round(total - vat, 2)
+    if qty is None and price and amount:
+        # Одиночную цифру количества скан часто теряет — восстанавливаем из «стоимость / цена»
+        derived = amount / price
+        if derived > 0 and _has_decimals(derived, 3):
+            qty = round(derived, 3)
+    if qty is None or qty <= 0:
+        return None
     qty, price = reconcile(qty, price, amount)
     if total is None:
         base = amount if amount is not None else (qty * price if price is not None else None)
@@ -313,24 +395,62 @@ def _column_groups(header_words: list[dict], line_h: float) -> list[dict]:
     return groups
 
 
-def lines_from_words(words: list[dict]) -> list[Line]:
+def _groups_from_vlines(header_words: list[dict], vlines, top: float, bottom: float) -> list[dict]:
+    """Колонки по вертикальным линиям таблицы, пересекающим шапку."""
+    mid = (top + bottom) / 2
+    xs = sorted({round(x) for x, y0, y1 in vlines if y0 - 2 <= mid <= y1 + 2})
+    groups = []
+    for x0, x1 in zip(xs, xs[1:]):
+        if x1 - x0 < 6:
+            continue
+        words = [w for w in header_words if x0 <= (w["x0"] + w["x1"]) / 2 < x1]
+        label = " ".join(w["text"] for w in sorted(words, key=lambda w: (round(w["top"] / 4), w["x0"])))
+        groups.append({"x0": x0, "x1": x1, "words": words, "label": label,
+                       "kind": classify_header(label) or "skip"})
+    return _fix_kinds(groups)
+
+
+def _fix_kinds(groups: list[dict]) -> list[dict]:
+    """Две колонки «Стоимость» без явной «с НДС»: правая — стоимость с НДС (порядок граф ТТН/ТН)."""
+    amounts = [g for g in groups if g["kind"] == "amount"]
+    if len(amounts) >= 2 and not any(g["kind"] == "total" for g in groups):
+        amounts[-1]["kind"] = "total"
+    names = [g for g in groups if g["kind"] == "name"]
+    for g in names[1:]:
+        g["kind"] = "skip"  # наименование одно — самая левая такая колонка
+    return groups
+
+
+def lines_from_words(words: list[dict], vlines=None) -> list[Line]:
     """Строки накладной из слов с координатами (текстовый слой без линий или OCR)."""
     rows = _group_rows(words)
     if not rows:
         return []
     heights = sorted(w["bottom"] - w["top"] for w in words)
     line_h = heights[len(heights) // 2]
-    for idx, row in enumerate(rows):
-        text = " ".join(w["text"] for w in row).lower()
-        if "наимен" not in text and "товар" not in text:
-            continue
+    def is_header(text: str, word: str) -> bool:
+        # «(наименование, адрес)», «Товарный раздел», «Товарно-транспортная» — подписи бланка, не шапка
+        return word in text and not re.search(r"адрес|раздел|транспорт|документ", text)
+
+    texts = [" ".join(w["text"] for w in row).lower() for row in rows]
+    candidates = [i for i, t in enumerate(texts) if is_header(t, "наимен")] + \
+                 [i for i, t in enumerate(texts) if is_header(t, "товар") and not is_header(t, "наимен")]
+    for idx in candidates:
+        row = rows[idx]
         # Шапка занимает несколько строк: берём соседние строки без чисел
         top = min(w["top"] for w in row)
-        header_rows = [r for r in rows[max(0, idx - 2):idx + 4]
+        header_rows = [r for r in rows[max(0, idx - 3):idx + 5]
                        if abs(min(w["top"] for w in r) - top) <= 3.5 * line_h
-                       and not any(parse_number(w["text"]) is not None for w in r)]
+                       and not any(parse_number(w["text"]) is not None for w in r)
+                       and not re.search(r"раздел|транспорт", " ".join(w["text"] for w in r).lower())]
         last = max(rows.index(r) for r in header_rows)
-        groups = [g for g in _column_groups([w for r in header_rows for w in r], line_h) if g["kind"]]
+        header = [w for r in header_rows for w in r]
+        groups = []
+        if vlines:
+            groups = _groups_from_vlines(header, vlines, min(w["top"] for w in row),
+                                         max(w["bottom"] for w in row))
+        if not any(g["kind"] == "qty" for g in groups) or not any(g["kind"] == "name" for g in groups):
+            groups = [g for g in _column_groups(header, line_h) if g["kind"]]
         if not any(g["kind"] == "qty" for g in groups):
             continue
         return _rows_to_lines(rows[last + 1:], groups)
@@ -339,7 +459,7 @@ def lines_from_words(words: list[dict]) -> list[Line]:
 
 def _rows_to_lines(rows: list[list[dict]], groups: list[dict]) -> list[Line]:
     name_group = next((g for g in groups if g["kind"] == "name"), None)
-    first_number_x = min((g["x0"] for g in groups if g["kind"] != "name"), default=None)
+    first_number_x = min((g["x0"] for g in groups if g["kind"] not in ("name", "skip", "num")), default=None)
     lines: list[Line] = []
     for row in rows:
         cells: dict[str, list[str]] = {}
@@ -352,7 +472,8 @@ def _rows_to_lines(rows: list[list[dict]], groups: list[dict]) -> list[Line]:
                 g = name_group  # длинное название вылезает за шапку
             else:
                 g = min(groups, key=lambda g: abs((g["x0"] + g["x1"]) / 2 - center))
-            cells.setdefault(g["kind"], []).append(w["text"])
+            if g["kind"] != "skip":
+                cells.setdefault(g["kind"], []).append(w["text"])
         joined = {k: " ".join(v) for k, v in cells.items()}
         first = " ".join(w["text"] for w in row[:2]).lower()
         if first.startswith(("итого", "всего")):
@@ -392,9 +513,9 @@ def extract(path: Path, tesseract_path: str = "") -> Extracted:
             pages = ocr.ocr_pdf(path, tesseract_path)
         except ocr.OcrUnavailable as e:
             raise RecognitionError(f"PDF без текста (скан), а распознать картинку нельзя: {e}") from e
-        for words in pages:
-            result.lines.extend(lines_from_words(words))
-        text = "\n".join(" ".join(w["text"] for w in row) for words in pages for row in _group_rows(words))
+        for page in pages:
+            result.lines.extend(lines_from_words(page.words, page.vlines))
+        text = "\n".join(" ".join(w["text"] for w in row) for page in pages for row in _group_rows(page.words))
     find_requisites(text, result)
     if not result.lines:
         raise RecognitionError("Не нашёл в накладной таблицу с колонками «Наименование» и «Количество». "

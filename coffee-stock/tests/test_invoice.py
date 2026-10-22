@@ -234,3 +234,30 @@ def test_quantity_and_price_are_checked_against_amount():
     assert (line.qty, line.unit, line.price) == (5.5, "кг", 2.0)
     assert invoice._make_line({"name": "Стаканы", "unit": "lut", "qty": "1"}).unit == "шт"
     assert invoice._make_line({"name": "Стаканы", "unit": "уп", "qty": "1"}).unit == "уп"
+
+
+@needs_tesseract
+def test_skewed_ttn_scan_with_dotted_rows(tmp_path):
+    """Как реальная ТТН: перекос, пунктир, чужие даты/номера в бланке, графы «мест» и «масса»."""
+    from pdf_fixtures import TTN_ROWS, make_ttn_scan
+
+    pdf = tmp_path / "ttn.pdf"
+    make_ttn_scan(pdf)
+    ex = invoice.extract(pdf)
+    assert (ex.number, ex.date, ex.supplier) == ("4692066", "2026-06-17", 'ООО "ПРОКСИМАВЕСТ"')
+    got = [(l.qty, l.price, l.vat, l.total) for l in ex.lines]
+    want = [(float(r[3]), float(r[4]), float(r[7]), float(r[8])) for r in TTN_ROWS]
+    assert got == want
+    assert ex.lines[0].name.startswith("Кофе в зернах") and ex.lines[3].name.startswith("Сахар")
+    assert [l.unit for l in ex.lines] == ["шт", "шт", "шт", "шт", "упак"]
+
+
+def test_fuzzy_alias_tolerates_ocr_typos(conn):
+    ing = ingredients(conn)
+    line = invoice.EditedLine("Крышка черная для стакана D-80мм с открытым питейником", 3, "шт", 5, 3, 18,
+                              ing["Стаканчики"], 100)
+    inv = invoice.save_invoice(conn, None, "1", "2026-06-17", "ООО", [line], post=True)
+    assert inv
+    ingredient_id, factor, ignored = invoice.match_line(
+        conn, "Крышка черная для стакана 8Омм с открытым питейником", "шт")
+    assert (ingredient_id, factor, ignored) == (ing["Стаканчики"], 100, False)

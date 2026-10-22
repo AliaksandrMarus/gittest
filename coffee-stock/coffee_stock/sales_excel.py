@@ -28,12 +28,11 @@ def ensure_template(conn: sqlite3.Connection, path: Path) -> None:
         wb = load_workbook(path)
         ws = wb[SHEET] if SHEET in wb.sheetnames else wb.active
         have = {str(c.value).strip() for c in ws[1] if c.value}
-        col = ws.max_column + 1
-        for name in drinks:
-            if name not in have:
-                _header_cell(ws, col, name)
-                col += 1
-        wb.save(path)
+        missing = [name for name in drinks if name not in have]
+        for col, name in enumerate(missing, start=ws.max_column + 1):
+            _header_cell(ws, col, name)
+        if missing:  # без изменений не сохраняем — иначе зря меняется дата файла
+            wb.save(path)
         return
 
     wb = Workbook()
