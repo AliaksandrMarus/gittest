@@ -244,7 +244,7 @@ def test_skewed_ttn_scan_with_dotted_rows(tmp_path):
     pdf = tmp_path / "ttn.pdf"
     make_ttn_scan(pdf)
     ex = invoice.extract(pdf)
-    assert (ex.number, ex.date, ex.supplier) == ("4692066", "2026-06-17", 'ООО "ПРОКСИМАВЕСТ"')
+    assert (ex.number, ex.date, ex.supplier) == ("1234567", "2026-05-15", 'ООО "КОФЕСНАБ"')
     got = [(l.qty, l.price, l.vat, l.total) for l in ex.lines]
     want = [(float(r[3]), float(r[4]), float(r[7]), float(r[8])) for r in TTN_ROWS]
     assert got == want

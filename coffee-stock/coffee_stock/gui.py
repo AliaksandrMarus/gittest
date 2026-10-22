@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
     QSplitter, QStyleFactory, QTableWidget, QTableWidgetItem, QTabWidget, QTextEdit, QVBoxLayout, QWidget,
 )
 
-from . import core, db, export, inbox, invoice, ocr, sales_excel, seed_ds152, style, updater
+from . import core, db, export, inbox, invoice, ocr, sales_excel, seed, style, updater
 from ._version import VERSION
 
 STATUS_NAMES = {"posted": "Проведена", "review": "Нужна проверка", "error": "Не распознана",
@@ -1103,8 +1103,26 @@ class SettingsTab(QWidget):
                                     "secondary"))
         update_row.addStretch()
         form.addRow("Программа", update_row)
+        form.addRow("Начальные данные", button("Загрузить начальные данные…", self.load_seed, "secondary"))
         form.addRow("", self.auto_update)
         form.addRow(button("Сохранить", self.save))
+
+    def load_seed(self) -> None:
+        if not seed.needed(self.win.conn):
+            QMessageBox.warning(self, "Начальные данные", "В программе уже есть накладные или продажи — начальные "
+                                                          "данные загружаются только в пустую базу.")
+            return
+        path, _ = QFileDialog.getOpenFileName(self, "Файл начальных данных", "", "Начальные данные (*.json)")
+        if not path:
+            return
+        try:
+            data = seed.load(Path(path))
+            seed.apply(self.win.conn, data, self.win.folders.sales_file)
+        except seed.SeedError as e:
+            QMessageBox.warning(self, "Начальные данные", f"Не удалось загрузить: {e}")
+            return
+        self.win.refresh_all()
+        QMessageBox.information(self, "Начальные данные", "Данные загружены: справочники, накладные, продажи.")
 
     def browse(self) -> None:
         path, _ = QFileDialog.getOpenFileName(self, "tesseract.exe", "", "tesseract.exe (tesseract.exe)")
@@ -1137,8 +1155,11 @@ class MainWindow(QMainWindow):
         self.folders = inbox.Folders(root)
         self.folders.create()
         self.conn = db.connect(self.folders.db_file)
-        if seed_ds152.needed(self.conn):
-            seed_ds152.apply(self.conn, self.folders.sales_file)
+        seed_message = ""
+        try:
+            seed_message = seed.apply_from_folder(self.conn, self.folders.root, self.folders.sales_file)
+        except seed.SeedError as e:
+            seed_message = f"Файл начальных данных не загружен: {e}"
         sales_excel.ensure_template(self.conn, self.folders.sales_file)
         self.worker: InboxWorker | None = None
         self.update_worker: UpdateCheckWorker | None = None
@@ -1169,6 +1190,8 @@ class MainWindow(QMainWindow):
 
         self.refresh_all()
         self.import_sales(manual=False)
+        if seed_message:
+            self.statusBar().showMessage(seed_message, 20000)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.tick)
         self.timer.start(CHECK_INTERVAL_MS)
