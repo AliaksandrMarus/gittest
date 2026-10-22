@@ -267,9 +267,8 @@ def _make_line(cells: dict[str, str]) -> Line | None:
     name = re.sub(r"^\d{1,3}[.)]?\s+(?=\D)", "", (cells.get("name") or "").strip(" |"))
     if not name or not re.search(r"[A-Za-zА-Яа-яЁё]{2}", name) or name.lower().startswith(("итого", "всего")):
         return None
-    qty = parse_number(cells.get("qty"))
-    price, vat = parse_number(cells.get("price")), parse_number(cells.get("vat"))
-    total, amount = parse_number(cells.get("total")), parse_number(cells.get("amount"))
+    values, merged = _split_numeric_cells(cells)
+    qty, price, amount, vat, total = (values.get(k) for k in ("qty", "price", "amount", "vat", "total"))
     if amount is None and total is not None and vat is not None:
         # Без колонки НДС нельзя понять, есть ли он в сумме, — тогда не сверяем
         amount = round(total - vat, 2)
@@ -280,7 +279,8 @@ def _make_line(cells: dict[str, str]) -> Line | None:
             qty = round(derived, 3)
     if qty is None or qty <= 0:
         return None
-    qty, price = reconcile(qty, price, amount)
+    if not merged:  # из слипшихся колонок стоимость ненадёжна — количество по ней не правим
+        qty, price = reconcile(qty, price, amount)
     if total is None:
         base = amount if amount is not None else (qty * price if price is not None else None)
         if base is not None:
@@ -292,6 +292,47 @@ def _make_line(cells: dict[str, str]) -> Line | None:
 
 
 CANONICAL_UNITS = {"кг", "г", "л", "мл", "шт"}
+
+# Порядок числовых граф в ТТН/ТН слева направо
+NUMERIC_ORDER = ("qty", "price", "amount", "rate", "vat", "total")
+
+
+def parse_cell_numbers(text: str | None) -> list[float]:
+    """Все числа ячейки. «1 000,50» — одно число (пробел перед ровно тремя цифрами — разряды),
+    «462.00 92.40» — два: так выглядят слипшиеся соседние колонки."""
+    if not text:
+        return []
+    tokens = re.findall(r"\d+(?:[.,]\d+)?", text.replace("\u00a0", " "))
+    numbers: list[str] = []
+    for token in tokens:
+        if numbers and re.fullmatch(r"\d{3}(?:[.,]\d+)?", token) and re.fullmatch(r"\d{1,3}", numbers[-1]) \
+                and re.search(re.escape(numbers[-1]) + r"\s" + re.escape(token), text):
+            numbers[-1] += token  # «1 000» — разряды одного числа
+        else:
+            numbers.append(token)
+    return [v for v in (parse_number(n) for n in numbers) if v is not None]
+
+
+def _split_numeric_cells(cells: dict[str, str]) -> tuple[dict[str, float], bool]:
+    """Числа по графам. Лишнее число из ячейки уходит в следующую пустую графу справа:
+    если на скане не нашлась линия между колонками, «Стоимость» и «Сумма НДС» слипаются."""
+    found = {k: parse_cell_numbers(cells.get(k)) for k in NUMERIC_ORDER}
+    merged = False
+    for i, key in enumerate(NUMERIC_ORDER):
+        extra = found[key][1:]
+        if not extra:
+            continue
+        merged = True
+        found[key] = found[key][:1]
+        for nxt in NUMERIC_ORDER[i + 1:]:
+            if not extra:
+                break
+            if found[nxt]:
+                continue
+            if nxt == "rate" and not (extra[0] <= 30 and extra[0] == int(extra[0])):
+                continue  # ставка НДС — целый процент, а не сумма
+            found[nxt] = [extra.pop(0)]
+    return {k: v[0] for k, v in found.items() if v}, merged
 
 
 def _has_decimals(value: float, digits: int) -> bool:

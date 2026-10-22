@@ -244,6 +244,11 @@ def test_skewed_ttn_scan_with_dotted_rows(tmp_path):
     pdf = tmp_path / "ttn.pdf"
     make_ttn_scan(pdf)
     ex = invoice.extract(pdf)
+    # Диагностика для CI: при падении pytest покажет, что увидело распознавание
+    page = ocr.ocr_pdf(pdf)[0]
+    print("vlines:", sorted(round(v[0]) for v in page.vlines))
+    for row in invoice._group_rows(page.words):
+        print(round(row[0]["top"]), " | ".join(f"{w['text']}@{round(w['x0'])}-{round(w['x1'])}" for w in row))
     assert (ex.number, ex.date, ex.supplier) == ("1234567", "2026-05-15", 'ООО "КОФЕСНАБ"')
     got = [(l.qty, l.price, l.vat, l.total) for l in ex.lines]
     want = [(float(r[3]), float(r[4]), float(r[7]), float(r[8])) for r in TTN_ROWS]
@@ -261,3 +266,15 @@ def test_fuzzy_alias_tolerates_ocr_typos(conn):
     ingredient_id, factor, ignored = invoice.match_line(
         conn, "Крышка черная для стакана 8Омм с открытым питейником", "шт")
     assert (ingredient_id, factor, ignored) == (ing["Стаканчики"], 100, False)
+
+
+def test_merged_columns_are_split_not_glued():
+    assert invoice.parse_cell_numbers("1 000,50") == [1000.5]
+    assert invoice.parse_cell_numbers("462.00 92.40") == [462.0, 92.4]
+    # «Стоимость» и «Сумма НДС» слиплись: НДС уходит в свою графу, количество не портится
+    line = invoice._make_line({"name": "Кофе", "qty": "12", "price": "38.50", "amount": "462.00 92.40",
+                               "total": "554.40"})
+    assert (line.qty, line.price, line.vat, line.total) == (12, 38.5, 92.4, 554.4)
+    line = invoice._make_line({"name": "Кофе", "qty": "12", "price": "38.50", "amount": "462.00 20 92.40",
+                               "total": "554.40"})
+    assert (line.qty, line.vat) == (12, 92.4)

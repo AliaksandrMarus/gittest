@@ -193,7 +193,8 @@ def remove_table_lines(image):
     from PIL import Image
 
     pixels = np.array(image)
-    dark = pixels < 140
+    # Тонкие линии после поворота и сглаживания серые — для их поиска порог мягче, чем для текста
+    dark = pixels < 175
     height, width = dark.shape
     horizontal = _long_runs(dark, max(width // 15, 40))
     # Пунктир: точки с промежутками; склеиваем разрывы и берём только тонкие полосы
