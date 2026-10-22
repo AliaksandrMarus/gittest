@@ -1193,8 +1193,13 @@ class MainWindow(QMainWindow):
         self.import_sales(manual=False)
         if seed_message:
             self.statusBar().showMessage(seed_message, 20000)
-        elif updater.can_update() and (updated := updater.finished_update(updater.app_dir())):
-            self.statusBar().showMessage(f"Программа обновлена до версии {updated}", 20000)
+        if seed.needed(self.conn) and not seed_message:
+            # Пустая база — сразу предложить загрузить начальные данные, а не искать кнопку
+            QTimer.singleShot(800, self.offer_seed)
+        if updater.can_update():
+            updater.cleanup_after_update(updater.app_dir())
+            if not seed_message and (updated := updater.finished_update(updater.app_dir())):
+                self.statusBar().showMessage(f"Программа обновлена до версии {updated}", 20000)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.tick)
         self.timer.start(CHECK_INTERVAL_MS)
@@ -1281,6 +1286,13 @@ class MainWindow(QMainWindow):
             box.setAttribute(Qt.WA_DeleteOnClose)
             box.show()
 
+    def offer_seed(self) -> None:
+        if QMessageBox.question(
+                self, "Начальные данные",
+                "В программе ещё нет накладных и продаж.\n\nЗагрузить начальные данные из файла "
+                "«Начальные данные.json» (накладные, рецептура, продажи, остатки)?") == QMessageBox.Yes:
+            self.settings_tab.load_seed()
+
     # -- обновления
     def check_updates(self, manual: bool) -> None:
         if not updater.can_update():
@@ -1353,6 +1365,8 @@ class MainWindow(QMainWindow):
 
 
 def main() -> int:
+    if updater.finish_from_args(sys.argv):
+        return 0  # это запуск только для замены файлов при обновлении — окно не нужно
     app = QApplication(sys.argv)
     app.setApplicationName("Учёт кофейного автомата")
     app.setStyle(QStyleFactory.create("Fusion"))

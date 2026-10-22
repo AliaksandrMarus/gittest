@@ -6,8 +6,10 @@
 tesseract). Данные — coffee.db, Продажи.xlsx, папка «Накладные» — лежат рядом
 и не трогаются; перед обновлением база дополнительно копируется в резерв.
 
-Заменить запущенный exe нельзя, поэтому файлы копирует маленький bat-скрипт:
-он ждёт, пока программа закроется, копирует новые файлы и запускает её снова.
+Заменить запущенный exe нельзя, поэтому старая программа распаковывает новую
+версию в «_update\\new» и запускает её с ключом --finish-update. Новая версия
+ждёт, пока старая закроется, копирует себя на место старой (средствами Python —
+русские буквы в пути не мешают), запускает программу из обычной папки и выходит.
 """
 
 from __future__ import annotations
@@ -18,6 +20,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 import urllib.request
 import zipfile
 from dataclasses import dataclass
@@ -119,65 +122,109 @@ def prepare(zip_path: Path, root: Path) -> Path:
 
 
 LOG_NAME = "Обновление.log"
-
-
-def update_script(root: Path, staging: Path, pid: int, version: str = "") -> str:
-    """bat-скрипт: дождаться выхода программы, заменить её файлы и запустить её снова.
-
-    Каждый шаг пишется в «Обновление.log» рядом с программой — если что-то пойдёт
-    не так, будет видно, на каком шаге.
-    """
-    log = root / LOG_NAME
-    exe = root / "CoffeeStock.exe"
-    lines = [
-        "@echo off",
-        # Новый CoffeeStock.exe не должен принять служебные переменные старого за свои
-        "set PYINSTALLER_RESET_ENVIRONMENT=1",
-        f'echo обновление до версии {version} > "{log}"',
-        "set /a n=0",
-        ":wait",
-        f'tasklist /FI "PID eq {pid}" | find "{pid}" >nul',
-        "if errorlevel 1 goto closed",
-        "set /a n+=1",
-        "if %n% geq 60 goto closed",
-        "ping -n 2 127.0.0.1 >nul",  # пауза 1 с; timeout без консоли не работает
-        "goto wait",
-        ":closed",
-        f'echo программа закрыта >> "{log}"',
-    ]
-    for i, part in enumerate(PROGRAM_PARTS):
-        target = root / part
-        remove = f'del /f /q "{target}"' if part.endswith(".exe") else f'rmdir /s /q "{target}"'
-        # Файлы могут быть заняты ещё пару секунд после выхода — повторяем до 10 раз
-        lines += [
-            "set /a r=0",
-            f":remove{i}",
-            f'if not exist "{target}" goto removed{i}',
-            remove,
-            f'if not exist "{target}" goto removed{i}',
-            "set /a r+=1",
-            f"if %r% geq 10 goto removed{i}",
-            "ping -n 2 127.0.0.1 >nul",
-            f"goto remove{i}",
-            f":removed{i}",
-        ]
-    lines += [
-        f'robocopy "{staging}" "{root}" /E /NFL /NDL /NJH /NJS /NP >nul',
-        f'if not exist "{exe}" (echo ошибка: после копирования нет CoffeeStock.exe >> "{log}" & goto end)',
-        f'echo файлы заменены >> "{log}"',
-        f'start "" /D "{root}" "{exe}"',
-        f'echo готово >> "{log}"',
-        ":end",
-        f'rmdir /s /q "{root / "_update"}"',
-    ]
-    return "\r\n".join(lines) + "\r\n"
+FINISH_FLAG = "--finish-update"
 
 
 def clean_environment() -> dict[str, str]:
-    """Окружение для скрипта обновления без служебных переменных PyInstaller."""
+    """Окружение без служебных переменных PyInstaller: иначе запущенный из программы
+    CoffeeStock.exe принимает их за свои и не стартует."""
     env = {k: v for k, v in os.environ.items() if not k.startswith("_PYI") and k != "_MEIPASS2"}
     env["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
     return env
+
+
+def _spawn(args: list[str], cwd: Path) -> None:
+    flags = 0x00000008 | 0x00000200 if os.name == "nt" else 0  # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
+    subprocess.Popen(args, cwd=str(cwd), env=clean_environment(), creationflags=flags, close_fds=True)
+
+
+def install(zip_path: Path, root: Path, db_file: Path, version: str = "") -> None:
+    """Распаковывает новую версию и запускает её для замены файлов; после этого программу нужно закрыть."""
+    staging = prepare(zip_path, root)
+    if db_file.exists():
+        shutil.copy2(db_file, db_file.with_name(f"coffee.db.до-обновления-{VERSION}.bak"))
+    _spawn([str(staging / "CoffeeStock.exe"), FINISH_FLAG, str(root), str(os.getpid()), version], staging)
+
+
+def wait_for_exit(pid: int, timeout: float = 60) -> None:
+    """Ждёт, пока процесс завершится (не дольше timeout секунд)."""
+    deadline = time.monotonic() + timeout
+    if os.name == "nt":
+        import ctypes
+
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE
+        if handle:
+            kernel32.WaitForSingleObject(handle, int(timeout * 1000))
+            kernel32.CloseHandle(handle)
+        return
+    while time.monotonic() < deadline:
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return
+        time.sleep(0.5)
+
+
+def _remove(path: Path, attempts: int = 10) -> None:
+    """Удаляет файл или папку; файлы могут быть заняты ещё пару секунд после выхода программы."""
+    for _ in range(attempts):
+        if not path.exists():
+            return
+        try:
+            if path.is_dir():
+                shutil.rmtree(path)
+            else:
+                path.unlink()
+        except OSError:
+            time.sleep(1)
+    if path.exists():
+        raise OSError(f"не удалось удалить {path}")
+
+
+def finish_update(root: Path, staging: Path, pid: int, version: str = "") -> None:
+    """Выполняется новой версией из «_update\\new»: заменить файлы программы и запустить её."""
+    log = root / LOG_NAME
+
+    def note(text: str) -> None:
+        with open(log, "a", encoding="utf-8") as f:
+            f.write(text + "\n")
+
+    log.write_text(f"обновление до версии {version}\n", encoding="utf-8")
+    try:
+        wait_for_exit(pid)
+        note("программа закрыта")
+        for part in PROGRAM_PARTS:
+            _remove(root / part)
+        for item in staging.iterdir():
+            target = root / item.name
+            if item.is_dir():
+                shutil.copytree(item, target, dirs_exist_ok=True)
+            else:
+                shutil.copy2(item, target)
+        note("файлы заменены")
+        _spawn([str(root / "CoffeeStock.exe")], root)
+        note("готово")
+    except Exception as e:  # noqa: BLE001 — всё записать в лог, окна у этого процесса нет
+        note(f"ошибка: {e}")
+
+
+def finish_from_args(argv: list[str]) -> bool:
+    """Если программа запущена с --finish-update — завершить обновление и вернуть True (окно не нужно)."""
+    if FINISH_FLAG not in argv:
+        return False
+    i = argv.index(FINISH_FLAG)
+    root, pid = Path(argv[i + 1]), int(argv[i + 2])
+    version = argv[i + 3] if len(argv) > i + 3 else ""
+    finish_update(root, app_dir(), pid, version)
+    return True
+
+
+def cleanup_after_update(root: Path) -> None:
+    """Удаляет временную папку обновления (если программа запущена не из неё)."""
+    update_dir = root / "_update"
+    if update_dir.exists() and update_dir not in app_dir().parents:
+        shutil.rmtree(update_dir, ignore_errors=True)
 
 
 def finished_update(root: Path) -> str | None:
@@ -186,25 +233,10 @@ def finished_update(root: Path) -> str | None:
     if not log.exists():
         return None
     try:
-        lines = [l.strip() for l in log.read_text(encoding="oem" if os.name == "nt" else "utf-8",
-                                                    errors="replace").splitlines() if l.strip()]
+        lines = [l.strip() for l in log.read_text(encoding="utf-8", errors="replace").splitlines() if l.strip()]
     except OSError:
         return None
     if not lines or lines[-1] != "готово" or VERSION not in lines[0]:
         return None
     log.unlink(missing_ok=True)
     return VERSION
-
-
-def install(zip_path: Path, root: Path, db_file: Path, version: str = "") -> None:
-    """Готовит замену файлов и запускает скрипт; после этого программу нужно закрыть."""
-    staging = prepare(zip_path, root)
-    if db_file.exists():
-        shutil.copy2(db_file, db_file.with_name(f"coffee.db.до-обновления-{VERSION}.bak"))
-    script = root / "_update" / "update.bat"
-    # cmd читает bat в OEM-кодировке консоли (cp866) — так пути с русскими буквами не ломаются
-    script.write_text(update_script(root, staging, os.getpid(), version),
-                      encoding="oem" if os.name == "nt" else "utf-8")
-    flags = 0x08000000 | 0x00000008  # CREATE_NO_WINDOW | DETACHED_PROCESS
-    subprocess.Popen(["cmd", "/c", str(script)], creationflags=flags, close_fds=True, env=clean_environment())
-

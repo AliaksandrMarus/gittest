@@ -144,8 +144,8 @@ def apply_from_folder(conn: sqlite3.Connection, root: Path, sales_file: Path) ->
 
     Возвращает текст для строки состояния (пустой, если делать было нечего).
     """
-    path = root / FILE_NAME
-    if not path.exists() or not needed(conn):
+    path = find_file(root)
+    if path is None or not needed(conn):
         return ""
     data = load(path)
     apply(conn, data, sales_file)
@@ -153,4 +153,12 @@ def apply_from_folder(conn: sqlite3.Connection, root: Path, sales_file: Path) ->
     if target.exists():
         target.unlink()
     path.rename(target)
-    return "Начальные данные загружены из файла «Начальные данные.json»"
+    return f"Начальные данные загружены из файла «{path.name}»"
+
+
+def find_file(root: Path) -> Path | None:
+    """Файл начальных данных рядом с программой. Браузер при скачивании мог переименовать его
+    в «Начальные данные (1).json» — такие имена тоже подходят."""
+    files = sorted((p for p in root.glob("Начальные данные*.json") if p.name != LOADED_NAME),
+                   key=lambda p: p.stat().st_mtime, reverse=True)
+    return files[0] if files else None

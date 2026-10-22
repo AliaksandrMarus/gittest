@@ -43,3 +43,10 @@ def test_seed_file_validation(tmp_path):
     path.write_text(json.dumps(bad, ensure_ascii=False), encoding="utf-8")
     with pytest.raises(seed.SeedError, match="Латте"):
         seed.load(path)
+
+
+def test_renamed_download_is_found(tmp_path):
+    conn = db.connect(tmp_path / "coffee.db")
+    (tmp_path / "Начальные данные (1).json").write_text(json.dumps(DATA, ensure_ascii=False), encoding="utf-8")
+    assert seed.apply_from_folder(conn, tmp_path, tmp_path / "Продажи.xlsx")
+    assert (tmp_path / seed.LOADED_NAME).exists()
