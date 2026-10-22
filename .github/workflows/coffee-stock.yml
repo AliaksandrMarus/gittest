@@ -1,8 +1,9 @@
 name: Учёт кофейного автомата — сборка CoffeeStock
 
-# Прогоняет тесты и собирает программу для Windows вместе с Tesseract
-# (распознавание сканов накладных без интернета).
-# Готовая программа — во вкладке Actions → этот запуск → Artifacts → CoffeeStock.
+# Прогоняет тесты, собирает программу для Windows вместе с Tesseract
+# (распознавание сканов накладных без интернета) и выкладывает её в Releases
+# как CoffeeStock.zip с тегом coffee-stock-v1.0.N. Установленная программа
+# сама находит новый выпуск и обновляется (coffee_stock/updater.py).
 
 on:
   push:
@@ -12,7 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write  # создание выпуска (Release) с архивом программы
 
 jobs:
   build:
@@ -42,6 +43,12 @@ jobs:
       - name: Тесты
         run: python -m pytest -q -rs
 
+      - name: Номер версии
+        run: |
+          $version = "1.0.${{ github.run_number }}"
+          "VERSION = `"$version`"" | Out-File -Encoding utf8 coffee_stock\_version.py
+          "VERSION=$version" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+
       - name: Сборка
         run: |
           pyinstaller --noconfirm --onedir --windowed --name CoffeeStock --collect-data pdfminer run.py
@@ -53,7 +60,19 @@ jobs:
         run: |
           python -c "import sys; sys.frozen=True; sys.executable=r'dist\CoffeeStock\CoffeeStock.exe'; from coffee_stock import ocr; p=ocr.find_tesseract(); print(p); assert p and 'CoffeeStock' in str(p)"
 
+      - name: Архив
+        run: Compress-Archive -Path dist\CoffeeStock\* -DestinationPath dist\CoffeeStock.zip
+
       - uses: actions/upload-artifact@v4
         with:
           name: CoffeeStock
           path: coffee-stock/dist/CoffeeStock/
+
+      - name: Выпуск (Release) для автообновления
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $notes = git log -1 --pretty=%B | Select-String -NotMatch "Co-Authored-By|Claude-Session" | Out-String
+          gh release create "coffee-stock-v$env:VERSION" dist\CoffeeStock.zip `
+            --title "Учёт кофейного автомата $env:VERSION" --notes "$notes" --target "$env:GITHUB_SHA"

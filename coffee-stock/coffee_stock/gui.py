@@ -12,13 +12,14 @@ from pathlib import Path
 from PySide6.QtCore import QDate, QThread, QTimer, QUrl, Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QDesktopServices, QFont
 from PySide6.QtWidgets import (
-    QAbstractItemView, QApplication, QComboBox, QDateEdit, QDialog, QDialogButtonBox,
+    QAbstractItemView, QApplication, QCheckBox, QComboBox, QDateEdit, QDialog, QDialogButtonBox,
     QDoubleSpinBox, QFileDialog, QFormLayout, QFrame, QHBoxLayout, QHeaderView, QInputDialog, QLabel,
-    QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton, QSpinBox,
+    QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QProgressDialog, QPushButton, QSpinBox,
     QSplitter, QStyleFactory, QTableWidget, QTableWidgetItem, QTabWidget, QTextEdit, QVBoxLayout, QWidget,
 )
 
-from . import core, db, export, inbox, invoice, ocr, sales_excel, style
+from . import core, db, export, inbox, invoice, ocr, sales_excel, style, updater
+from ._version import VERSION
 
 STATUS_NAMES = {"posted": "Проведена", "review": "Нужна проверка", "error": "Не распознана",
                 "duplicate": "Повтор"}
@@ -169,6 +170,32 @@ class InboxWorker(QThread):
         finally:
             conn.close()
         self.done.emit(results)
+
+
+class UpdateCheckWorker(QThread):
+    done = Signal(object, str)  # Release | None, текст ошибки
+
+    def run(self) -> None:
+        try:
+            self.done.emit(updater.latest_release(), "")
+        except Exception as e:  # noqa: BLE001 — нет интернета и т.п.
+            self.done.emit(None, str(e))
+
+
+class DownloadWorker(QThread):
+    progress = Signal(int, int)
+    done = Signal(str, str)  # путь к архиву, текст ошибки
+
+    def __init__(self, release: "updater.Release", target: Path):
+        super().__init__()
+        self.release, self.target = release, target
+
+    def run(self) -> None:
+        try:
+            path = updater.download(self.release, self.target, lambda d, t: self.progress.emit(d, t))
+            self.done.emit(str(path), "")
+        except Exception as e:  # noqa: BLE001
+            self.done.emit("", str(e))
 
 
 # ---- Диалоги ---------------------------------------------------------------
@@ -1069,6 +1096,14 @@ class SettingsTab(QWidget):
         form.addRow("Прогноз по расходу за", self.days)
         form.addRow("Распознавание сканов (Tesseract)", tess_row)
         form.addRow("", self.ocr_status)
+        self.auto_update = QCheckBox("Проверять обновления при запуске")
+        update_row = QHBoxLayout()
+        update_row.addWidget(QLabel(f"Версия {VERSION}"))
+        update_row.addWidget(button("Проверить обновления", lambda: self.win.check_updates(manual=True),
+                                    "secondary"))
+        update_row.addStretch()
+        form.addRow("Программа", update_row)
+        form.addRow("", self.auto_update)
         form.addRow(button("Сохранить", self.save))
 
     def browse(self) -> None:
@@ -1080,6 +1115,7 @@ class SettingsTab(QWidget):
         conn = self.win.conn
         self.days.setValue(int(db.get_setting(conn, "forecast_days") or 14))
         self.tesseract.setText(db.get_setting(conn, "tesseract_path"))
+        self.auto_update.setChecked(db.get_setting(conn, "auto_update") != "0")
         exe = ocr.find_tesseract(self.tesseract.text().strip())
         self.ocr_status.setText(f"Найден: {exe}" if exe else
                                 "Tesseract не найден — сканы-картинки распознаваться не будут, только PDF с текстом.")
@@ -1088,6 +1124,7 @@ class SettingsTab(QWidget):
         conn = self.win.conn
         db.set_setting(conn, "forecast_days", str(self.days.value()))
         db.set_setting(conn, "tesseract_path", self.tesseract.text().strip())
+        db.set_setting(conn, "auto_update", "1" if self.auto_update.isChecked() else "0")
         self.win.refresh_all()
         self.win.statusBar().showMessage("Настройки сохранены", 5000)
 
@@ -1102,8 +1139,10 @@ class MainWindow(QMainWindow):
         self.conn = db.connect(self.folders.db_file)
         sales_excel.ensure_template(self.conn, self.folders.sales_file)
         self.worker: InboxWorker | None = None
+        self.update_worker: UpdateCheckWorker | None = None
+        self.download_worker: DownloadWorker | None = None
 
-        self.setWindowTitle("Учёт кофейного автомата")
+        self.setWindowTitle(f"Учёт кофейного автомата — версия {VERSION}")
         self.setWindowIcon(style.app_icon())
         self.resize(1200, 780)
         self.tabs = QTabWidget()
@@ -1132,6 +1171,8 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.tick)
         self.timer.start(CHECK_INTERVAL_MS)
         QTimer.singleShot(500, lambda: self.check_inbox(settle=3))
+        if db.get_setting(self.conn, "auto_update") != "0":
+            QTimer.singleShot(3000, lambda: self.check_updates(manual=False))
 
     def refresh_all(self) -> None:
         for tab in (self.stock_tab, self.sales_tab, self.invoices_tab, self.recipes_tab,
@@ -1211,6 +1252,70 @@ class MainWindow(QMainWindow):
             box.setModal(False)
             box.setAttribute(Qt.WA_DeleteOnClose)
             box.show()
+
+    # -- обновления
+    def check_updates(self, manual: bool) -> None:
+        if not updater.can_update():
+            if manual:
+                QMessageBox.information(self, "Обновления", "Обновление работает только в собранной программе "
+                                                           "CoffeeStock.exe под Windows.")
+            return
+        if self.update_worker is not None and self.update_worker.isRunning():
+            return
+        self.update_worker = UpdateCheckWorker()
+        self.update_worker.done.connect(lambda rel, err: self.update_checked(rel, err, manual))
+        self.update_worker.start()
+
+    def update_checked(self, release, error: str, manual: bool) -> None:
+        if error:
+            if manual:
+                QMessageBox.warning(self, "Обновления", f"Не удалось проверить обновления: {error}")
+            return
+        if release is None or not updater.is_newer(release.version):
+            if manual:
+                QMessageBox.information(self, "Обновления", f"У вас последняя версия ({VERSION}).")
+            return
+        text = f"Доступна новая версия {release.version} (у вас {VERSION})."
+        if release.notes:
+            text += "\n\nЧто нового:\n" + release.notes[:1200]
+        text += "\n\nОбновить сейчас? Программа перезапустится, данные и накладные сохранятся."
+        if QMessageBox.question(self, "Обновление программы", text) == QMessageBox.Yes:
+            self.start_update(release)
+
+    def start_update(self, release) -> None:
+        if self.worker is not None and self.worker.isRunning():
+            self.worker.wait(60_000)
+        dialog = QProgressDialog("Скачиваю обновление…", "Отмена", 0, 100, self)
+        dialog.setWindowTitle("Обновление")
+        dialog.setMinimumDuration(0)
+        dialog.setAutoClose(False)
+        target = self.folders.root / "_update" / updater.ASSET
+        self.download_worker = DownloadWorker(release, target)
+
+        def progress(done: int, total: int) -> None:
+            if total:
+                dialog.setValue(int(done * 100 / total))
+            dialog.setLabelText(f"Скачиваю обновление… {done / 1_048_576:.0f} МБ")
+
+        def finished(path: str, error: str) -> None:
+            dialog.close()
+            if dialog.wasCanceled():
+                return
+            if error:
+                QMessageBox.warning(self, "Обновление", f"Не удалось скачать обновление: {error}")
+                return
+            try:
+                updater.install(Path(path), updater.app_dir(), self.folders.db_file)
+            except Exception as e:  # noqa: BLE001
+                QMessageBox.warning(self, "Обновление", f"Не удалось установить обновление: {e}")
+                return
+            self.timer.stop()
+            QApplication.quit()
+
+        self.download_worker.progress.connect(progress)
+        self.download_worker.done.connect(finished)
+        self.download_worker.start()
+        dialog.show()
 
     def closeEvent(self, event) -> None:
         if self.worker is not None:

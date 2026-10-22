@@ -120,6 +120,7 @@ DEFAULT_RECIPES = {
 DEFAULT_SETTINGS = {
     "forecast_days": "14",
     "tesseract_path": "",
+    "auto_update": "1",
 }
 
 # Столбцы, добавленные после первой версии: старая база дополняется при запуске
