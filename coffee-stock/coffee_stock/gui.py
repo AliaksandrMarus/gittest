@@ -1193,6 +1193,8 @@ class MainWindow(QMainWindow):
         self.import_sales(manual=False)
         if seed_message:
             self.statusBar().showMessage(seed_message, 20000)
+        elif updater.can_update() and (updated := updater.finished_update(updater.app_dir())):
+            self.statusBar().showMessage(f"Программа обновлена до версии {updated}", 20000)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.tick)
         self.timer.start(CHECK_INTERVAL_MS)
@@ -1331,7 +1333,7 @@ class MainWindow(QMainWindow):
                 QMessageBox.warning(self, "Обновление", f"Не удалось скачать обновление: {error}")
                 return
             try:
-                updater.install(Path(path), updater.app_dir(), self.folders.db_file)
+                updater.install(Path(path), updater.app_dir(), self.folders.db_file, release.version)
             except Exception as e:  # noqa: BLE001
                 QMessageBox.warning(self, "Обновление", f"Не удалось установить обновление: {e}")
                 return
