@@ -222,3 +222,15 @@ def test_ocr_cleanups():
     assert invoice.unit_factor("lut", "шт") == 1 and invoice.unit_factor("kt", "г") == 1000
     line = invoice._make_line({"name": "2 Стакан бумажный 250 мл", "qty": "10"})
     assert line.name == "Стакан бумажный 250 мл"
+
+
+def test_quantity_and_price_are_checked_against_amount():
+    assert invoice.reconcile(9.9, 2.0, 11.0) == (5.5, 2.0)   # цифра количества прочитана неверно
+    assert invoice.reconcile(3, 46.0, 135.0) == (3, 45.0)    # цифра цены прочитана неверно
+    assert invoice.reconcile(3, 45.0, 135.0) == (3, 45.0)    # всё сходится
+    assert invoice.reconcile(7, 3.0, 10.0) == (7, 3.0)       # непонятно, что исправлять, — не трогаем
+    line = invoice._make_line({"name": "Сахар-песок", "unit": "kt", "qty": "9,9", "price": "2,00",
+                               "vat": "2,20", "total": "13,20"})
+    assert (line.qty, line.unit, line.price) == (5.5, "кг", 2.0)
+    assert invoice._make_line({"name": "Стаканы", "unit": "lut", "qty": "1"}).unit == "шт"
+    assert invoice._make_line({"name": "Стаканы", "unit": "уп", "qty": "1"}).unit == "уп"

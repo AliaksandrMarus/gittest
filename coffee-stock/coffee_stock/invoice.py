@@ -195,11 +195,45 @@ def _make_line(cells: dict[str, str]) -> Line | None:
         return None
     price, vat = parse_number(cells.get("price")), parse_number(cells.get("vat"))
     total, amount = parse_number(cells.get("total")), parse_number(cells.get("amount"))
+    if amount is None and total is not None and vat is not None:
+        # Без колонки НДС нельзя понять, есть ли он в сумме, — тогда не сверяем
+        amount = round(total - vat, 2)
+    qty, price = reconcile(qty, price, amount)
     if total is None:
         base = amount if amount is not None else (qty * price if price is not None else None)
         if base is not None:
             total = round(base + (vat or 0), 2)
-    return Line(name, qty, (cells.get("unit") or "").strip(), price, vat, total)
+    unit = (cells.get("unit") or "").strip()
+    if unit_key(unit) in CANONICAL_UNITS:
+        unit = unit_key(unit)  # «kt», «КГ» → «кг»
+    return Line(name, qty, unit, price, vat, total)
+
+
+CANONICAL_UNITS = {"кг", "г", "л", "мл", "шт"}
+
+
+def _has_decimals(value: float, digits: int) -> bool:
+    return abs(value * 10 ** digits - round(value * 10 ** digits)) < 1e-6
+
+
+def reconcile(qty: float, price: float | None, amount: float | None) -> tuple[float, float | None]:
+    """Сверяет «количество × цена = стоимость» и исправляет неверно прочитанную цифру.
+
+    Если произведение расходится со стоимостью, ошибка в количестве или в цене:
+    берём тот вариант, который даёт правдоподобное число (количество до 3 знаков,
+    цена до 2 знаков после запятой). Иначе оставляем как есть — строку проверит человек.
+    """
+    if not price or not amount or price <= 0 or amount <= 0:
+        return qty, price
+    if abs(qty * price - amount) <= max(0.01 * amount, 0.01):
+        return qty, price
+    new_qty = amount / price
+    if _has_decimals(new_qty, 3):
+        return round(new_qty, 3), price
+    new_price = amount / qty
+    if _has_decimals(new_price, 2):
+        return qty, round(new_price, 2)
+    return qty, price
 
 
 def lines_from_table(table: list[list]) -> list[Line]:
