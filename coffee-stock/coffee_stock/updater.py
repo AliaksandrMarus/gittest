@@ -122,6 +122,7 @@ def prepare(zip_path: Path, root: Path) -> Path:
 
 
 LOG_NAME = "Обновление.log"
+EXIT_WAIT = 20  # сколько секунд ждать, пока старая версия закроется сама
 FINISH_FLAG = "--finish-update"
 
 
@@ -146,24 +147,58 @@ def install(zip_path: Path, root: Path, db_file: Path, version: str = "") -> Non
     _spawn([str(staging / "CoffeeStock.exe"), FINISH_FLAG, str(root), str(os.getpid()), version], staging)
 
 
-def wait_for_exit(pid: int, timeout: float = 60) -> None:
-    """Ждёт, пока процесс завершится (не дольше timeout секунд)."""
+def wait_for_exit(pid: int, timeout: float = 60) -> bool:
+    """Ждёт, пока процесс завершится (не дольше timeout секунд). True — процесс завершился."""
     deadline = time.monotonic() + timeout
     if os.name == "nt":
         import ctypes
 
         kernel32 = ctypes.windll.kernel32
         handle = kernel32.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE
+        if not handle:
+            return True  # процесса уже нет
+        try:
+            return kernel32.WaitForSingleObject(handle, int(timeout * 1000)) == 0  # WAIT_OBJECT_0
+        finally:
+            kernel32.CloseHandle(handle)
+    while time.monotonic() < deadline:
+        if not _alive(pid):
+            return True
+        time.sleep(0.2)
+    return not _alive(pid)
+
+
+def _alive(pid: int) -> bool:
+    try:
+        reaped, _ = os.waitpid(pid, os.WNOHANG)  # свой дочерний процесс-«зомби» тоже считается завершённым
+        if reaped:
+            return False
+    except (ChildProcessError, OSError):
+        pass
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
+
+def terminate(pid: int) -> None:
+    """Принудительно закрывает процесс (старая версия программы, которая не закрылась сама)."""
+    if os.name == "nt":
+        import ctypes
+
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.OpenProcess(0x0001 | 0x00100000, False, pid)  # PROCESS_TERMINATE | SYNCHRONIZE
         if handle:
-            kernel32.WaitForSingleObject(handle, int(timeout * 1000))
+            kernel32.TerminateProcess(handle, 1)
             kernel32.CloseHandle(handle)
         return
-    while time.monotonic() < deadline:
-        try:
-            os.kill(pid, 0)
-        except OSError:
-            return
-        time.sleep(0.5)
+    import signal
+
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except OSError:
+        pass
 
 
 def _remove(path: Path, attempts: int = 10) -> None:
@@ -192,7 +227,10 @@ def finish_update(root: Path, staging: Path, pid: int, version: str = "") -> Non
 
     log.write_text(f"обновление до версии {version}\n", encoding="utf-8")
     try:
-        wait_for_exit(pid)
+        if not wait_for_exit(pid, EXIT_WAIT):
+            note("программа не закрылась сама — закрываю её")
+            terminate(pid)
+            wait_for_exit(pid, 10)
         note("программа закрыта")
         for part in PROGRAM_PARTS:
             _remove(root / part)
@@ -240,3 +278,19 @@ def finished_update(root: Path) -> str | None:
         return None
     log.unlink(missing_ok=True)
     return VERSION
+
+
+def failed_update(root: Path) -> str | None:
+    """Текст «Обновление.log», если обновление закончилось ошибкой (лог убирается)."""
+    log = root / LOG_NAME
+    if not log.exists():
+        return None
+    try:
+        text = log.read_text(encoding="utf-8", errors="replace").strip()
+    except OSError:
+        return None
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    if not lines or lines[-1] == "готово" or not any(l.startswith("ошибка") for l in lines):
+        return None
+    log.unlink(missing_ok=True)
+    return text

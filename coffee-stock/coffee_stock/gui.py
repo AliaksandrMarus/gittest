@@ -1321,6 +1321,12 @@ class MainWindow(QMainWindow):
             updater.cleanup_after_update(updater.app_dir())
             if not seed_message and (updated := updater.finished_update(updater.app_dir())):
                 self.statusBar().showMessage(f"Программа обновлена до версии {updated}", 20000)
+            elif failed := updater.failed_update(updater.app_dir()):
+                QTimer.singleShot(1000, lambda: QMessageBox.warning(
+                    self, "Обновление не удалось",
+                    "Программа осталась прежней версии, данные не тронуты.\n\n" + failed[-1500:] +
+                    "\n\nПопробуйте ещё раз (Настройки → «Проверить обновления») или скачайте CoffeeStock.zip "
+                    "с GitHub (раздел Releases) и распакуйте поверх папки программы."))
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.tick)
         self.timer.start(CHECK_INTERVAL_MS)
@@ -1492,6 +1498,13 @@ class MainWindow(QMainWindow):
                 QMessageBox.warning(self, "Обновление", f"Не удалось установить обновление: {e}")
                 return
             self.timer.stop()
+            # Новая версия ждёт, пока эта закроется. Если цикл событий не завершится сам
+            # (открытый диалог, поток), выходим принудительно — данные в базе уже записаны.
+            if self.worker is not None:
+                self.worker.wait(30_000)
+            self.conn.close()
+            QTimer.singleShot(1500, lambda: os._exit(0))
+            QApplication.closeAllWindows()
             QApplication.quit()
 
         self.download_worker.progress.connect(progress)

@@ -77,7 +77,7 @@ def test_finish_update_replaces_program_keeps_data_and_restarts(tmp_path, monkey
     (staging / "CoffeeStock.exe").write_text("new exe", encoding="utf-8")
     started = {}
     monkeypatch.setattr(updater.subprocess, "Popen", lambda args, **kw: started.update(args=args, **kw))
-    monkeypatch.setattr(updater, "wait_for_exit", lambda pid, timeout=60: None)
+    monkeypatch.setattr(updater, "wait_for_exit", lambda pid, timeout=60: True)
     monkeypatch.setattr(updater, "VERSION", "1.0.12")
 
     updater.finish_update(root, staging, 123, "1.0.12")
@@ -91,7 +91,45 @@ def test_finish_update_replaces_program_keeps_data_and_restarts(tmp_path, monkey
 
 
 def test_wait_for_exit_returns_for_missing_process():
-    updater.wait_for_exit(999999, timeout=2)
+    assert updater.wait_for_exit(999999, timeout=2)
+
+
+def test_finish_update_closes_old_version_that_hangs(tmp_path, monkeypatch):
+    """Старая версия не закрылась сама (завис цикл событий) — новая закрывает её и всё равно обновляет."""
+    import subprocess
+    import sys
+
+    root = tmp_path / "Кофеаппарат"
+    root.mkdir()
+    (root / "CoffeeStock.exe").write_text("old exe", encoding="utf-8")
+    staging = root / "_update" / "new"
+    staging.mkdir(parents=True)
+    (staging / "CoffeeStock.exe").write_text("new exe", encoding="utf-8")
+    hung = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])
+    started = {}
+    monkeypatch.setattr(updater.subprocess, "Popen", lambda args, **kw: started.update(args=args, **kw))
+    monkeypatch.setattr(updater, "EXIT_WAIT", 1)
+    monkeypatch.setattr(updater, "VERSION", "1.0.15")
+    try:
+        updater.finish_update(root, staging, hung.pid, "1.0.15")
+        assert hung.wait(timeout=10) is not None  # процесс закрыт
+    finally:
+        if hung.poll() is None:
+            hung.kill()
+    log = (root / updater.LOG_NAME).read_text(encoding="utf-8")
+    assert "не закрылась сама" in log
+    assert (root / "CoffeeStock.exe").read_text(encoding="utf-8") == "new exe"
+    assert started["args"] == [str(root / "CoffeeStock.exe")]
+    assert updater.finished_update(root) == "1.0.15"
+
+
+def test_failed_update_is_reported(tmp_path):
+    (tmp_path / updater.LOG_NAME).write_text("обновление до версии 1.0.15\nошибка: не удалось удалить _internal\n",
+                                             encoding="utf-8")
+    assert "не удалось удалить" in updater.failed_update(tmp_path)
+    assert not (tmp_path / updater.LOG_NAME).exists()
+    (tmp_path / updater.LOG_NAME).write_text("обновление до версии 1.0.15\nготово\n", encoding="utf-8")
+    assert updater.failed_update(tmp_path) is None
 
 
 def test_finished_update_message(tmp_path, monkeypatch):
