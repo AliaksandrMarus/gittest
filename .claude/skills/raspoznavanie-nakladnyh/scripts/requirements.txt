@@ -1,0 +1,9 @@
+pdfplumber>=0.11
+pypdfium2>=4.30
+numpy>=1.26
+Pillow>=10
+# карточка накладной (invoice_kit/editor.py)
+PySide6>=6.7
+# тесты
+pytest>=8
+reportlab>=4
