@@ -9,6 +9,7 @@
 Формат:
 {
   "ingredients": [{"name": "Кофе в зёрнах", "unit": "г", "min_stock": 2000}, ...],
+      ("in_portions": false — второстепенный, не ограничивает порции; по умолчанию так для палочек и крышек)
   "drinks": [{"name": "Капучино", "price": 3.5, "recipe": {"Кофе в зёрнах": 12, ...}}, ...],
   "invoices": [{"number": "...", "date": "2026-06-17", "supplier": "...", "file": "...",
                 "lines": [{"name": "...", "qty": 10, "unit": "шт", "price": 40.00, "vat": 80.00,
@@ -70,8 +71,10 @@ def apply(conn: sqlite3.Connection, data: dict, sales_file: Path | None = None) 
         for table in ("recipe", "movements", "invoice_lines", "invoices", "aliases", "sales", "drinks",
                       "ingredients"):
             conn.execute(f"DELETE FROM {table}")
-        conn.executemany("INSERT INTO ingredients(name, unit, min_stock) VALUES (?, ?, ?)",
-                         [(i["name"], i["unit"], i.get("min_stock", 0)) for i in data["ingredients"]])
+        conn.executemany("INSERT INTO ingredients(name, unit, min_stock, in_portions) VALUES (?, ?, ?, ?)",
+                         [(i["name"], i["unit"], i.get("min_stock", 0),
+                           int(i.get("in_portions", not db.is_secondary(i["name"]))))
+                          for i in data["ingredients"]])
         ing = {r["name"]: r["id"] for r in conn.execute("SELECT id, name FROM ingredients")}
         for d in data["drinks"]:
             drink_id = conn.execute("INSERT INTO drinks(name, price) VALUES (?, ?)",

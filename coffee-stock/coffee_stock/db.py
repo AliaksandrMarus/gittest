@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS ingredients (
     id        INTEGER PRIMARY KEY,
     name      TEXT NOT NULL UNIQUE,
     unit      TEXT NOT NULL,
-    min_stock REAL NOT NULL DEFAULT 0
+    min_stock REAL NOT NULL DEFAULT 0,
+    in_portions INTEGER NOT NULL DEFAULT 1  -- 0: второстепенный (палочки, крышки) — не ограничивает порции
 );
 
 CREATE TABLE IF NOT EXISTS drinks (
@@ -108,13 +109,13 @@ DEFAULT_INGREDIENTS = [
 DEFAULT_PRICES = {"Эспрессо": 2.5, "Американо": 2.5, "Капучино": 3.5, "Латте": 3.5, "Горячий шоколад": 3.0}
 
 DEFAULT_RECIPES = {
-    "Эспрессо": {"Кофе в зёрнах": 8, "Сахар": 5, "Стаканчики": 1, "Палочки для размешивания": 1},
-    "Американо": {"Кофе в зёрнах": 8, "Сахар": 5, "Стаканчики": 1, "Палочки для размешивания": 1},
+    "Эспрессо": {"Кофе в зёрнах": 8, "Сахар": 5, "Стаканчики": 1, "Палочки для размешивания": 0.5},
+    "Американо": {"Кофе в зёрнах": 8, "Сахар": 5, "Стаканчики": 1, "Палочки для размешивания": 0.5},
     "Капучино": {"Кофе в зёрнах": 8, "Молоко сухое": 10, "Сахар": 5, "Стаканчики": 1,
-                 "Палочки для размешивания": 1},
+                 "Палочки для размешивания": 0.5},
     "Латте": {"Кофе в зёрнах": 8, "Молоко сухое": 14, "Сахар": 5, "Стаканчики": 1,
-              "Палочки для размешивания": 1},
-    "Горячий шоколад": {"Шоколад": 25, "Сахар": 3, "Стаканчики": 1, "Палочки для размешивания": 1},
+              "Палочки для размешивания": 0.5},
+    "Горячий шоколад": {"Шоколад": 25, "Сахар": 3, "Стаканчики": 1, "Палочки для размешивания": 0.5},
 }
 
 DEFAULT_SETTINGS = {
@@ -125,6 +126,7 @@ DEFAULT_SETTINGS = {
 
 # Столбцы, добавленные после первой версии: старая база дополняется при запуске
 MIGRATIONS = {
+    "ingredients": [("in_portions", "INTEGER NOT NULL DEFAULT 1")],
     "drinks": [("price", "REAL NOT NULL DEFAULT 0")],
     "sales": [("price", "REAL NOT NULL DEFAULT 0")],
     "invoice_lines": [("price", "REAL"), ("vat", "REAL"), ("total", "REAL")],
@@ -148,7 +150,23 @@ def _migrate(conn: sqlite3.Connection) -> None:
         for name, decl in columns:
             if name not in have:
                 conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
+                if (table, name) == ("ingredients", "in_portions"):
+                    mark_secondary(conn)
     conn.commit()
+
+
+SECONDARY_WORDS = ("палоч", "размешив", "крышк")
+
+
+def is_secondary(name: str) -> bool:
+    return any(w in name.lower() for w in SECONDARY_WORDS)
+
+
+def mark_secondary(conn: sqlite3.Connection) -> None:
+    """Палочки и крышки берут не все — они не должны ограничивать число порций.
+    (lower() в SQLite не понимает русские буквы, поэтому проверяем в Python.)"""
+    ids = [(r[0],) for r in conn.execute("SELECT id, name FROM ingredients") if is_secondary(r[1])]
+    conn.executemany("UPDATE ingredients SET in_portions = 0 WHERE id = ?", ids)
 
 
 def _seed(conn: sqlite3.Connection) -> None:
@@ -157,6 +175,7 @@ def _seed(conn: sqlite3.Connection) -> None:
         conn.executemany(
             "INSERT INTO ingredients(name, unit, min_stock) VALUES (?, ?, ?)", DEFAULT_INGREDIENTS
         )
+        mark_secondary(conn)
         ing = {r["name"]: r["id"] for r in conn.execute("SELECT id, name FROM ingredients")}
         for drink, parts in DEFAULT_RECIPES.items():
             drink_id = conn.execute("INSERT INTO drinks(name, price) VALUES (?, ?)",

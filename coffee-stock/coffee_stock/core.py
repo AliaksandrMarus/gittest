@@ -103,6 +103,7 @@ class ForecastRow:
     per_day: float
     days_left: float | None  # None — расхода не было, прогноз невозможен
     run_out: str | None
+    secondary: bool = False  # палочки, крышки: учитываются в остатках, но не ограничивают порции
 
     @property
     def low(self) -> bool:
@@ -134,7 +135,7 @@ def forecast(conn: sqlite3.Connection, window_days: int) -> list[ForecastRow]:
 
     current = stock(conn)
     rows = []
-    for ing in conn.execute("SELECT id, name, unit, min_stock FROM ingredients ORDER BY name"):
+    for ing in conn.execute("SELECT id, name, unit, min_stock, in_portions FROM ingredients ORDER BY name"):
         qty = current.get(ing["id"], 0.0)
         per_day = used.get(ing["id"], 0.0)
         days_left = run_out = None
@@ -142,26 +143,52 @@ def forecast(conn: sqlite3.Connection, window_days: int) -> list[ForecastRow]:
             days_left = max(qty, 0) / per_day
             run_out = (date.today() + timedelta(days=int(days_left))).isoformat()
         rows.append(ForecastRow(ing["id"], ing["name"], ing["unit"], qty, ing["min_stock"],
-                                per_day, days_left, run_out))
+                                per_day, days_left, run_out, not ing["in_portions"]))
     return rows
 
 
-def portions_left(conn: sqlite3.Connection) -> list[tuple[str, int, str]]:
-    """Сколько порций каждого напитка ещё можно приготовить и что закончится первым."""
+@dataclass
+class PortionsRow:
+    drink: str
+    portions: int
+    limit: str  # ингредиент, который закончится первым
+    per_day: float  # средние продажи напитка в день за окно прогноза
+    days_left: float | None
+
+
+def portions_left(conn: sqlite3.Connection, window_days: int = 14) -> list[PortionsRow]:
+    """Сколько порций каждого напитка ещё можно приготовить и что закончится первым.
+
+    Второстепенные ингредиенты (палочки, крышки — их берут не все) не учитываются.
+    Сначала напитки, которых осталось меньше всего.
+    """
     current = stock(conn)
+    sold: dict[int, float] = {}
+    end = last_sales_date(conn)
+    if end:
+        start = (date.fromisoformat(end) - timedelta(days=max(1, window_days) - 1)).isoformat()
+        start = max(start, conn.execute("SELECT MIN(date) FROM sales").fetchone()[0])
+        span = (date.fromisoformat(end) - date.fromisoformat(start)).days + 1
+        for r in conn.execute("SELECT drink_id, SUM(count) FROM sales WHERE date BETWEEN ? AND ? "
+                              "GROUP BY drink_id", (start, end)):
+            sold[r[0]] = r[1] / span
     result = []
     for d in conn.execute("SELECT id, name FROM drinks ORDER BY name"):
         best: tuple[float, str] | None = None
         for r in conn.execute(
             "SELECT r.ingredient_id, r.qty, i.name FROM recipe r "
-            "JOIN ingredients i ON i.id = r.ingredient_id WHERE r.drink_id = ? AND r.qty > 0",
+            "JOIN ingredients i ON i.id = r.ingredient_id "
+            "WHERE r.drink_id = ? AND r.qty > 0 AND i.in_portions = 1",
             (d["id"],),
         ):
             n = max(current.get(r["ingredient_id"], 0.0), 0) / r["qty"]
             if best is None or n < best[0]:
                 best = (n, r["name"])
         if best is not None:
-            result.append((d["name"], int(best[0]), best[1]))
+            per_day = sold.get(d["id"], 0.0)
+            result.append(PortionsRow(d["name"], int(best[0]), best[1], per_day,
+                                      best[0] / per_day if per_day else None))
+    result.sort(key=lambda r: (r.portions, r.drink))
     return result
 
 
@@ -243,7 +270,7 @@ def summary(conn: sqlite3.Connection, window_days: int) -> Summary:
     month_start = date.today().replace(day=1).isoformat()
     r = conn.execute("SELECT COALESCE(SUM(count * price), 0), COALESCE(SUM(count), 0) FROM sales "
                      "WHERE date >= ?", (month_start,)).fetchone()
-    low = sum(1 for f in forecast(conn, window_days) if f.low)
+    low = sum(1 for f in forecast(conn, window_days) if f.low and not f.secondary)
     return Summary(last, day_money, day_count, r[0], r[1], low)
 
 

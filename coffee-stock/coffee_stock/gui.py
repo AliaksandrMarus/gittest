@@ -200,6 +200,54 @@ class DownloadWorker(QThread):
 
 # ---- Диалоги ---------------------------------------------------------------
 
+class SalesPreviewDialog(QDialog):
+    """Что программа нашла в Excel-файле продаж — перед записью в базу."""
+
+    def __init__(self, conn: sqlite3.Connection, path: Path, data: sales_excel.WorkbookSales, parent=None):
+        super().__init__(parent)
+        self.conn, self.data = conn, data
+        self.setWindowTitle(f"Продажи из файла «{path.name}»")
+        self.resize(900, 640)
+        layout = QVBoxLayout(self)
+        sheets = ", ".join(f"«{s.title}» ({s.kind}, дней {len(s.values)})" for s in data.sheets)
+        layout.addWidget(label(f"Найдено на листах: {sheets}", "hint"))
+        self.cumulative = QCheckBox("В файле показания счётчиков автомата нарастающим итогом "
+                                    "(продажи за день = показание − предыдущее показание)")
+        self.cumulative.setChecked(data.cumulative)
+        self.cumulative.setEnabled(any(s.kind == "таблица" for s in data.sheets))
+        self.cumulative.toggled.connect(self.show_days)
+        layout.addWidget(self.cumulative)
+        self.table = make_table()
+        layout.addWidget(self.table, 1)
+        self.notes = label("", "hint")
+        self.notes.setWordWrap(True)
+        layout.addWidget(self.notes)
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.button(QDialogButtonBox.Ok).setText("Загрузить продажи")
+        buttons.button(QDialogButtonBox.Cancel).setText("Отмена")
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+        self.daily: dict[str, dict[int, int]] = {}
+        self.show_days()
+
+    def show_days(self) -> None:
+        drinks = [(r["id"], r["name"]) for r in self.conn.execute("SELECT id, name FROM drinks ORDER BY id")]
+        tables = any(s.kind == "таблица" for s in self.data.sheets)
+        self.daily, notes = self.data.daily(self.cumulative.isChecked() if tables else None)
+        rows, totals = [], [0] * len(drinks)
+        for day in sorted(self.daily, reverse=True):
+            counts = [self.daily[day].get(d, 0) for d, _ in drinks]
+            totals = [a + b for a, b in zip(totals, counts)]
+            rows.append([day] + [n or "" for n in counts] + [sum(counts)])
+        rows.append(["Итого"] + totals + [sum(totals)])
+        fill_table(self.table, ["Дата"] + [n for _, n in drinks] + ["Всего"], rows, bold_last=True)
+        self.notes.setText("\n".join((self.data.errors + notes)[:12]))
+
+    def daily_sales(self) -> dict[str, dict[int, int]]:
+        return self.daily
+
+
 class InventoryDialog(QDialog):
     def __init__(self, conn: sqlite3.Connection, parent=None):
         super().__init__(parent)
@@ -481,6 +529,8 @@ class StockTab(QWidget):
         self.table = make_table()
         layout.addWidget(self.table, 3)
         layout.addWidget(label("Сколько порций ещё можно приготовить", "title"))
+        self.portions_info = label("", "hint")
+        layout.addWidget(self.portions_info)
         self.portions = make_table()
         layout.addWidget(self.portions, 2)
 
@@ -505,17 +555,33 @@ class StockTab(QWidget):
                    [[r.name, r.unit, r.stock, r.min_stock, round(r.per_day, 2),
                      "—" if r.days_left is None else int(r.days_left), r.run_out or "—"] for r in rows])
         for i, r in enumerate(rows):
-            if r.low:
+            if r.low and not r.secondary:
                 color_row(self.table, i, RED)
-            elif r.days_left is not None and r.days_left < 7:
+            elif r.low or (r.days_left is not None and r.days_left < 7):
                 color_row(self.table, i, YELLOW)
         last = core.last_sales_date(conn)
         self.info.setText(
             f"Прогноз по среднему расходу за {days} дн. "
             + (f"Продажи внесены по {fmt(last)}. " if last else "Продаж пока нет. ")
-            + "Красным — меньше минимального запаса или на 1–2 дня, жёлтым — меньше чем на неделю.")
-        fill_table(self.portions, ["Напиток", "Порций", "Первым закончится"],
-                   [list(p) for p in core.portions_left(conn)])
+            + "Красным — меньше минимального запаса или на 1–2 дня, жёлтым — меньше чем на неделю "
+              "(второстепенные — палочки, крышки — только жёлтым).")
+        portions = core.portions_left(conn, days)
+        fill_table(self.portions, ["Напиток", "Порций", "Продаётся в день", "Хватит на дней", "Ограничивает"],
+                   [[p.drink, p.portions, round(p.per_day, 1) if p.per_day else "—",
+                     "—" if p.days_left is None else int(p.days_left), p.limit] for p in portions])
+        for i, p in enumerate(portions):
+            if p.days_left is not None and p.days_left < 3:
+                color_row(self.portions, i, RED)
+            elif p.days_left is not None and p.days_left < 7:
+                color_row(self.portions, i, YELLOW)
+            elif not p.per_day:
+                for c in range(self.portions.columnCount()):
+                    if item := self.portions.item(i, c):
+                        item.setForeground(QBrush(QColor("#9E8E80")))
+        secondary = [r[0] for r in conn.execute("SELECT name FROM ingredients WHERE in_portions = 0 ORDER BY name")]
+        self.portions_info.setText(
+            "По главным ингредиентам; сначала то, чего осталось меньше всего. Серым — напитки без продаж "
+            f"за {days} дн." + (f" Не учитываются: {', '.join(secondary).lower()}." if secondary else ""))
 
     def inventory(self) -> None:
         dlg = InventoryDialog(self.win.conn, self)
@@ -536,22 +602,61 @@ class SalesTab(QWidget):
         layout.addWidget(label(
             f"Файл продаж: {win.folders.sales_file}\n"
             "Каждый день впишите количество проданных напитков и сохраните файл — программа подхватит "
-            "изменения сама. Сумма считается по цене напитка на вкладке «Рецепты и цены».", "hint"))
+            "изменения сама. Сумма считается по цене напитка на вкладке «Рецепты и цены».\n"
+            "Ведёте свой Excel (показания автомата по дням, в том числе нарастающим итогом, или «Отчёт по "
+            "реализации»)? Нажмите «Загрузить Excel с автомата…» — программа разберёт его сама.", "hint"))
         buttons = QHBoxLayout()
         buttons.addWidget(button("Открыть файл продаж", self.open_file))
         buttons.addWidget(button("Загрузить продажи сейчас", lambda: self.win.import_sales(manual=True),
                                  "secondary"))
+        buttons.addWidget(button("Загрузить Excel с автомата…", self.load_workbook))
         buttons.addStretch()
         layout.addLayout(buttons)
         layout.addWidget(label("Последние 31 день", "title"))
         self.table = make_table()
         layout.addWidget(self.table)
 
+        self.source = label("", "hint")
+        layout.insertWidget(2, self.source)
+
     def open_file(self) -> None:
         sales_excel.ensure_template(self.win.conn, self.win.folders.sales_file)
         open_path(self.win.folders.sales_file)
 
+    def load_workbook(self) -> None:
+        conn = self.win.conn
+        start = db.get_setting(conn, "sales_source") or str(self.win.folders.root)
+        path, _ = QFileDialog.getOpenFileName(self, "Excel-файл с продажами", start, "Excel (*.xlsx *.xlsm)")
+        if not path:
+            return
+        path = Path(path)
+        try:
+            data = sales_excel.read_workbook(conn, path)
+        except PermissionError:
+            QMessageBox.warning(self, "Продажи", "Файл занят другой программой. Сохраните его в Excel и повторите.")
+            return
+        except Exception as e:  # noqa: BLE001
+            QMessageBox.warning(self, "Продажи", f"Не удалось прочитать файл: {e}")
+            return
+        if not data.sheets:
+            QMessageBox.warning(self, "Продажи", "\n".join(data.errors))
+            return
+        dlg = SalesPreviewDialog(conn, path, data, self)
+        if not dlg.exec():
+            return
+        days = sales_excel.apply_daily(conn, dlg.daily_sales())
+        db.set_setting(conn, "sales_source", str(path))
+        db.set_setting(conn, "sales_source_cumulative", "1" if dlg.cumulative.isChecked() else "0")
+        db.set_setting(conn, "sales_source_mtime", str(path.stat().st_mtime))
+        self.win.refresh_all()
+        self.win.statusBar().showMessage(
+            f"Продажи загружены: дней {len(days)}" + (f" (по {fmt(days[-1])})" if days else "")
+            + ". Когда файл изменится, программа перечитает его сама.", 12000)
+
     def refresh(self) -> None:
+        source = db.get_setting(self.win.conn, "sales_source")
+        self.source.setText(f"Ваш файл с автомата: {source} — перечитывается сам после каждого сохранения."
+                            if source else "")
         end = date.today()
         start = date.fromordinal(end.toordinal() - 30)
         header, rows = core.report_sales_by_day(self.win.conn, start.isoformat(), end.isoformat())
@@ -782,7 +887,10 @@ class RecipesTab(QWidget):
         right.addWidget(button("Пересчитать расход за все дни по текущим рецептам", self.recompute, "secondary"))
 
         right.addWidget(label("Ингредиенты", "title"))
-        right.addWidget(label("Двойной щелчок — изменить название, единицу или минимальный запас.", "hint"))
+        right.addWidget(label("Двойной щелчок — изменить название, единицу или минимальный запас. Галочку "
+                              "«Учитывать в расчёте порций» снимите у того, что берут не все (палочки, крышки): "
+                              "такой ингредиент списывается и приходуется, но не ограничивает число порций.",
+                              "hint"))
         self.ingredients = make_table()
         self.ingredients.itemChanged.connect(self.ingredient_edited)
         right.addWidget(self.ingredients, 2)
@@ -808,16 +916,23 @@ class RecipesTab(QWidget):
         if self.drinks.currentItem() is None and self.drinks.count():
             self.drinks.setCurrentRow(0)
         self.drinks.blockSignals(False)
-        rows = self.win.conn.execute("SELECT id, name, unit, min_stock FROM ingredients ORDER BY name").fetchall()
+        rows = self.win.conn.execute(
+            "SELECT id, name, unit, min_stock, in_portions FROM ingredients ORDER BY name").fetchall()
         self.ingredients.clear()
-        self.ingredients.setColumnCount(3)
-        self.ingredients.setHorizontalHeaderLabels(["Название", "Единица (г, мл, шт)", "Мин. запас"])
+        self.ingredients.setColumnCount(4)
+        self.ingredients.setHorizontalHeaderLabels(["Название", "Единица (г, мл, шт)", "Мин. запас",
+                                                    "Учитывать в расчёте порций"])
         self.ingredients.setRowCount(len(rows))
         for i, r in enumerate(rows):
             for c, v in enumerate((r["name"], r["unit"], fmt(r["min_stock"]))):
                 item = QTableWidgetItem(v)
                 item.setData(Qt.UserRole, r["id"])
                 self.ingredients.setItem(i, c, item)
+            item = QTableWidgetItem("да" if r["in_portions"] else "нет — второстепенный")
+            item.setFlags((item.flags() | Qt.ItemIsUserCheckable) & ~Qt.ItemIsEditable)
+            item.setCheckState(Qt.Checked if r["in_portions"] else Qt.Unchecked)
+            item.setData(Qt.UserRole, r["id"])
+            self.ingredients.setItem(i, 3, item)
         self.ingredients.resizeColumnsToContents()
         self.loading = False
         self.show_recipe()
@@ -906,6 +1021,12 @@ class RecipesTab(QWidget):
 
     def ingredient_edited(self, item: QTableWidgetItem) -> None:
         if self.loading:
+            return
+        if item.column() == 3:
+            with self.win.conn:
+                self.win.conn.execute("UPDATE ingredients SET in_portions = ? WHERE id = ?",
+                                      (int(item.checkState() == Qt.Checked), item.data(Qt.UserRole)))
+            self.win.refresh_all()
             return
         column = ("name", "unit", "min_stock")[item.column()]
         value: object = item.text().strip()
@@ -1214,6 +1335,7 @@ class MainWindow(QMainWindow):
 
     def tick(self) -> None:
         self.import_sales(manual=False)
+        self.import_source()
         self.check_inbox(settle=3)
 
     # -- продажи
@@ -1247,6 +1369,26 @@ class MainWindow(QMainWindow):
                 self.invoices_tab.add_log("Продажи: " + "; ".join(result.errors[:5]))
         elif manual:
             QMessageBox.information(self, "Продажи", msg)
+        self.refresh_all()
+
+    def import_source(self) -> None:
+        """Перечитать Excel-файл пользователя, если он изменился (выбран в «Загрузить Excel с автомата…»)."""
+        source = db.get_setting(self.conn, "sales_source")
+        path = Path(source) if source else None
+        if path is None or not path.exists():
+            return
+        mtime = str(path.stat().st_mtime)
+        if db.get_setting(self.conn, "sales_source_mtime") == mtime:
+            return
+        try:
+            result = sales_excel.import_workbook(
+                self.conn, path, db.get_setting(self.conn, "sales_source_cumulative") == "1")
+        except Exception:  # noqa: BLE001 — файл ещё сохраняется или открыт; попробуем при следующей проверке
+            return
+        db.set_setting(self.conn, "sales_source_mtime", mtime)
+        self.statusBar().showMessage(f"Продажи из «{path.name}» обновлены: дней {len(result.days)}", 10000)
+        if result.errors:
+            self.invoices_tab.add_log("Продажи: " + "; ".join(result.errors[:5]))
         self.refresh_all()
 
     # -- накладные

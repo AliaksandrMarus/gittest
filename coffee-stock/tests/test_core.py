@@ -66,8 +66,28 @@ def test_portions_left_names_bottleneck(conn):
         core.add_movement(conn, "2026-10-01", ing["Сахар"], 1000, "initial")
         core.add_movement(conn, "2026-10-01", ing["Стаканчики"], 10, "initial")
         core.add_movement(conn, "2026-10-01", ing["Палочки для размешивания"], 100, "initial")
-    left = {name: (n, what) for name, n, what in core.portions_left(conn)}
+    left = {r.drink: (r.portions, r.limit) for r in core.portions_left(conn)}
     assert left["Горячий шоколад"] == (10, "Стаканчики")
+
+
+def test_stirrers_do_not_limit_portions_or_raise_alarm(conn):
+    """Палочку берёт примерно каждый второй: норма 0,5, порции и карточку «Заканчивается» она не трогает."""
+    ing, drk = ids(conn, "ingredients"), ids(conn, "drinks")
+    with conn:
+        for name in ("Шоколад", "Сахар"):
+            core.add_movement(conn, "2026-10-01", ing[name], 1000, "initial")
+        core.add_movement(conn, "2026-10-01", ing["Стаканчики"], 200, "initial")
+        core.add_movement(conn, "2026-10-01", ing["Палочки для размешивания"], 2, "initial")
+        core.set_sales_for_date(conn, "2026-10-02", {drk["Горячий шоколад"]: 4})
+    assert core.stock(conn)[ing["Палочки для размешивания"]] == 0  # 2 − 4 × 0,5
+    left = {r.drink: r for r in core.portions_left(conn)}
+    assert (left["Горячий шоколад"].portions, left["Горячий шоколад"].limit) == (36, "Шоколад")
+    assert left["Горячий шоколад"].per_day == 4
+    assert left["Горячий шоколад"].days_left == pytest.approx(900 / 25 / 4)
+    rows = {r.name: r for r in core.forecast(conn, 14)}
+    assert rows["Палочки для размешивания"].low and rows["Палочки для размешивания"].secondary
+    low_main = sum(1 for r in rows.values() if r.low and not r.secondary)
+    assert core.summary(conn, 14).low_count == low_main < sum(1 for r in rows.values() if r.low)
 
 
 def test_reports(conn):
