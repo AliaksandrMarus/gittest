@@ -66,24 +66,24 @@ def test_install_starts_new_version_with_clean_environment(tmp_path, monkeypatch
 def test_finish_update_replaces_program_keeps_data_and_restarts(tmp_path, monkeypatch):
     root = tmp_path / "C Claude Code" / "Кофеаппарат"
     (root / "_internal").mkdir(parents=True)
-    (root / "_internal" / "old.dll").write_text("old")
-    (root / "CoffeeStock.exe").write_text("old exe")
-    (root / "coffee.db").write_text("база")
-    (root / "Продажи.xlsx").write_text("продажи")
+    (root / "_internal" / "old.dll").write_text("old", encoding="utf-8")
+    (root / "CoffeeStock.exe").write_text("old exe", encoding="utf-8")
+    (root / "coffee.db").write_text("база", encoding="utf-8")
+    (root / "Продажи.xlsx").write_text("продажи", encoding="utf-8")
     (root / "Накладные").mkdir()
     staging = root / "_update" / "new"
     (staging / "_internal").mkdir(parents=True)
-    (staging / "_internal" / "new.dll").write_text("new")
-    (staging / "CoffeeStock.exe").write_text("new exe")
+    (staging / "_internal" / "new.dll").write_text("new", encoding="utf-8")
+    (staging / "CoffeeStock.exe").write_text("new exe", encoding="utf-8")
     started = {}
     monkeypatch.setattr(updater.subprocess, "Popen", lambda args, **kw: started.update(args=args, **kw))
     monkeypatch.setattr(updater, "wait_for_exit", lambda pid, timeout=60: None)
     monkeypatch.setattr(updater, "VERSION", "1.0.12")
 
     updater.finish_update(root, staging, 123, "1.0.12")
-    assert (root / "CoffeeStock.exe").read_text() == "new exe"
+    assert (root / "CoffeeStock.exe").read_text(encoding="utf-8") == "new exe"
     assert (root / "_internal" / "new.dll").exists() and not (root / "_internal" / "old.dll").exists()
-    assert (root / "coffee.db").read_text() == "база" and (root / "Продажи.xlsx").exists()
+    assert (root / "coffee.db").read_text(encoding="utf-8") == "база" and (root / "Продажи.xlsx").exists()
     assert (root / "Накладные").is_dir()
     assert started["args"] == [str(root / "CoffeeStock.exe")]
     assert started["env"]["PYINSTALLER_RESET_ENVIRONMENT"] == "1"
