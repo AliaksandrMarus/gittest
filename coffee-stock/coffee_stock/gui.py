@@ -1,4 +1,5 @@
-"""Окно программы: вкладки «Остатки», «Продажи», «Накладные», «Рецепты и цены», «Отчёты», «Настройки»."""
+"""Окно программы: вкладки «Остатки», «Продажи», «Накладные», «Рецепты и цены», «Отчёты», «Кофеавтомат»,
+«Настройки»."""
 
 from __future__ import annotations
 
@@ -6,7 +7,8 @@ import os
 import shutil
 import sqlite3
 import sys
-from datetime import date
+import time
+from datetime import date, datetime
 from pathlib import Path
 
 from PySide6.QtCore import QDate, QThread, QTimer, QUrl, Qt, Signal
@@ -18,7 +20,7 @@ from PySide6.QtWidgets import (
     QSplitter, QStyleFactory, QTableWidget, QTableWidgetItem, QTabWidget, QTextEdit, QVBoxLayout, QWidget,
 )
 
-from . import core, db, export, inbox, invoice, ocr, sales_excel, seed, style, updater
+from . import core, db, export, inbox, invoice, ocr, sales_excel, seed, style, updater, vending
 from ._version import VERSION
 
 STATUS_NAMES = {"posted": "Проведена", "review": "Нужна проверка", "error": "Не распознана",
@@ -170,6 +172,30 @@ class InboxWorker(QThread):
         finally:
             conn.close()
         self.done.emit(results)
+
+
+class VendingWorker(QThread):
+    """Опрос кофеавтомата по сети — до минуты, поэтому в отдельном потоке."""
+
+    done = Signal(object)  # vending.PollResult или str (проверка связи)
+
+    def __init__(self, root: Path, machine: str, mac: str, sales_file: Path, check_only: bool = False):
+        super().__init__()
+        self.root, self.machine, self.mac, self.sales_file = root, machine, mac, sales_file
+        self.check_only = check_only
+
+    def run(self) -> None:
+        if self.check_only:
+            try:
+                self.done.emit(vending.check(self.root, self.machine, self.mac))
+            except Exception as e:  # noqa: BLE001
+                self.done.emit(f"Нет связи: {e}")
+            return
+        try:
+            result = vending.poll(self.root, self.machine, self.mac, self.sales_file)
+        except Exception as e:  # noqa: BLE001
+            result = vending.PollResult(error=f"сбой опроса: {e}")
+        self.done.emit(result)
 
 
 class UpdateCheckWorker(QThread):
@@ -1193,6 +1219,115 @@ class ReportsTab(QWidget):
         open_path(Path(path))
 
 
+class VendingTab(QWidget):
+    """Продажи прямо с кофеавтомата: по напиткам и по дням, отчёт в Excel."""
+
+    def __init__(self, win: "MainWindow"):
+        super().__init__()
+        self.win = win
+        layout = QVBoxLayout(self)
+        cards = QHBoxLayout()
+        self.card_count = Card("Продано за месяц")
+        self.card_money = Card("Выручка за месяц")
+        self.card_day = Card("Последний день")
+        for c in (self.card_count, self.card_money, self.card_day):
+            cards.addWidget(c)
+        layout.addLayout(cards)
+
+        row = QHBoxLayout()
+        row.addWidget(label("Кофеавтомат", "title"))
+        row.addWidget(QLabel("   Месяц:"))
+        self.month = QComboBox()
+        self.month.setMinimumWidth(150)
+        self.month.currentIndexChanged.connect(self.show_month)
+        row.addWidget(self.month)
+        row.addStretch()
+        self.poll_button = button("Опросить автомат сейчас", lambda: self.win.poll_vending(manual=True))
+        row.addWidget(self.poll_button)
+        row.addWidget(button("Отчёт в Excel", self.open_report, "secondary"))
+        row.addWidget(button("Папка отчётов", lambda: open_path(vending.reports_dir(self.win.folders.root)),
+                             "secondary"))
+        layout.addLayout(row)
+        self.status = label("", "hint")
+        layout.addWidget(self.status)
+
+        split = QSplitter(Qt.Horizontal)
+        left, right = QWidget(), QWidget()
+        lbox, rbox = QVBoxLayout(left), QVBoxLayout(right)
+        lbox.setContentsMargins(0, 0, 6, 0)
+        rbox.setContentsMargins(6, 0, 0, 0)
+        lbox.addWidget(label("По напиткам", "title"))
+        self.drinks = make_table()
+        lbox.addWidget(self.drinks)
+        rbox.addWidget(label("По дням", "title"))
+        self.days = make_table()
+        rbox.addWidget(self.days)
+        split.addWidget(left)
+        split.addWidget(right)
+        split.setSizes([520, 520])
+        layout.addWidget(split, 1)
+        self.log = QTextEdit()
+        self.log.setReadOnly(True)
+        self.log.setMaximumHeight(90)
+        layout.addWidget(self.log)
+
+    def add_log(self, text: str) -> None:
+        self.log.append(f"{datetime.now():%d.%m %H:%M}  {text}")
+
+    def selected(self) -> str:
+        return self.month.currentData() or date.today().strftime("%Y-%m")
+
+    def refresh(self) -> None:
+        root = self.win.folders.root
+        keep = self.month.currentData()
+        months = vending.months(root) or [date.today().strftime("%Y-%m")]
+        self.month.blockSignals(True)
+        self.month.clear()
+        for ym in months:
+            self.month.addItem(vending.month_title(ym), ym)
+        if keep in months:
+            self.month.setCurrentIndex(months.index(keep))
+        self.month.blockSignals(False)
+        conn = self.win.conn
+        last = db.get_setting(conn, "vending_last")
+        minutes = int(db.get_setting(conn, "vending_minutes") or 0)
+        self.status.setText(
+            f"Автомат {db.get_setting(conn, 'vending_machine')} · "
+            + (f"последний опрос {last}" if last else "ещё не опрашивался")
+            + (f" · опрос каждые {minutes} мин" if minutes else " · автоопрос выключен (Настройки)")
+            + ". Продажи с автомата сами вносятся в «Продажи.xlsx» — остатки пересчитываются.")
+        self.show_month()
+
+    def show_month(self) -> None:
+        s = vending.summary(self.win.folders.root, self.selected())
+        title = vending.month_title(s.month)
+        self.card_count.show_value(f"{s.count} порц.", title, "cups")
+        self.card_money.show_value(money(s.money), title, "money")
+        if s.days:
+            day, _wd, n, total = s.days[-1]
+            self.card_day.show_value(money(total), f"{fmt(day)} · {n} порц.", "month")
+        else:
+            self.card_day.show_value("—", "продаж нет", "month")
+        rows = [list(d) for d in s.drinks]
+        if rows:
+            rows.append(["Итого", "", s.count, s.money, 100.0])
+        fill_table(self.drinks, ["Напиток", "Цена", "Кол-во, шт", "Сумма, руб", "Доля, %"], rows, bold_last=True)
+        rows = [[day, wd, n, total] for day, wd, n, total in reversed(s.days)]
+        if rows:
+            rows.append(["Итого", "", s.count, s.money])
+        fill_table(self.days, ["Дата", "День", "Кол-во, шт", "Сумма, руб"], rows, bold_last=True)
+
+    def open_report(self) -> None:
+        root = self.win.folders.root
+        ym = self.selected()
+        path = vending.build_report(root, ym) or vending.report_path(root, ym)
+        if path.exists():
+            open_path(path)
+        else:
+            QMessageBox.information(self, "Кофеавтомат", "Данных автомата за этот месяц нет — "
+                                                        "нажмите «Опросить автомат сейчас».")
+
+
 class SettingsTab(QWidget):
     def __init__(self, win: "MainWindow"):
         super().__init__()
@@ -1226,6 +1361,20 @@ class SettingsTab(QWidget):
         form.addRow("Программа", update_row)
         form.addRow("Начальные данные", button("Загрузить начальные данные…", self.load_seed, "secondary"))
         form.addRow("", self.auto_update)
+        self.machine = QLineEdit()
+        self.machine.setPlaceholderText("192.168.1.9:5555")
+        self.mac = QLineEdit()
+        self.mac.setPlaceholderText("28-2d-06-12-98-5a")
+        self.minutes = QSpinBox()
+        self.minutes.setRange(0, 1440)
+        self.minutes.setSuffix(" мин")
+        self.minutes.setSpecialValueText("только вручную")
+        machine_row = QHBoxLayout()
+        machine_row.addWidget(self.machine)
+        machine_row.addWidget(button("Проверить связь", self.check_machine, "secondary"))
+        form.addRow("Кофеавтомат: адрес в сети", machine_row)
+        form.addRow("Кофеавтомат: MAC (если IP сменится)", self.mac)
+        form.addRow("Опрашивать автомат каждые", self.minutes)
         form.addRow(button("Сохранить", self.save))
 
     def load_seed(self) -> None:
@@ -1246,6 +1395,10 @@ class SettingsTab(QWidget):
         self.win.refresh_all()
         QMessageBox.information(self, "Начальные данные", "Данные загружены: справочники, накладные, продажи.")
 
+    def check_machine(self) -> None:
+        self.save()  # проверяем адрес, который сейчас введён
+        self.win.poll_vending(manual=True, check_only=True)
+
     def browse(self) -> None:
         path, _ = QFileDialog.getOpenFileName(self, "tesseract.exe", "", "tesseract.exe (tesseract.exe)")
         if path:
@@ -1256,7 +1409,10 @@ class SettingsTab(QWidget):
         self.days.setValue(int(db.get_setting(conn, "forecast_days") or 14))
         self.tesseract.setText(db.get_setting(conn, "tesseract_path"))
         self.auto_update.setChecked(db.get_setting(conn, "auto_update") != "0")
-        exe = ocr.find_tesseract(self.tesseract.text().strip())
+        self.machine.setText(db.get_setting(conn, "vending_machine"))
+        self.mac.setText(db.get_setting(conn, "vending_mac"))
+        self.minutes.setValue(int(db.get_setting(conn, "vending_minutes") or 0))
+        exe =ocr.find_tesseract(self.tesseract.text().strip())
         self.ocr_status.setText(f"Найден: {exe}" if exe else
                                 "Tesseract не найден — сканы-картинки распознаваться не будут, только PDF с текстом.")
 
@@ -1265,6 +1421,9 @@ class SettingsTab(QWidget):
         db.set_setting(conn, "forecast_days", str(self.days.value()))
         db.set_setting(conn, "tesseract_path", self.tesseract.text().strip())
         db.set_setting(conn, "auto_update", "1" if self.auto_update.isChecked() else "0")
+        db.set_setting(conn, "vending_machine", self.machine.text().strip())
+        db.set_setting(conn, "vending_mac", self.mac.text().strip())
+        db.set_setting(conn, "vending_minutes", str(self.minutes.value()))
         self.win.refresh_all()
         self.win.statusBar().showMessage("Настройки сохранены", 5000)
 
@@ -1286,6 +1445,8 @@ class MainWindow(QMainWindow):
         self.worker: InboxWorker | None = None
         self.update_worker: UpdateCheckWorker | None = None
         self.download_worker: DownloadWorker | None = None
+        self.vending_worker: VendingWorker | None = None
+        self.vending_next = time.monotonic() + 5  # когда опросить автомат; первый раз — сразу после запуска
 
         self.setWindowTitle(f"Учёт кофейного автомата — версия {VERSION}")
         self.setWindowIcon(style.app_icon())
@@ -1297,10 +1458,12 @@ class MainWindow(QMainWindow):
         self.invoices_tab = InvoicesTab(self)
         self.recipes_tab = RecipesTab(self)
         self.reports_tab = ReportsTab(self)
+        self.vending_tab = VendingTab(self)
         self.settings_tab = SettingsTab(self)
         for tab, title in ((self.stock_tab, "☕  Остатки"), (self.sales_tab, "Продажи"),
                            (self.invoices_tab, "Накладные"), (self.recipes_tab, "Рецепты и цены"),
-                           (self.reports_tab, "Отчёты"), (self.settings_tab, "Настройки")):
+                           (self.reports_tab, "Отчёты"), (self.vending_tab, "Кофеавтомат"),
+                           (self.settings_tab, "Настройки")):
             self.tabs.addTab(tab, title)
         container = QWidget()
         box = QVBoxLayout(container)
@@ -1336,13 +1499,65 @@ class MainWindow(QMainWindow):
 
     def refresh_all(self) -> None:
         for tab in (self.stock_tab, self.sales_tab, self.invoices_tab, self.recipes_tab,
-                    self.reports_tab, self.settings_tab):
+                    self.reports_tab, self.vending_tab, self.settings_tab):
             tab.refresh()
 
     def tick(self) -> None:
         self.import_sales(manual=False)
         self.import_source()
         self.check_inbox(settle=3)
+        if int(db.get_setting(self.conn, "vending_minutes") or 0) and time.monotonic() >= self.vending_next:
+            self.poll_vending(manual=False)
+
+    # -- кофеавтомат
+    def poll_vending(self, manual: bool, check_only: bool = False) -> None:
+        if self.vending_worker is not None and self.vending_worker.isRunning():
+            if manual:
+                self.statusBar().showMessage("Автомат уже опрашивается…", 5000)
+            return
+        machine = db.get_setting(self.conn, "vending_machine").strip()
+        if not machine:
+            if manual:
+                QMessageBox.warning(self, "Кофеавтомат", "Укажите адрес автомата на вкладке «Настройки».")
+            return
+        if not check_only:  # следующий автоопрос — через заданный интервал после этого
+            self.vending_next = time.monotonic() + int(db.get_setting(self.conn, "vending_minutes") or 0) * 60
+        self.statusBar().showMessage("Проверяю связь с кофеавтоматом…" if check_only else "Опрашиваю кофеавтомат…")
+        self.vending_tab.poll_button.setEnabled(False)
+        self.vending_worker = VendingWorker(self.folders.root, machine, db.get_setting(self.conn, "vending_mac"),
+                                            self.folders.sales_file, check_only)
+        self.vending_worker.done.connect(lambda result: self.vending_done(result, manual))
+        self.vending_worker.start()
+
+    def vending_done(self, result, manual: bool) -> None:
+        self.vending_tab.poll_button.setEnabled(True)
+        self.statusBar().clearMessage()
+        if isinstance(result, str):  # проверка связи
+            self.vending_tab.add_log(result)
+            QMessageBox.information(self, "Кофеавтомат", result)
+            return
+        if result.error:
+            self.vending_tab.add_log("Ошибка: " + result.error)
+            self.statusBar().showMessage("Кофеавтомат: " + result.error, 15000)
+            if manual:
+                QMessageBox.warning(self, "Кофеавтомат", result.error)
+            return
+        if result.machine and result.machine != db.get_setting(self.conn, "vending_machine"):
+            db.set_setting(self.conn, "vending_machine", result.machine)
+            result.notes.insert(0, f"автомат сменил адрес — теперь {result.machine} "
+                                   "(лучше закрепить IP за автоматом в роутере)")
+        db.set_setting(self.conn, "vending_last", f"{datetime.now():%d.%m.%Y %H:%M}")
+        got = ", ".join(f"{vending.month_title(ym).lower()}: {n} шт" for ym, n in result.months.items())
+        text = f"Опрос: {got}. " + ("В «Продажи.xlsx» внесено: " + "; ".join(result.changes)
+                                    if result.changes else "«Продажи.xlsx» уже совпадает с автоматом.")
+        self.vending_tab.add_log(text)
+        for note in result.notes:
+            self.vending_tab.add_log("! " + note)
+        self.statusBar().showMessage("Кофеавтомат: " + text, 15000)
+        self.import_sales(manual=False)  # файл продаж изменился — пересчитать продажи и остатки
+        self.refresh_all()
+        if manual and result.notes:
+            QMessageBox.information(self, "Кофеавтомат", text + "\n\n" + "\n".join(result.notes))
 
     # -- продажи
     def import_sales(self, manual: bool) -> None:
@@ -1515,6 +1730,9 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event) -> None:
         if self.worker is not None:
             self.worker.wait(60_000)
+        if self.vending_worker is not None:
+            self.vending_worker.wait(90_000)
+        vending.kill_server(self.folders.root)  # фоновый adb не должен оставаться после программы
         self.conn.close()
         super().closeEvent(event)
 
