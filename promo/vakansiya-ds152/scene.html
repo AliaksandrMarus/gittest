@@ -41,6 +41,11 @@
   .req .t { font-size: 52px; font-weight: 900; line-height: 1.08; }
   .req .d { font-size: 36px; font-weight: 600; color: #4a5468; margin-top: 10px; line-height: 1.25; }
 
+  /* 3б. Бонус */
+  #b-stamp { left: 70px; top: 210px; padding: 16px 30px; border: 8px solid #e02424; color: #fff; background: rgba(224,36,36,.85); border-radius: 16px; font-size: 52px; font-weight: 900; letter-spacing: 4px; transform-origin: 0 50%; }
+  #b-word { left: 60px; top: 340px; padding: 6px 24px 12px; background: rgba(10,18,34,.78); border-radius: 18px; font-size: 80px; font-weight: 900; color: #ffd23f; transform-origin: 0 50%; }
+  #b-tail { left: 70px; right: 70px; top: 220px; font-size: 76px; font-weight: 900; line-height: 1.1; }
+
   /* 4. Условия */
   #o-head { left: 70px; top: 300px; font-size: 92px; font-weight: 900; line-height: 1.05; }
   #o-head span { color: #ffd23f; }
@@ -82,13 +87,19 @@
     <div class="req abs"><div class="ic"></div><div><div class="t">Стрессоустойчивость</div><div class="d">даже когда клиент «только спросить» <span class="em">😅</span></div></div></div>
   </div>
 
+  <div id="s3b" class="abs scene">
+    <div id="b-stamp" class="abs">БОНУСНЫЙ НАВЫК</div>
+    <div id="b-word" class="abs shadow">многозадачность <span class="em">😄</span></div>
+    <div id="b-tail" class="abs shadow">…и территория у нас<br>всегда в порядке <span class="em">✨</span></div>
+  </div>
+
   <div id="s4" class="abs scene">
     <div id="o-head" class="abs shadow">А мы <span>даём</span> <span class="em">💪</span></div>
     <div id="o-grid" class="abs">
       <div class="off">Официальное трудоустройство</div>
       <div class="off">Стабильная зарплата</div>
       <div class="off">Обучение на месте</div>
-      <div class="off">Дружный коллектив</div>
+      <div class="off"><span>Дружный коллектив <span class="em">🐱</span></span></div>
     </div>
   </div>
 
@@ -121,8 +132,11 @@ const SVG_OK = '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none
 $$('.req .ic').forEach((el) => (el.innerHTML = SVG_OK));
 
 // Тайминг сцен совпадает с монтажом клипов в render.mjs
-const T = { s2: 3.0, s3: 5.4, req: [5.4, 7.6, 10.0, 12.6, 14.4], s4: 16.6, s5: 20.6 };
-window.DURATION = 25.8;
+// Карточки требований: [появление, уход]; между 2-й и 3-й — бонус-вставка на фото
+const T = { s2: 3.0, s3: 5.4, req: [[5.4, 7.0], [7.0, 9.8], [14.0, 16.6], [16.6, 18.4], [18.4, 20.6]], bonus: [9.8, 12.2, 14.0], s4: 20.6, s5: 24.6 };
+// Полноэкранные фото: рамку вокруг видео прячем
+const PHOTO = [[7.0, 14.0], [16.6, 18.4], [22.6, 24.6]];
+window.DURATION = 29.8;
 
 window.render = (t) => {
   // 1. Хук
@@ -141,10 +155,10 @@ window.render = (t) => {
   rise($('#w-b'), t, T.s2 + .4);
 
   // 3. Требования: каждая карточка «прилетает» под свой клип
-  $('#s3').style.opacity = vis(t, T.s3, T.s4);
-  $$('#r-dots i').forEach((d, i) => d.classList.toggle('on', t >= T.req[i]));
+  $('#s3').style.opacity = Math.max(vis(t, T.s3, T.bonus[0]), vis(t, T.bonus[2], T.s4));
+  $$('#r-dots i').forEach((d, i) => d.classList.toggle('on', t >= T.req[i][0]));
   $$('.req').forEach((el, i) => {
-    const a = T.req[i], b = T.req[i + 1] ?? T.s4;
+    const [a, b] = T.req[i];
     const e = outBack(prog(t, a, a + .4));
     const out = prog(t, b - .2, b);
     el.style.opacity = t < a ? 0 : Math.min(prog(t, a, a + .12), 1 - out);
@@ -174,7 +188,18 @@ window.render = (t) => {
   rise($('#f-addr'), t, T.s5 + .9);
   rise($('#f-cta'), t, T.s5 + 1.5);
 
-  $('#frame').style.opacity = 1;
+  $('#frame').style.opacity = PHOTO.some(([a, b]) => t >= a - .05 && t < b) ? 0 : 1;
+
+  // Бонус-вставка: многозадачность
+  const [b0, b1, b2] = T.bonus;
+  $('#s3b').style.opacity = vis(t, b0, b2, .15, .2);
+  const st = prog(t, b0 + .1, b0 + .3);
+  $('#b-stamp').style.opacity = st * (1 - prog(t, b1 - .15, b1));
+  $('#b-stamp').style.transform = `rotate(-6deg) scale(${t < b0 + .1 ? 2.5 : 2.5 - 1.5 * outCubic(st)})`;
+  const bw = outBack(prog(t, b0 + .45, b0 + .8));
+  $('#b-word').style.opacity = prog(t, b0 + .45, b0 + .55) * (1 - prog(t, b1 - .15, b1));
+  $('#b-word').style.transform = `scale(${.4 + .6 * bw})`;
+  rise($('#b-tail'), t, b1 + .05);
 };
 
 window.ready = document.fonts.ready.then(() => window.render(0));
