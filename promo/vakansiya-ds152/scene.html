@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ДС 152 — вакансия</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* Фон прозрачный: графика накладывается поверх видеоряда */
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: transparent; }
+  body { font-family: "Inter Display", "Inter", "DejaVu Sans", sans-serif; color: #fff; }
+  .abs { position: absolute; }
+  .em { font-family: "Noto Color Emoji"; font-weight: 400; }
+  .shadow { text-shadow: 0 4px 24px rgba(0,0,0,.85), 0 2px 4px rgba(0,0,0,.6); }
+  .scene { inset: 0; opacity: 0; }
+
+  /* Рамка вокруг видео в центре (видео стоит в y 640–1248) */
+  #frame { left: 0; right: 0; top: 636px; height: 616px; border-top: 6px solid #ffd23f; border-bottom: 6px solid #ffd23f; }
+
+  /* 1. Хук */
+  #badge { left: 70px; top: 190px; padding: 14px 30px; background: #e02424; border-radius: 12px; font-size: 44px; font-weight: 900; letter-spacing: 6px; transform-origin: 0 50%; }
+  #h-a { left: 70px; top: 300px; font-size: 84px; font-weight: 800; }
+  #h-b { left: 70px; top: 390px; font-size: 150px; font-weight: 900; color: #ffd23f; line-height: 1.05; transform-origin: 0 50%; }
+  #h-c { left: 70px; right: 70px; top: 1310px; font-size: 50px; font-weight: 700; line-height: 1.25; }
+  #h-c b { color: #ffd23f; }
+
+  /* 2. Кто мы */
+  #w-a { left: 70px; right: 70px; top: 300px; font-size: 76px; font-weight: 900; line-height: 1.05; }
+  #w-a span { color: #ffd23f; }
+  #w-b { left: 70px; right: 70px; top: 1310px; font-size: 54px; font-weight: 700; line-height: 1.25; }
+  #w-b .pill { display: inline-block; margin-top: 18px; padding: 12px 26px; background: #1f4fb8; border-radius: 12px; font-size: 46px; }
+
+  /* 3. Требования */
+  #r-head { left: 70px; top: 300px; font-size: 92px; font-weight: 900; line-height: 1; }
+  #r-head span { color: #ffd23f; }
+  #r-dots { left: 70px; top: 430px; display: flex; gap: 14px; }
+  #r-dots i { width: 70px; height: 14px; border-radius: 7px; background: rgba(255,255,255,.3); }
+  #r-dots i.on { background: #ffd23f; }
+  .req { left: 60px; right: 60px; top: 1300px; padding: 34px 36px; background: #fff; color: #14213d; border-radius: 28px; display: flex; gap: 30px; align-items: center; box-shadow: 0 30px 70px rgba(0,0,0,.5); opacity: 0; }
+  .req .ic { width: 96px; height: 96px; border-radius: 22px; background: #1aa358; flex: none; display: flex; align-items: center; justify-content: center; }
+  .req .ic svg { width: 66px; height: 66px; }
+  .req .t { font-size: 52px; font-weight: 900; line-height: 1.08; }
+  .req .d { font-size: 36px; font-weight: 600; color: #4a5468; margin-top: 10px; line-height: 1.25; }
+
+  /* 4. Условия */
+  #o-head { left: 70px; top: 300px; font-size: 92px; font-weight: 900; line-height: 1.05; }
+  #o-head span { color: #ffd23f; }
+  #o-grid { left: 60px; right: 60px; top: 1300px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .off { background: #ffd23f; color: #14213d; border-radius: 22px; padding: 26px 26px; font-size: 40px; font-weight: 900; line-height: 1.12; opacity: 0; min-height: 150px; display: flex; align-items: center; }
+
+  /* 5. Финал */
+  #f-a { left: 70px; right: 70px; top: 220px; font-size: 84px; font-weight: 900; line-height: 1.05; }
+  #f-a span { color: #ffd23f; }
+  #f-phone { left: 60px; right: 60px; top: 440px; padding: 22px 0; background: #ffd23f; color: #14213d; border-radius: 24px; text-align: center; font-size: 82px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+  #f-addr { left: 70px; right: 70px; top: 1300px; font-size: 48px; font-weight: 800; line-height: 1.25; display: flex; gap: 20px; align-items: flex-start; }
+  #f-addr svg { width: 44px; height: 56px; flex: none; margin-top: 4px; }
+  #f-addr small { display: block; font-size: 36px; font-weight: 600; color: #d6dbe6; }
+  #f-cta { left: 70px; right: 140px; top: 1460px; font-size: 38px; font-weight: 700; line-height: 1.3; padding: 24px 30px; background: rgba(10,18,34,.82); border: 3px solid rgba(255,255,255,.35); border-radius: 22px; }
+</style>
+</head>
+<body>
+  <div id="frame" class="abs"></div>
+
+  <div id="s1" class="abs scene">
+    <div id="badge" class="abs">ВАКАНСИЯ</div>
+    <div id="h-a" class="abs shadow">Эта команда</div>
+    <div id="h-b" class="abs shadow">ищет ТЕБЯ <span class="em" style="font-size:120px">👉</span></div>
+    <div id="h-c" class="abs shadow">Бобруйск, работа для тех, кто <b>живёт автомобилями</b></div>
+  </div>
+
+  <div id="s2" class="abs scene">
+    <div id="w-a" class="abs shadow">Диагностическая станция <span>№152</span></div>
+    <div id="w-b" class="abs shadow">расширяет команду<br><span class="pill">УП «Белтехосмотр»</span></div>
+  </div>
+
+  <div id="s3" class="abs scene">
+    <div id="r-head" class="abs shadow">Кого <span>ищем?</span></div>
+    <div id="r-dots" class="abs"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="req abs"><div class="ic"></div><div><div class="t">Образование по автотранспорту</div><div class="d">высшее — или Бобруйский автомеханический колледж</div></div></div>
+    <div class="req abs"><div class="ic"></div><div><div class="t">Опыт работы</div><div class="d">знаешь машину не только по картинкам <span class="em">😉</span></div></div></div>
+    <div class="req abs"><div class="ic"></div><div><div class="t">Опытный пользователь ПК</div><div class="d">программы для тебя — не тёмный лес</div></div></div>
+    <div class="req abs"><div class="ic"></div><div><div class="t">Целеустремлённость</div><div class="d">едешь только вперёд</div></div></div>
+    <div class="req abs"><div class="ic"></div><div><div class="t">Стрессоустойчивость</div><div class="d">даже когда клиент «только спросить» <span class="em">😅</span></div></div></div>
+  </div>
+
+  <div id="s4" class="abs scene">
+    <div id="o-head" class="abs shadow">А мы <span>даём</span> <span class="em">💪</span></div>
+    <div id="o-grid" class="abs">
+      <div class="off">Официальное трудоустройство</div>
+      <div class="off">Стабильная зарплата</div>
+      <div class="off">Обучение на месте</div>
+      <div class="off">Дружный коллектив</div>
+    </div>
+  </div>
+
+  <div id="s5" class="abs scene">
+    <div id="f-a" class="abs shadow">Узнал себя? <span>Звони!</span></div>
+    <div id="f-phone" class="abs">+375 225 72-82-68</div>
+    <div id="f-addr" class="abs shadow">
+      <svg viewBox="0 0 24 30"><path d="M12 0C5.4 0 0 5.2 0 11.7 0 20.4 12 30 12 30s12-9.6 12-18.3C24 5.2 18.6 0 12 0z" fill="#ffd23f"/><circle cx="12" cy="11.5" r="4.6" fill="#14213d"/></svg>
+      <div>г. Бобруйск, ул. Гоголя, 181<small>ДС №152, УП «Белтехосмотр»</small></div>
+    </div>
+    <div id="f-cta" class="abs">Отправь другу, которому нужна работа <span class="em">👇</span></div>
+  </div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => [...document.querySelectorAll(s)];
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const outCubic = (x) => 1 - Math.pow(1 - x, 3);
+const outBack = (x) => { const c = 1.9; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+// Плавное появление в [a, a+fi] и исчезновение в [b-fo, b]
+const vis = (t, a, b, fi = .25, fo = .25) => Math.min(prog(t, a, a + fi), 1 - prog(t, b - fo, b));
+const rise = (el, t, at, dy = 50, d = .4) => {
+  const e = outCubic(prog(t, at, at + d));
+  el.style.opacity = e;
+  el.style.transform = `translateY(${(1 - e) * dy}px)`;
+};
+
+const SVG_OK = '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+$$('.req .ic').forEach((el) => (el.innerHTML = SVG_OK));
+
+// Тайминг сцен совпадает с монтажом клипов в render.mjs
+const T = { s2: 3.0, s3: 5.4, req: [5.4, 7.6, 10.0, 12.6, 14.4], s4: 16.6, s5: 20.6 };
+window.DURATION = 25.8;
+
+window.render = (t) => {
+  // 1. Хук
+  $('#s1').style.opacity = vis(t, 0, T.s2, .01);
+  const bd = outBack(prog(t, .05, .35));
+  $('#badge').style.transform = `scale(${bd}) rotate(-4deg)`;
+  $('#badge').style.opacity = prog(t, .05, .1) * (Math.floor(t * 4) % 2 === 0 || t < 1 ? 1 : .75);
+  rise($('#h-a'), t, .2);
+  const hb = outBack(prog(t, .55, .9));
+  $('#h-b').style.cssText = `opacity:${prog(t, .55, .65)};transform:scale(${.4 + .6 * hb})`;
+  rise($('#h-c'), t, 1.1);
+
+  // 2. Кто мы
+  $('#s2').style.opacity = vis(t, T.s2, T.s3);
+  rise($('#w-a'), t, T.s2 + .05);
+  rise($('#w-b'), t, T.s2 + .4);
+
+  // 3. Требования: каждая карточка «прилетает» под свой клип
+  $('#s3').style.opacity = vis(t, T.s3, T.s4);
+  $$('#r-dots i').forEach((d, i) => d.classList.toggle('on', t >= T.req[i]));
+  $$('.req').forEach((el, i) => {
+    const a = T.req[i], b = T.req[i + 1] ?? T.s4;
+    const e = outBack(prog(t, a, a + .4));
+    const out = prog(t, b - .2, b);
+    el.style.opacity = t < a ? 0 : Math.min(prog(t, a, a + .12), 1 - out);
+    el.style.transform = `translateX(${(1 - e) * 500 - out * 300}px) rotate(${(1 - e) * 4}deg)`;
+    const ic = el.querySelector('.ic');
+    const k = prog(t, a + .3, a + .55);
+    ic.style.transform = `scale(${k === 0 ? .2 : outBack(k)})`;
+  });
+
+  // 4. Условия
+  $('#s4').style.opacity = vis(t, T.s4, T.s5);
+  rise($('#o-head'), t, T.s4 + .05);
+  $$('.off').forEach((el, i) => {
+    const at = T.s4 + .45 + i * .55;
+    const e = outBack(prog(t, at, at + .35));
+    el.style.opacity = prog(t, at, at + .1);
+    el.style.transform = `scale(${t < at ? .3 : .3 + .7 * e})`;
+  });
+
+  // 5. Финал
+  $('#s5').style.opacity = prog(t, T.s5, T.s5 + .25);
+  rise($('#f-a'), t, T.s5 + .05);
+  const ph = outBack(prog(t, T.s5 + .35, T.s5 + .75));
+  const pulse = t > T.s5 + 1.5 ? 1 + Math.sin((t - T.s5) * 6) * .025 : 1;
+  $('#f-phone').style.opacity = prog(t, T.s5 + .35, T.s5 + .45);
+  $('#f-phone').style.transform = `scale(${(t < T.s5 + .35 ? .3 : .3 + .7 * ph) * pulse})`;
+  rise($('#f-addr'), t, T.s5 + .9);
+  rise($('#f-cta'), t, T.s5 + 1.5);
+
+  $('#frame').style.opacity = 1;
+};
+
+window.ready = document.fonts.ready.then(() => window.render(0));
+</script>
+</body>
+</html>
