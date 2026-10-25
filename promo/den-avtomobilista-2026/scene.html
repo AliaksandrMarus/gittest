@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ДС 152 — День автомобилиста</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #0a1222; }
+  body { font-family: "Inter Display", "Inter", "DejaVu Sans", sans-serif; color: #fff; }
+  .abs { position: absolute; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+
+  /* Дорога */
+  #road-wrap { inset: 0; perspective: 900px; perspective-origin: 50% 20%; }
+  #road {
+    left: 140px; width: 800px; top: -1400px; height: 4200px;
+    background:
+      linear-gradient(90deg, transparent 0 24px, #e9eef5 24px 40px, transparent 40px calc(100% - 40px), #e9eef5 calc(100% - 40px) calc(100% - 24px), transparent calc(100% - 24px)),
+      linear-gradient(180deg, #1b2436, #121a2a);
+    transform: rotateX(58deg);
+    transform-origin: 50% 100%;
+  }
+  #dashes {
+    left: 50%; width: 22px; margin-left: -11px; top: -300px; height: 4800px;
+    background: repeating-linear-gradient(180deg, #ffd23f 0 140px, transparent 140px 300px);
+  }
+  #vignette { inset: 0; background: radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(5,9,18,.85) 100%); }
+
+  /* Фото станции */
+  #photo { inset: 0; opacity: 0; }
+  #photo .fill { inset: -60px; background-size: cover; background-position: center; filter: blur(40px) brightness(.55); }
+  #photo .main { inset: 0; background-size: cover; background-position: 70% 50%; transform-origin: 66% 30%; }
+  #photo .shade { inset: 0; background: linear-gradient(180deg, rgba(6,10,20,.25) 0%, rgba(6,10,20,0) 30%, rgba(6,10,20,.2) 46%, rgba(6,10,20,.8) 56%, rgba(6,10,20,.93) 100%); }
+
+  /* Сцена 1 */
+  #s1 { inset: 0; }
+  .blinker { top: 1600px; width: 0; height: 0; border-top: 70px solid transparent; border-bottom: 70px solid transparent; filter: drop-shadow(0 0 30px #ffae00); }
+  #blink-l { left: 70px; border-right: 110px solid #ffae00; }
+  #blink-r { right: 70px; border-left: 110px solid #ffae00; }
+  #s1-a { left: 0; right: 0; top: 1040px; text-align: center; font-size: 64px; font-weight: 700; letter-spacing: .5px; text-shadow: 0 4px 24px rgba(0,0,0,.8); }
+  #s1-b { left: 0; right: 0; top: 1140px; text-align: center; font-size: 120px; font-weight: 900; line-height: 1.05; text-shadow: 0 6px 30px rgba(0,0,0,.8); }
+  #s1-c { left: 0; right: 0; top: 1280px; text-align: center; font-size: 210px; font-weight: 900; line-height: 1; color: #ffd23f; text-shadow: 0 10px 0 #b8860b, 0 20px 50px rgba(0,0,0,.6); }
+
+  /* Карта */
+  #card {
+    left: 70px; width: 940px; top: 250px; height: 1240px;
+    background: #fbfaf5; color: #14213d; border-radius: 28px;
+    box-shadow: 0 40px 90px rgba(0,0,0,.55);
+    padding: 54px 56px; opacity: 0;
+  }
+  #card .hdr { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 4px solid #14213d; padding-bottom: 22px; }
+  #card .hdr small { display: block; font-size: 26px; font-weight: 600; letter-spacing: 3px; color: #5b6478; }
+  #card .hdr b { display: block; font-size: 58px; font-weight: 900; line-height: 1.05; margin-top: 8px; }
+  #card .num { font-family: "JetBrains Mono", monospace; font-size: 26px; color: #5b6478; text-align: right; line-height: 1.5; }
+  .row { display: flex; align-items: center; gap: 30px; padding: 24px 0; border-bottom: 2px dashed #c9ccd4; opacity: 0; }
+  .row .txt { flex: 1; }
+  .row .t { font-size: 46px; font-weight: 800; line-height: 1.1; }
+  .row .d { font-size: 32px; font-weight: 500; color: #4a5468; margin-top: 8px; line-height: 1.2; }
+  .box { width: 92px; height: 92px; border: 5px solid #14213d; border-radius: 18px; position: relative; flex: none; }
+  .box .ok { inset: -5px; border-radius: 18px; background: #1aa358; display: flex; align-items: center; justify-content: center; transform: scale(0); }
+  .box .ok svg { width: 64px; height: 64px; }
+  #verdict { left: 56px; right: 56px; bottom: 236px; font-size: 32px; font-weight: 700; color: #5b6478; opacity: 0; }
+
+  /* Штамп */
+  #stamp {
+    left: 150px; width: 780px; top: 1270px; height: 200px;
+    border: 12px solid #d7263d; border-radius: 30px; color: #d7263d;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-weight: 900; text-align: center; opacity: 0; mix-blend-mode: multiply;
+  }
+  #stamp .big { font-size: 96px; line-height: 1; letter-spacing: 2px; }
+  #stamp .sm { font-size: 36px; letter-spacing: 8px; margin-top: 8px; }
+
+  /* Сцена 4 */
+  #s4 { inset: 0; opacity: 0; }
+  #s4-a { left: 0; right: 0; top: 500px; text-shadow: 0 6px 30px rgba(0,0,0,.7); text-align: center; font-size: 104px; font-weight: 900; line-height: 1.05; }
+  #s4-a .y { color: #ffd23f; display: block; font-size: 108px; margin-top: 10px; text-shadow: 0 10px 0 #b8860b, 0 20px 60px rgba(0,0,0,.5); }
+  #s4-b { left: 70px; right: 70px; top: 880px; text-align: center; font-size: 52px; font-weight: 600; line-height: 1.35; padding: 36px 30px; background: rgba(10,18,34,.82); border-radius: 26px; }
+  #s4-b b { color: #ffd23f; }
+  .conf { width: 22px; height: 40px; border-radius: 4px; }
+
+  /* Финал */
+  #s5 { inset: 0; opacity: 0; }
+  #s5-label { left: 80px; top: 1000px; font-size: 34px; font-weight: 700; letter-spacing: 6px; color: #ffd23f; }
+  #s5-name { left: 80px; right: 120px; top: 1050px; font-size: 84px; font-weight: 900; line-height: 1.02; }
+  #s5-org { left: 80px; top: 1245px; font-size: 42px; font-weight: 700; padding: 14px 28px; background: #ffd23f; color: #14213d; border-radius: 14px; }
+  #s5-addr { left: 80px; right: 120px; top: 1350px; font-size: 48px; font-weight: 800; line-height: 1.2; display: flex; gap: 22px; align-items: flex-start; }
+  #s5-addr svg { width: 48px; height: 60px; flex: none; margin-top: 4px; }
+  #s5-cta { left: 80px; right: 140px; top: 1470px; font-size: 38px; font-weight: 600; line-height: 1.3; padding: 28px 34px; background: rgba(10,18,34,.8); border: 3px solid rgba(255,255,255,.35); border-radius: 22px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="road-wrap" class="abs"><div id="road" class="abs"><div id="dashes" class="abs"></div></div></div>
+  <div id="vignette" class="abs"></div>
+
+  <div id="photo" class="abs"><div class="fill abs"></div><div class="main abs"></div><div class="shade abs"></div></div>
+
+  <div id="s1" class="abs">
+    <div id="blink-l" class="abs blinker"></div>
+    <div id="blink-r" class="abs blinker"></div>
+    <div id="s1-a" class="abs">Сегодня на техосмотре —</div>
+    <div id="s1-b" class="abs">не машина,</div>
+    <div id="s1-c" class="abs">а ВЫ <span style="font-size:170px">👀</span></div>
+  </div>
+
+  <div id="card" class="abs">
+    <div class="hdr">
+      <div><small>ДИАГНОСТИЧЕСКАЯ КАРТА</small><b>Техосмотр<br>водителя</b></div>
+      <div class="num">ДС №152<br>25.10.2026<br>г. Бобруйск</div>
+    </div>
+    <div class="row"><div class="txt"><div class="t">Тормоза</div><div class="d">срабатывают перед каждой «зеброй»</div></div><div class="box"><div class="ok abs"></div></div></div>
+    <div class="row"><div class="txt"><div class="t">Нервы в пробке</div><div class="d">в пределах нормы (почти)</div></div><div class="box"><div class="ok abs"></div></div></div>
+    <div class="row"><div class="txt"><div class="t">Фары</div><div class="d">глаза горят от любимой дороги</div></div><div class="box"><div class="ok abs"></div></div></div>
+    <div class="row"><div class="txt"><div class="t">Бак кофе</div><div class="d">залит до отметки «полный»</div></div><div class="box"><div class="ok abs"></div></div></div>
+    <div class="row"><div class="txt"><div class="t">Плейлист</div><div class="d">исправен, громкость — на максимум</div></div><div class="box"><div class="ok abs"></div></div></div>
+    <div id="verdict" class="abs">Заключение инспектора:</div>
+  </div>
+
+  <div id="stamp" class="abs"><div class="big">ГОДЕН</div><div class="sm">К ПРАЗДНИКУ!</div></div>
+
+  <div id="s4" class="abs">
+    <div id="confetti" class="abs" style="inset:0"></div>
+    <div id="s4-a" class="abs">С Днём<span class="y">автомобилиста!</span></div>
+    <div id="s4-b" class="abs">Ровных дорог, <b>зелёного света</b><br>и только плановых остановок!</div>
+  </div>
+
+  <div id="s5" class="abs">
+    <div id="s5-label" class="abs">ПОЗДРАВЛЯЕТ</div>
+    <div id="s5-name" class="abs">Диагностическая станция №152</div>
+    <div id="s5-org" class="abs">УП «Белтехосмотр»</div>
+    <div id="s5-addr" class="abs">
+      <svg viewBox="0 0 24 30"><path d="M12 0C5.4 0 0 5.2 0 11.7 0 20.4 12 30 12 30s12-9.6 12-18.3C24 5.2 18.6 0 12 0z" fill="#ffd23f"/><circle cx="12" cy="11.5" r="4.6" fill="#14213d"/></svg>
+      <div>г. Бобруйск, ул. Гоголя, 181</div>
+    </div>
+    <div id="s5-cta" class="abs">Отметь в комментариях того, кто точно прошёл бы этот техосмотр 🚗</div>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => [...document.querySelectorAll(s)];
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const outCubic = (x) => 1 - Math.pow(1 - x, 3);
+const outBack = (x) => { const c = 1.9; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+// Плавное появление в [a, a+fi] и исчезновение в [b-fo, b]
+const vis = (t, a, b, fi = .3, fo = .3) => Math.min(prog(t, a, a + fi), 1 - prog(t, b - fo, b));
+
+const SVG_OK = '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+$$('.ok').forEach((el) => (el.innerHTML = SVG_OK));
+
+// Конфетти с фиксированным сидом — кадры воспроизводимы
+let seed = 152;
+const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const COLORS = ['#ffd23f', '#ffffff', '#1aa358', '#d7263d', '#4ea8ff'];
+const confetti = Array.from({ length: 70 }, () => ({
+  x: rnd() * 1080, delay: rnd() * 1.2, speed: 500 + rnd() * 600,
+  rot: rnd() * 360, spin: (rnd() - .5) * 900, sway: 30 + rnd() * 60, c: COLORS[Math.floor(rnd() * COLORS.length)],
+}));
+const confBox = $('#confetti');
+confetti.forEach((p) => { const d = document.createElement('div'); d.className = 'conf abs'; d.style.background = p.c; confBox.appendChild(d); p.el = d; });
+
+const ROW_T = [3.0, 4.6, 6.2, 7.8, 9.4];
+window.DURATION = 20.5;
+let hasPhoto = false;
+
+window.render = (t) => {
+  // Дорога едет всегда
+  $('#dashes').style.transform = `translateY(${(t * 900) % 300}px)`;
+
+  // Фото: сцена 1 и финал
+  const ph = hasPhoto ? Math.max(vis(t, 0, 2.6, .01, .4), vis(t, 16.8, 30, .6, .1)) : 0;
+  $('#photo').style.opacity = ph;
+  const z = t < 10 ? 1.04 + t * .03 : 1.02 + (t - 16.8) * .025;
+  $('#photo .main').style.transform = `scale(${z})`;
+
+  // Сцена 1
+  const s1 = 1 - prog(t, 2.2, 2.6);
+  $('#s1').style.opacity = s1;
+  const blink = Math.floor(t * 3) % 2 === 0 ? 1 : .15;
+  $('#blink-l').style.opacity = $('#blink-r').style.opacity = blink;
+  const a = outCubic(prog(t, .1, .5));
+  $('#s1-a').style.cssText = `opacity:${a};transform:translateY(${(1 - a) * 40}px)`;
+  const b = outBack(prog(t, .55, .9));
+  $('#s1-b').style.cssText = `opacity:${prog(t, .55, .7)};transform:scale(${.6 + .4 * b})`;
+  const c = outBack(prog(t, 1.0, 1.35));
+  $('#s1-c').style.cssText = `opacity:${prog(t, 1.0, 1.1)};transform:scale(${.3 + .7 * c}) rotate(${(1 - c) * -8}deg)`;
+
+  // Карта
+  const cin = outCubic(prog(t, 2.3, 2.9));
+  const cout = prog(t, 12.8, 13.3);
+  // Тряска от удара штампа
+  const hit = prog(t, 11.15, 11.55);
+  const shake = hit > 0 && hit < 1 ? Math.sin(hit * 40) * (1 - hit) * 18 : 0;
+  $('#card').style.opacity = Math.min(prog(t, 2.3, 2.6), 1 - cout);
+  $('#card').style.transform = `translate(${shake}px, ${(1 - cin) * 500 - cout * 200}px) rotate(${shake * .05}deg)`;
+  $$('.row').forEach((row, i) => {
+    const rt = ROW_T[i];
+    const r = outCubic(prog(t, rt, rt + .35));
+    row.style.opacity = r;
+    row.style.transform = `translateX(${(1 - r) * -60}px)`;
+    const k = prog(t, rt + .7, rt + 1.0);
+    row.querySelector('.ok').style.transform = `scale(${k === 0 ? 0 : outBack(k)})`;
+  });
+  $('#verdict').style.opacity = prog(t, 10.5, 10.8);
+
+  // Штамп
+  const st = prog(t, 11.0, 11.2);
+  const stOut = prog(t, 12.8, 13.3);
+  $('#stamp').style.opacity = st === 0 ? 0 : Math.min(.4 + st * .6, 1 - stOut);
+  $('#stamp').style.transform = `translateY(${-stOut * 200}px) rotate(-9deg) scale(${3 - 2 * outCubic(st)})`;
+
+  // Сцена 4
+  const s4 = vis(t, 13.2, 17.1, .3, .4);
+  $('#s4').style.opacity = s4;
+  const h = outBack(prog(t, 13.3, 13.8));
+  $('#s4-a').style.transform = `scale(${.5 + .5 * h})`;
+  const w = outCubic(prog(t, 14.3, 14.9));
+  $('#s4-b').style.cssText = `opacity:${w};transform:translateY(${(1 - w) * 50}px)`;
+  confetti.forEach((p) => {
+    const lt = t - 13.3 - p.delay;
+    if (lt < 0) { p.el.style.opacity = 0; return; }
+    const y = -60 + lt * p.speed;
+    p.el.style.opacity = 1;
+    p.el.style.transform = `translate(${p.x + Math.sin(lt * 3 + p.rot) * p.sway}px, ${y}px) rotate(${p.rot + lt * p.spin}deg)`;
+  });
+
+  // Финал
+  const s5 = prog(t, 16.9, 17.4);
+  $('#s5').style.opacity = s5;
+  const items = [['#s5-label', 17.0], ['#s5-name', 17.15], ['#s5-org', 17.4], ['#s5-addr', 17.7], ['#s5-cta', 18.4]];
+  items.forEach(([sel, at]) => {
+    const e = outCubic(prog(t, at, at + .45));
+    $(sel).style.opacity = e;
+    $(sel).style.transform = `translateY(${(1 - e) * 50}px)`;
+  });
+  const pulse = t > 19 ? 1 + Math.sin((t - 19) * 6) * .02 : 1;
+  $('#s5-cta').style.transform += ` scale(${pulse})`;
+};
+
+// Готовность: шрифты + фото станции (если положено рядом как station.jpg)
+window.ready = Promise.all([
+  document.fonts.ready,
+  new Promise((res) => {
+    const img = new Image();
+    img.onload = () => {
+      hasPhoto = true;
+      $$('#photo .fill, #photo .main').forEach((el) => (el.style.backgroundImage = `url(${img.src})`));
+      res();
+    };
+    img.onerror = () => res();
+    img.src = 'station.jpg';
+  }),
+]).then(() => window.render(0));
+</script>
+</body>
+</html>
