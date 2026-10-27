@@ -46,6 +46,22 @@
   #b-word { left: 60px; top: 340px; padding: 6px 24px 12px; background: rgba(10,18,34,.78); border-radius: 18px; font-size: 80px; font-weight: 900; color: #ffd23f; transform-origin: 0 50%; }
   #b-tail { left: 70px; right: 70px; top: 220px; font-size: 76px; font-weight: 900; line-height: 1.1; }
 
+  /* 3в. Официальные плашки: требования и обязанности */
+  .dim { inset: 0; background: rgba(6,10,20,.55); }
+  .plate { left: 46px; right: 46px; top: 220px; padding: 40px 40px 34px; background: rgba(255,255,255,.96); color: #14213d; border-radius: 30px; box-shadow: 0 30px 80px rgba(0,0,0,.55); }
+  .plate h2 { display: inline-block; padding: 10px 24px; margin-bottom: 26px; background: #1f4fb8; color: #fff; border-radius: 14px; font-size: 48px; font-weight: 900; letter-spacing: 1px; }
+  .plate li { list-style: none; position: relative; padding-left: 46px; margin-top: 20px; font-size: 41px; font-weight: 600; line-height: 1.26; opacity: 0; }
+  .plate li::before { content: ""; position: absolute; left: 4px; top: 15px; width: 22px; height: 22px; border-radius: 6px; background: #ffd23f; box-shadow: 0 0 0 3px #14213d; }
+
+  /* 4б. Адрес под «Гоголя, сто восемьдесят один» */
+  #a-head { left: 70px; top: 230px; font-size: 92px; font-weight: 900; }
+  #a-pill { left: 60px; top: 360px; padding: 18px 34px; background: #ffd23f; color: #14213d; border-radius: 22px; font-size: 76px; font-weight: 900; box-shadow: 0 20px 60px rgba(0,0,0,.5); transform-origin: 0 50%; }
+  #a-sub { left: 70px; top: 1320px; font-size: 48px; font-weight: 800; line-height: 1.25; }
+
+  /* 4в. Кот под «Дружный коллектив, и даже кот» */
+  #k-a { left: 70px; right: 70px; top: 230px; font-size: 88px; font-weight: 900; line-height: 1.05; }
+  #k-b { left: 60px; top: 450px; padding: 10px 30px 16px; background: rgba(10,18,34,.8); border-radius: 20px; font-size: 96px; font-weight: 900; color: #ffd23f; transform-origin: 0 50%; }
+
   /* 4. Условия */
   #o-head { left: 70px; top: 300px; font-size: 92px; font-weight: 900; line-height: 1.05; }
   #o-head span { color: #ffd23f; }
@@ -93,6 +109,46 @@
     <div id="b-tail" class="abs shadow">…и территория у нас<br>всегда в порядке <span class="em">✨</span></div>
   </div>
 
+  <div id="s-treb" class="abs scene">
+    <div class="dim abs"></div>
+    <div class="plate abs">
+      <h2>Требования к кандидату</h2>
+      <ul>
+        <li>опыт работы по технической специальности (инженер-механик, инженер-техник, инженер по организации перевозок, организация дорожного движения и т.п.)</li>
+        <li>пользовательский уровень работы с ПК (ведение электронных баз данных)</li>
+        <li>общее знание видов, типов и устройства транспортных средств</li>
+        <li>наличие водительского удостоверения (приветствуется)</li>
+        <li>высокая моральная устойчивость</li>
+        <li>отсутствие судимости за коррупционные правонарушения</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="s-obyaz" class="abs scene">
+    <div class="dim abs"></div>
+    <div class="plate abs">
+      <h2>Основные должностные обязанности</h2>
+      <ul>
+        <li>осуществляет проведение государственного технического осмотра транспортных средств, отдельных видов контрольно-диагностических работ в соответствии с требованиями НПА, ТНПА, ЛПА, технологическими инструкциями к проведению этих работ</li>
+        <li>проводит контрольные замеры и проверку соответствия полученных значений измеряемых параметров нормативным</li>
+        <li>оформляет диагностическую карту</li>
+        <li>принимает денежные средства на услуги</li>
+        <li>ведет электронную базу данных</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="s-addr" class="abs scene">
+    <div id="a-head" class="abs shadow">Ждём тебя!</div>
+    <div id="a-pill" class="abs">ул. Гоголя, 181</div>
+    <div id="a-sub" class="abs shadow">г. Бобруйск<br>ДС №152, УП «БЕЛТЕХОСМОТР»</div>
+  </div>
+
+  <div id="s-kot" class="abs scene">
+    <div id="k-a" class="abs shadow">Дружный коллектив…</div>
+    <div id="k-b" class="abs shadow">и даже кот <span class="em">🐱</span></div>
+  </div>
+
   <div id="s4" class="abs scene">
     <div id="o-head" class="abs shadow">А мы <span>даём</span> <span class="em">💪</span></div>
     <div id="o-grid" class="abs">
@@ -133,10 +189,15 @@ $$('.req .ic').forEach((el) => (el.innerHTML = SVG_OK));
 
 // Тайминг сцен совпадает с монтажом клипов в render.mjs
 // Карточки требований: [появление, уход]; между 2-й и 3-й — бонус-вставка на фото
-const T = { s2: 3.0, s3: 5.4, req: [[5.4, 7.0], [7.0, 9.8], [14.0, 16.6], [16.6, 18.4], [18.4, 20.6]], bonus: [9.8, 12.2, 14.0], s4: 20.6, s5: 24.6 };
+// Со 2-й половины ролика сцены стоят под слова песни (тайминги из субтитров pesnya.m4a):
+// 34.2 «…станция твоя!», 38.8 «Гоголя, сто восемьдесят один», 43.0 «…и даже кот», 48.5 «Звони скорей»
+const T = {
+  s2: 3.0, s3: 5.4, req: [[5.4, 7.0], [7.0, 9.8], [14.0, 16.6], [16.6, 18.4], [18.4, 20.6]], bonus: [9.8, 12.2, 14.0],
+  treb: [20.6, 27.4], obyaz: [27.4, 34.2], s4: 34.2, addr: 38.8, kot: 43.0, s5: 48.5,
+};
 // Полноэкранные фото: рамку вокруг видео прячем
-const PHOTO = [[7.0, 14.0], [16.6, 18.4], [22.6, 24.6]];
-window.DURATION = 29.8;
+const PHOTO = [[7.0, 14.0], [16.6, 18.4], [20.6, 34.2], [40.8, 48.5], [51.7, 53.75]];
+window.DURATION = 55.4;
 
 window.render = (t) => {
   // 1. Хук
@@ -155,7 +216,7 @@ window.render = (t) => {
   rise($('#w-b'), t, T.s2 + .4);
 
   // 3. Требования: каждая карточка «прилетает» под свой клип
-  $('#s3').style.opacity = Math.max(vis(t, T.s3, T.bonus[0]), vis(t, T.bonus[2], T.s4));
+  $('#s3').style.opacity = Math.max(vis(t, T.s3, T.bonus[0]), vis(t, T.bonus[2], T.treb[0]));
   $$('#r-dots i').forEach((d, i) => d.classList.toggle('on', t >= T.req[i][0]));
   $$('.req').forEach((el, i) => {
     const [a, b] = T.req[i];
@@ -168,8 +229,36 @@ window.render = (t) => {
     ic.style.transform = `scale(${k === 0 ? .2 : outBack(k)})`;
   });
 
+  // 3в. Официальные плашки: пункты появляются по одному
+  [['#s-treb', T.treb], ['#s-obyaz', T.obyaz]].forEach(([sel, [a, b]]) => {
+    $(sel).style.opacity = vis(t, a, b, .3, .3);
+    rise($(sel + ' .plate'), t, a + .05, 80, .45);
+    $(sel + ' .plate').style.opacity = 1;
+    $$(sel + ' li').forEach((li, i) => {
+      const at = a + .5 + i * .45;
+      const e = outCubic(prog(t, at, at + .35));
+      li.style.opacity = e;
+      li.style.transform = `translateX(${(1 - e) * -40}px)`;
+    });
+  });
+
   // 4. Условия
-  $('#s4').style.opacity = vis(t, T.s4, T.s5);
+  $('#s4').style.opacity = vis(t, T.s4, T.addr);
+
+  // 4б. Адрес
+  $('#s-addr').style.opacity = vis(t, T.addr, T.kot);
+  rise($('#a-head'), t, T.addr + .05);
+  const ap = outBack(prog(t, T.addr + .3, T.addr + .65));
+  $('#a-pill').style.opacity = prog(t, T.addr + .3, T.addr + .4);
+  $('#a-pill').style.transform = `scale(${t < T.addr + .3 ? .3 : .3 + .7 * ap})`;
+  rise($('#a-sub'), t, T.addr + .8);
+
+  // 4в. Кот: «и даже кот» выскакивает вместе со словом в песне
+  $('#s-kot').style.opacity = vis(t, T.kot, T.s5);
+  rise($('#k-a'), t, T.kot + .05);
+  const kb = outBack(prog(t, T.kot + 2.2, T.kot + 2.6));
+  $('#k-b').style.opacity = prog(t, T.kot + 2.2, T.kot + 2.3);
+  $('#k-b').style.transform = `scale(${t < T.kot + 2.2 ? .3 : .3 + .7 * kb}) rotate(-3deg)`;
   rise($('#o-head'), t, T.s4 + .05);
   $$('.off').forEach((el, i) => {
     const at = T.s4 + .45 + i * .55;

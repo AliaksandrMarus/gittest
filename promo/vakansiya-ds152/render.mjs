@@ -1,9 +1,10 @@
 // Рендер ролика-вакансии: node render.mjs <видео-визитка.mp4> [папка_для_кадров]
 // 1) монтирует вертикальную подложку из фрагментов визитки, 2) покадрово снимает
-// графику scene.html с прозрачным фоном, 3) накладывает одно на другое через ffmpeg.
+// графику scene.html с прозрачным фоном, 3) накладывает одно на другое через ffmpeg
+// и кладёт звуком песню pesnya.m4a (если её нет — тихая дорожка).
 import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -32,10 +33,16 @@ const CLIPS = [
   [70.1, 0.8],          // сотрудник за компьютером — ПК
   ['foto/zal.jpg', 1.8], // зал с линией техосмотра — целеустремлённость («только вперёд»)
   [133.0, 2.2],         // сотрудник поправляет кепку — стрессоустойчивость
-  [74.1, 2.0],          // сотрудник машет рукой — условия
-  ['foto/kot.jpg', 2.0], // кот на рабочем столе — «дружный коллектив»
-  [13.8, 3.2],          // команда — финал
-  [136.8, 2.0],         // станция с высоты — финал
+  ['foto/zal.jpg', 6.8], // фон плашки «Требования к кандидату»
+  ['foto/5.jpg', 6.8],  // фон плашки «Основные обязанности»
+  [74.1, 2.7],          // сотрудник машет рукой — условия («…станция твоя!»)
+  [130.9, 1.9],         // сотрудник у рабочего места — условия
+  [136.8, 2.0],         // станция с высоты — «Гоголя, 181 — ждём тебя!»
+  ['foto/stanciya.jpg', 2.2], // фасад станции с вывеской
+  ['foto/kot.jpg', 5.5], // кот на рабочем столе — «дружный коллектив, и даже кот»
+  [13.8, 3.2],          // команда — финал («Звони скорей…»)
+  ['foto/komanda.jpg', 2.05, 'fit'], // команда с тачкой — финал
+  [4.5, 1.65],          // вывеска — финал
 ];
 
 rmSync(framesDir, { recursive: true, force: true });
@@ -57,7 +64,8 @@ await browser.close();
 // Каждый видеофрагмент: размытый растянутый фон + чёткое видео 1080 по ширине с медленным наездом
 const isPhoto = ([s]) => typeof s === 'string';
 const inputs = CLIPS.flatMap((c) => isPhoto(c)
-  ? ['-loop', '1', '-framerate', String(FPS), '-t', String(c[1]), '-i', join(here, c[0])]
+  // +0.5 с запаса: zoompan съедает пару кадров, а точную длину всё равно задаёт trim
+  ? ['-loop', '1', '-framerate', String(FPS), '-t', String(c[1] + 0.5), '-i', join(here, c[0])]
   : ['-ss', String(c[0]), '-t', String(c[1]), '-i', src]);
 const parts = CLIPS.map(([, d, mode], i) => mode === 'fit' ? [
   `[${i}:v]fps=${FPS},setsar=1,split[a${i}][b${i}]`,
@@ -84,12 +92,19 @@ const filter = [
   `[base][gfx]overlay=0:0:format=auto,format=yuv420p[out]`,
 ].join(';');
 
+// Песня из Suno: обрезаем по длине ролика, плавно гасим в конце, громкость — под соцсети (−14 LUFS).
+// Без песни — тихая дорожка: некоторые площадки капризничают с видео без аудио
+const song = join(here, 'pesnya.m4a');
+const audioIn = existsSync(song) ? ['-i', song] : ['-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo'];
+// apad — песня чуть короче ролика (54,8 с), добиваем тишиной, чтобы -shortest не резал видео
+const audioFilter = `[${n + 1}:a]apad,atrim=0:${duration},asetpts=PTS-STARTPTS,` +
+  `afade=t=out:st=${duration - 1.5}:d=1.5,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[aud]`;
+
 const ffArgs = ['-y', '-loglevel', 'error', ...inputs, '-framerate', String(FPS), '-i', join(framesDir, '%04d.png'),
-  // Тихая дорожка: некоторые площадки капризничают с видео без аудио
-  '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo',
-  '-filter_complex', filter, '-map', '[out]', '-map', `${n + 1}:a`,
+  ...audioIn,
+  '-filter_complex', `${filter};${audioFilter}`, '-map', '[out]', '-map', '[aud]',
   '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-r', String(FPS),
-  '-c:a', 'aac', '-b:a', '128k', '-shortest', '-movflags', '+faststart',
+  '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart',
   join(here, 'ds152-vakansiya.mp4')];
 execFileSync('ffmpeg', ffArgs, { stdio: 'inherit' });
 console.log('Готово');
