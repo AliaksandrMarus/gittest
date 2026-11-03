@@ -1,0 +1,400 @@
+/* ===== БутузТранс =====
+   Цвета: оранжевый с логотипа, асфальт, тент Kögel, дорожная разметка, бумага накладной */
+:root {
+  --orange: #F29A2E;
+  --asphalt: #242422;
+  --asphalt-deep: #1A1A19;
+  --ink: #000;
+  --tarp: #8C8F8A;
+  --line: #F5F5F0;
+  --paper: #E9E6DF;
+  --display: "Unbounded", "Arial Black", sans-serif;
+  --text: "Golos Text", system-ui, sans-serif;
+  --gutter: clamp(16px, 4vw, 56px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--asphalt);
+  color: var(--line);
+  font: 400 18px/1.55 var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+ol, ul { list-style: none; }
+img, video, svg { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--display); font-weight: 900; line-height: 1.02; letter-spacing: -0.01em; }
+:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+
+.wrap { padding-inline: var(--gutter); max-width: 1440px; margin-inline: auto; }
+
+/* ===== Кнопки ===== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 56px; padding: 0 28px;
+  border: 2px solid transparent; border-radius: 4px;
+  font: 600 17px/1 var(--text);
+  cursor: pointer;
+  transition: background-color .2s, color .2s, border-color .2s;
+}
+.btn--orange { background: var(--orange); color: var(--ink); }
+.btn--orange:hover { background: var(--line); }
+.btn--line { border-color: var(--line); color: var(--line); }
+.btn--line:hover { background: var(--line); color: var(--ink); }
+.btn--black { background: var(--ink); color: var(--orange); }
+.btn--black:hover { background: var(--asphalt); color: var(--line); }
+
+/* ===== Навигация ===== */
+.nav {
+  position: fixed; inset: 0 0 auto; z-index: 50;
+  display: flex; align-items: center; gap: 28px;
+  padding: 18px var(--gutter);
+  color: var(--ink);
+  transition: background-color .3s, color .3s, padding .3s;
+}
+.nav.is-solid { background: var(--asphalt-deep); color: var(--line); padding-block: 12px; }
+.nav__logo { font: 900 22px/1 var(--display); letter-spacing: -0.02em; margin-right: auto; }
+.nav__logo b { font-weight: 500; }
+.nav__links { display: flex; gap: 28px; font-weight: 500; }
+.nav__links a { padding: 6px 0; border-bottom: 2px solid transparent; transition: border-color .2s; }
+.nav__links a:hover { border-color: currentColor; }
+.nav__phone { font-weight: 600; white-space: nowrap; }
+.nav__cta {
+  padding: 10px 18px; border-radius: 4px;
+  background: var(--ink); color: var(--orange); font-weight: 600;
+}
+.nav.is-solid .nav__cta { background: var(--orange); color: var(--ink); }
+.nav__burger { display: none; width: 44px; height: 44px; background: none; border: 0; color: inherit; cursor: pointer; }
+.nav__burger span { display: block; height: 2px; margin: 9px 10px; background: currentColor; transition: transform .3s; }
+.nav__burger[aria-expanded="true"] span:first-child { transform: translateY(5.5px) rotate(45deg); }
+.nav__burger[aria-expanded="true"] span:last-child { transform: translateY(-5.5px) rotate(-45deg); }
+
+/* ===== Hero: видео видно только сквозь буквы ===== */
+.hero { position: relative; background: var(--orange); }
+.hero__stage {
+  position: relative;
+  height: 100svh; min-height: 520px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.hero__video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.3) brightness(.8);
+}
+/* белый слой с чёрными буквами: в режиме screen буквы становятся окнами в видео */
+.hero__knock {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff;
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+.hero__word {
+  font: 900 14vw/0.86 var(--display);
+  letter-spacing: -0.035em;
+  color: #000;
+  white-space: nowrap;
+  transform: translateY(-4%);
+}
+.hero__break { display: none; }
+/* оранжевый слой красит белое в фирменный цвет, а видео в буквах тонирует */
+.hero__paint { position: absolute; inset: 0; background: var(--orange); mix-blend-mode: multiply; }
+.hero__shade {
+  position: absolute; inset: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,.85) 0%, rgba(0,0,0,.25) 55%, rgba(0,0,0,.1) 100%);
+  opacity: 0;
+}
+.hero__intro {
+  position: absolute; inset: auto var(--gutter) clamp(24px, 5vh, 48px);
+  display: flex; justify-content: space-between; align-items: end; gap: 32px;
+  color: var(--ink);
+}
+.hero__title { font: 500 clamp(18px, 1.9vw, 26px)/1.25 var(--display); max-width: 24ch; letter-spacing: 0; }
+.hero__fleet { font-weight: 500; max-width: 30ch; text-align: right; }
+
+.hero__final { padding: 56px var(--gutter) 72px; background: var(--asphalt-deep); }
+.has-motion .hero__final {
+  position: absolute; inset: auto 0 0; z-index: 2;
+  padding-bottom: clamp(40px, 9vh, 96px);
+  background: none;
+  opacity: 0; visibility: hidden;
+}
+.hero__distance { font: 900 clamp(40px, 7.4vw, 120px)/0.95 var(--display); letter-spacing: -0.03em; max-width: 12ch; }
+.hero__claim { font-size: clamp(18px, 1.6vw, 22px); margin: 20px 0 32px; max-width: 40ch; }
+.hero__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* ===== Маршрут ===== */
+.route { position: relative; background: var(--asphalt); overflow: hidden; }
+/* заголовок слева, справа одометр и под ним мини-карта */
+.route__head {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px 32px;
+  padding: clamp(88px, 12vh, 128px) var(--gutter) 0;
+}
+.route__title { grid-row: 1 / 3; align-self: start; }
+.route__odo { grid-column: 2; grid-row: 1; justify-self: end; }
+.route__title { font-size: clamp(32px, 4.4vw, 64px); max-width: 10ch; }
+.route__odo {
+  font: 900 clamp(36px, 6vw, 96px)/1 var(--display);
+  color: var(--orange);
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+.route__odo span { display: inline-block; min-width: 4.2ch; text-align: right; font-variant-numeric: tabular-nums; }
+
+.route__viewport { position: relative; overflow-x: auto; padding-bottom: clamp(180px, 22vw, 240px); }
+/* правый отступ подобран так, чтобы в конце прокрутки последняя остановка встала на место первой */
+.route__track {
+  --stop: clamp(280px, 38vw, 520px);
+  display: flex; width: max-content;
+  padding: clamp(40px, 7vh, 80px) calc(100vw - var(--stop) - var(--gutter)) 0 var(--gutter);
+}
+.stop {
+  flex: none;
+  width: var(--stop);
+  padding: 0 40px 0 22px;
+  border-left: 2px solid var(--tarp);
+}
+.stop__km { font: 700 18px/1 var(--display); color: var(--orange); margin-bottom: 18px; }
+/* размер подобран так, чтобы «Екатеринбург» помещался в одну строку */
+.stop__city { font-size: clamp(22px, 3.4vw, 56px); margin-bottom: 18px; white-space: nowrap; }
+.stop__text { color: #C9C9C2; max-width: 30ch; }
+.stop--last { border-color: var(--orange); }
+
+.route__road {
+  position: absolute; left: 0; right: 0; bottom: 36px;
+  height: 56px; background: var(--asphalt-deep);
+}
+.route__dashes {
+  position: absolute; left: 0; right: 0; top: 50%; height: 4px; margin-top: -2px;
+  background: repeating-linear-gradient(90deg, var(--line) 0 48px, transparent 48px 96px);
+}
+.route__truck {
+  position: absolute; left: var(--gutter); bottom: 60px;
+  width: clamp(230px, 30vw, 420px); height: auto;
+  display: none;
+}
+.has-motion .route__truck { display: block; }
+.has-motion .route__viewport { overflow: visible; }
+
+/* DAF XF105 */
+.tr-shadow { fill: rgba(0, 0, 0, .45); }
+.tr-tent { fill: var(--paper); }
+.tr-rail { fill: #6B6D68; }
+.tr-straps { stroke: rgba(0, 0, 0, .1); stroke-width: 2; fill: none; }
+.tr-stripe { fill: var(--orange); }
+.tr-name { font: 900 36px var(--display); fill: var(--ink); letter-spacing: -1px; }
+.tr-steel { fill: #2E2F2C; }
+.tr-guard { fill: #8C8F8A; }
+.tr-hose { stroke: #2E2F2C; stroke-width: 3; fill: none; }
+.tr-tank { fill: #C4C6C1; }
+.tr-tank-line { stroke: #8C8F8A; stroke-width: 2; }
+.tr-cab { fill: var(--orange); }
+.tr-cab-shade { fill: rgba(0, 0, 0, .1); }
+.tr-seam { stroke: rgba(0, 0, 0, .35); stroke-width: 2; fill: none; }
+.tr-seam-fill { fill: rgba(0, 0, 0, .35); }
+.tr-glass { fill: #1C2226; }
+.tr-glass-hi { stroke: rgba(255, 255, 255, .18); stroke-width: 3; }
+.tr-model { font: 900 22px var(--display); fill: rgba(0, 0, 0, .55); }
+.tr-trim { fill: #2E2F2C; }
+.tr-visor { fill: #2E2F2C; }
+.tr-mirror { fill: #2E2F2C; }
+.tr-lamp { fill: #FFE3B0; }
+.tr-step { fill: #4A4B47; }
+.tr-skirt { fill: #2E2F2C; }
+.tr-tire { fill: #121211; }
+.tr-rim { fill: #9A9C97; }
+.tr-hub { fill: #4A4B47; }
+.tr-bolt { fill: #4A4B47; }
+
+/* мини-карта маршрута */
+.minimap { grid-column: 2; grid-row: 2; justify-self: end; width: clamp(300px, 34vw, 480px); height: auto; }
+.minimap__dot { fill: rgba(245, 245, 240, .12); }
+.minimap__country { font: 500 28px var(--text); fill: #9A9C95; }
+.minimap__border { stroke: #9A9C95; stroke-width: 2; stroke-dasharray: 3 3; fill: none; }
+.minimap__line { stroke: #55554F; stroke-width: 3; fill: none; stroke-linejoin: round; }
+.minimap__done { stroke: var(--orange); stroke-width: 4; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.minimap__stops circle { fill: var(--asphalt); stroke: #9A9C95; stroke-width: 2; }
+.minimap__truck { fill: var(--orange); stroke: var(--asphalt); stroke-width: 3; }
+
+/* ===== Автопарк ===== */
+.fleet { background: var(--orange); color: var(--ink); padding: 0 0 clamp(72px, 10vw, 128px); overflow: hidden; }
+.fleet__run {
+  font: 900 clamp(64px, 13vw, 220px)/1 var(--display);
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  padding: clamp(24px, 4vw, 48px) 0 clamp(32px, 5vw, 64px);
+  border-bottom: 3px solid var(--ink);
+  margin-bottom: clamp(40px, 6vw, 72px);
+}
+.fleet__run span { display: inline-block; padding-left: var(--gutter); will-change: transform; }
+.fleet__top {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: clamp(28px, 5vw, 72px);
+  align-items: start; margin-bottom: clamp(48px, 7vw, 96px);
+}
+.fleet__title { font-size: clamp(26px, 3.2vw, 46px); max-width: 16ch; }
+.fleet__media { background: var(--ink); border-radius: 4px; overflow: hidden; }
+.fleet__media video { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.fleet__media figcaption { color: var(--line); padding: 12px 16px; font-size: 15px; }
+.fleet__specs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 24px; }
+.fleet__specs div { border-top: 3px solid var(--ink); padding-top: 14px; }
+.fleet__specs dt { font-weight: 500; }
+.fleet__specs dd { font: 900 clamp(44px, 6.6vw, 110px)/1 var(--display); letter-spacing: -0.04em; margin-top: 10px; white-space: nowrap; }
+.fleet__note { max-width: 52ch; margin-top: clamp(40px, 5vw, 64px); font-weight: 500; }
+
+/* ===== Услуги ===== */
+.services { padding: clamp(80px, 11vw, 144px) 0; background: var(--asphalt); }
+.services__title { font-size: clamp(32px, 4.4vw, 64px); margin-bottom: clamp(32px, 5vw, 56px); }
+.svc {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: baseline;
+  padding: clamp(22px, 3vw, 36px) 12px;
+  border-top: 1px solid rgba(245, 245, 240, .22);
+  transition: background-color .25s, color .25s, padding .25s;
+}
+.svc:last-child { border-bottom: 1px solid rgba(245, 245, 240, .22); }
+.svc h3 { font-size: clamp(26px, 3.6vw, 52px); }
+.svc p { color: #C9C9C2; max-width: 44ch; transition: color .25s; }
+.svc:hover { background: var(--orange); color: var(--ink); padding-inline: 24px; }
+.svc:hover p { color: var(--ink); }
+
+/* превью-ролик, который едет за курсором по списку направлений */
+.svc-preview {
+  position: fixed; left: 0; top: 0; z-index: 40;
+  width: clamp(240px, 24vw, 360px); aspect-ratio: 16 / 9;
+  border-radius: 4px; overflow: hidden;
+  background: var(--ink);
+  box-shadow: 0 24px 50px -18px rgba(0, 0, 0, .7);
+  pointer-events: none;
+  opacity: 0; scale: .85;
+  transition: opacity .25s, scale .25s;
+}
+.svc-preview.is-visible { opacity: 1; scale: 1; }
+.svc-preview video { width: 100%; height: 100%; object-fit: cover; }
+
+/* на сенсорных экранах ролик стоит прямо в строке */
+.svc__video { grid-column: 1 / -1; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 4px; margin-top: 8px; background: var(--ink); }
+
+/* ===== Заявка ===== */
+.order { position: relative; padding: clamp(80px, 11vw, 144px) 0; overflow: hidden; background: var(--asphalt-deep); }
+.order__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.1); }
+.order__shade { position: absolute; inset: 0; background: rgba(20, 20, 19, .78); }
+.order__inner { position: relative; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.2fr); gap: clamp(32px, 6vw, 96px); align-items: start; }
+.order__intro h2 { font-size: clamp(32px, 4.2vw, 60px); margin-bottom: 20px; }
+.order__intro p { color: #D6D6CF; max-width: 36ch; }
+
+.waybill {
+  position: relative;
+  background: var(--paper); color: var(--ink);
+  border-radius: 4px;
+  padding: clamp(22px, 3vw, 36px);
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, .6);
+}
+/* перфорация, как на отрывном бланке */
+.waybill::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -6px; width: 12px;
+  background: radial-gradient(circle at 6px 10px, var(--asphalt-deep) 5px, transparent 5.5px) 0 0 / 12px 20px repeat-y;
+}
+.waybill__top {
+  display: flex; justify-content: space-between; gap: 16px;
+  padding-bottom: 14px; margin-bottom: 22px;
+  border-bottom: 2px dashed rgba(0, 0, 0, .35);
+  font-weight: 600;
+}
+.waybill__top span:last-child { font-variant-numeric: tabular-nums; color: #5B5B55; }
+.waybill__route { display: grid; grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr); align-items: end; gap: 12px; margin-bottom: 22px; }
+.waybill__arrow { height: 2px; background: var(--ink); position: relative; margin-bottom: 22px; }
+.waybill__arrow::after {
+  content: ""; position: absolute; right: -1px; top: -5px;
+  border: 6px solid transparent; border-left: 10px solid var(--ink); border-right: 0;
+}
+.waybill__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 20px; }
+.field { display: grid; gap: 4px; font-size: 14px; color: #55554F; font-weight: 500; }
+.field--wide { grid-column: 1 / -1; }
+.field input {
+  width: 100%; min-width: 0;
+  background: transparent; color: var(--ink);
+  border: 0; border-bottom: 2px solid var(--ink); border-radius: 0;
+  padding: 8px 0; font: 500 18px var(--text);
+  color-scheme: light;
+}
+.field input::placeholder { color: #9A9A92; }
+.field input:focus { outline: none; border-color: var(--orange); }
+.field input.is-invalid { border-color: #C2261B; }
+.field--big input { font: 700 clamp(20px, 2.2vw, 28px) var(--display); padding: 6px 0 10px; }
+.waybill__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 28px; }
+.waybill__note { font-weight: 500; }
+
+/* ===== Водителям ===== */
+.jobs { background: var(--orange); color: var(--ink); padding: clamp(48px, 6vw, 80px) 0; }
+.jobs__inner { display: flex; justify-content: space-between; align-items: center; gap: 32px; }
+.jobs h2 { font-size: clamp(26px, 3.4vw, 48px); margin-bottom: 10px; }
+.jobs p { max-width: 48ch; font-weight: 500; }
+.jobs .btn { flex-shrink: 0; }
+
+/* ===== Подвал ===== */
+.footer { background: var(--asphalt-deep); padding-top: clamp(64px, 8vw, 112px); overflow: hidden; }
+.footer__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.footer__label { color: var(--tarp); margin-bottom: 8px; }
+.footer__big { font: 700 clamp(20px, 2.1vw, 30px)/1.2 var(--display); overflow-wrap: anywhere; }
+.footer__big:hover { color: var(--orange); }
+.footer__msg { display: flex; gap: 18px; margin-top: 14px; font-weight: 500; }
+.footer__msg a { border-bottom: 2px solid var(--orange); }
+.footer__addr { font-size: 18px; }
+.footer__wordmark {
+  font: 900 14.2vw/0.8 var(--display);
+  letter-spacing: -0.05em;
+  color: var(--orange);
+  white-space: nowrap;
+  margin: clamp(56px, 8vw, 112px) 0 0 -0.04em;
+}
+.footer__wordmark b { font-weight: 500; color: var(--line); }
+.footer__legal { display: flex; justify-content: space-between; gap: 16px; padding-block: 20px 28px; font-size: 14px; color: var(--tarp); }
+
+/* ===== Адаптив ===== */
+@media (max-width: 1080px) {
+  .nav__phone { display: none; }
+  .order__inner { grid-template-columns: 1fr; }
+}
+@media (max-width: 860px) {
+  .nav { gap: 12px; }
+  .nav__burger { display: block; }
+  .nav__links {
+    position: fixed; inset: 64px 0 auto;
+    flex-direction: column; gap: 0;
+    padding: 8px var(--gutter) 24px;
+    background: var(--asphalt-deep); color: var(--line);
+    transform: translateY(-130%); transition: transform .35s;
+  }
+  .nav__links.is-open { transform: none; }
+  .nav__links a { padding: 16px 0; font-size: 20px; border-bottom: 1px solid rgba(245, 245, 240, .15); }
+  .hero__intro { flex-direction: column; align-items: start; gap: 10px; }
+  .hero__fleet { text-align: left; }
+  .fleet__specs { grid-template-columns: repeat(2, 1fr); gap: 32px 20px; }
+  .fleet__top { grid-template-columns: 1fr; }
+  .route__title { grid-row: 1; }
+  .minimap { grid-column: 1 / -1; justify-self: stretch; width: 100%; }
+  .svc { grid-template-columns: 1fr; gap: 8px; }
+  .jobs__inner { flex-direction: column; align-items: start; }
+  .footer__grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  /* на телефоне слово в две строки, иначе буквы слишком мелкие */
+  .hero__break { display: inline; }
+  .hero__word { text-align: left; line-height: 1.04; }
+  .fleet__specs { grid-template-columns: 1fr; gap: 28px; }
+  .fleet__specs dd { font-size: 16vw; }
+  .route__track { --stop: 80vw; }
+  .route__head { gap: 12px 16px; }
+  .route__odo { font-size: 30px; }
+  .waybill__route { grid-template-columns: 1fr; }
+  .waybill__arrow { display: none; }
+  .waybill__grid { grid-template-columns: 1fr; }
+  .hero__actions .btn { flex: 1 1 100%; }
+  .footer__legal { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}

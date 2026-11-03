@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>БутузТранс — грузоперевозки из Бобруйска в Россию и Китай</title>
+  <meta name="description" content="ООО «Бутузтранс», Бобруйск. Тягачи DAF XF105 с полуприцепами Kögel и Schmitz Cargobull. Перевозки по Беларуси, России, Казахстану и в Китай.">
+  <meta name="theme-color" content="#F29A2E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='9' fill='%23F29A2E'/%3E%3Ccircle cx='20' cy='20' r='12' fill='none' stroke='%23000' stroke-width='3'/%3E%3Cellipse cx='20' cy='20' rx='5' ry='12' fill='none' stroke='%23000' stroke-width='2.4'/%3E%3Cpath d='M8 20h24' stroke='%23000' stroke-width='2.4'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="nav" id="nav">
+  <a href="#top" class="nav__logo" aria-label="БутузТранс, на главную">Butuz<b>Trans</b></a>
+  <nav class="nav__links" id="navLinks" aria-label="Разделы">
+    <a href="#route">Маршрут</a>
+    <a href="#fleet">Автопарк</a>
+    <a href="#services">Услуги</a>
+    <a href="#jobs">Водителям</a>
+  </nav>
+  <!-- ЗАМЕНИТЬ: реальный телефон -->
+  <a href="tel:+375290000000" class="nav__phone">+375 29 000-00-00</a>
+  <a href="#order" class="nav__cta">Заявка</a>
+  <button class="nav__burger" id="burger" aria-label="Открыть меню" aria-expanded="false" aria-controls="navLinks"><span></span><span></span></button>
+</header>
+
+<!-- ============ HERO: видео внутри букв ============ -->
+<section class="hero" id="top">
+  <div class="hero__stage">
+    <!-- ЗАМЕНИТЬ: своё видео DAF — положите assets/video/hero.mp4 и поменяйте src -->
+    <video class="hero__video" autoplay muted loop playsinline preload="auto"
+           poster="https://images.pexels.com/videos/17899033/pexels-photo-17899033.jpeg?auto=compress&w=1600">
+      <source src="https://videos.pexels.com/video-files/17899033/17899033-hd_1280_720_24fps.mp4" type="video/mp4">
+    </video>
+    <div class="hero__knock" id="heroKnock">
+      <p class="hero__word" id="heroWord" aria-hidden="true">ДОВ<span id="zoomLetter">Е</span><span class="hero__break">-<br></span>ЗЁМ</p>
+    </div>
+    <div class="hero__paint" id="heroPaint"></div>
+    <div class="hero__shade" id="heroShade"></div>
+
+    <div class="hero__intro" id="heroIntro">
+      <h1 class="hero__title">Грузоперевозки из Бобруйска в Россию, Казахстан и Китай</h1>
+      <p class="hero__fleet">Свои тягачи DAF XF105, полуприцепы Kögel и Schmitz Cargobull</p>
+    </div>
+  </div>
+
+  <div class="hero__final" id="heroFinal">
+    <p class="hero__distance">Бобруйск — Пекин, 8&nbsp;600&nbsp;км</p>
+    <p class="hero__claim">Погрузим у вас на складе и привезём в срок.</p>
+    <div class="hero__actions">
+      <a href="#order" class="btn btn--orange">Рассчитать перевозку</a>
+      <a href="tel:+375290000000" class="btn btn--line">Позвонить диспетчеру</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ МАРШРУТ: горизонтальная прокрутка ============ -->
+<section class="route" id="route">
+  <div class="route__head">
+    <h2 class="route__title">Маршрут на Китай</h2>
+    <svg class="minimap" viewBox="40 20 780 190" role="img" aria-label="Схема маршрута: Беларусь, Россия, Казахстан, Китай">
+      <defs>
+        <pattern id="mapDots" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" class="minimap__dot"/></pattern>
+      </defs>
+      <rect x="40" y="20" width="780" height="190" fill="url(#mapDots)"/>
+      <text x="52" y="122" class="minimap__country">Беларусь</text>
+      <text x="200" y="40" class="minimap__country">Россия</text>
+      <text x="340" y="150" class="minimap__country">Казахстан</text>
+      <text x="640" y="160" class="minimap__country">Китай</text>
+      <path class="minimap__border" d="M106 64l-6 20M354 50l14 22M490 140l10 26"/>
+      <path class="minimap__line" d="M78 81L145 60L329 52L415 96L487 152L545 156L775 187"/>
+      <path class="minimap__done" id="mapDone" d="M78 81L145 60L329 52L415 96L487 152L545 156L775 187"/>
+      <g class="minimap__stops">
+        <circle cx="78" cy="81" r="4"/><circle cx="145" cy="60" r="4"/><circle cx="329" cy="52" r="4"/>
+        <circle cx="487" cy="152" r="4"/><circle cx="545" cy="156" r="4"/><circle cx="775" cy="187" r="4"/>
+      </g>
+      <circle class="minimap__truck" id="mapTruck" cx="78" cy="81" r="8"/>
+    </svg>
+    <p class="route__odo" aria-live="off"><span id="odo">0</span> км</p>
+  </div>
+
+  <div class="route__viewport">
+    <ol class="route__track" id="track">
+      <li class="stop">
+        <p class="stop__km">0 км</p>
+        <h3 class="stop__city">Бобруйск</h3>
+        <p class="stop__text">Наша база. Подаём машину под погрузку, оформляем CMR и пломбируем.</p>
+      </li>
+      <li class="stop">
+        <p class="stop__km">720 км</p>
+        <h3 class="stop__city">Москва</h3>
+        <p class="stop__text">Граница Беларусь — Россия без таможенного оформления, едем без остановок.</p>
+      </li>
+      <li class="stop">
+        <p class="stop__km">2 500 км</p>
+        <h3 class="stop__city">Екатеринбург</h3>
+        <p class="stop__text">Урал. Отсюда поворачиваем на юг, к Казахстану.</p>
+      </li>
+      <li class="stop">
+        <p class="stop__km">5 150 км</p>
+        <h3 class="stop__city">Хоргос</h3>
+        <p class="stop__text">Граница Казахстан — Китай. Документы готовим заранее, чтобы машина не стояла.</p>
+      </li>
+      <li class="stop">
+        <p class="stop__km">5 820 км</p>
+        <h3 class="stop__city">Урумчи</h3>
+        <p class="stop__text">Первый крупный город в Китае. Здесь многие грузы уже выгружаются.</p>
+      </li>
+      <li class="stop stop--last">
+        <p class="stop__km">8 600 км</p>
+        <h3 class="stop__city">Пекин</h3>
+        <p class="stop__text">Конец маршрута. Обратно везём груз из Китая.</p>
+      </li>
+    </ol>
+    <div class="route__road" aria-hidden="true"><div class="route__dashes" id="dashes"></div></div>
+    <!-- DAF XF105 Super Space Cab + тентованный полуприцеп, вид сбоку -->
+    <svg class="route__truck" id="truck" viewBox="0 0 640 212" aria-hidden="true">
+      <defs>
+        <symbol id="wheel" viewBox="-23 -23 46 46" overflow="visible">
+          <circle r="22" class="tr-tire"/>
+          <g class="tr-spin">
+            <circle r="13" class="tr-rim"/>
+            <circle r="4.5" class="tr-hub"/>
+            <circle cx="8.5" r="1.8" class="tr-bolt"/><circle cx="2.6" cy="8.1" r="1.8" class="tr-bolt"/>
+            <circle cx="-6.9" cy="5" r="1.8" class="tr-bolt"/><circle cx="-6.9" cy="-5" r="1.8" class="tr-bolt"/>
+            <circle cx="2.6" cy="-8.1" r="1.8" class="tr-bolt"/>
+          </g>
+        </symbol>
+      </defs>
+      <ellipse cx="320" cy="203" rx="318" ry="6" class="tr-shadow"/>
+
+      <!-- полуприцеп -->
+      <rect x="40" y="148" width="372" height="10" class="tr-steel"/>
+      <rect x="14" y="22" width="398" height="128" rx="3" class="tr-tent"/>
+      <rect x="14" y="22" width="398" height="7" class="tr-rail"/>
+      <rect x="14" y="141" width="398" height="9" class="tr-rail"/>
+      <path class="tr-straps" d="M47 29v112M80 29v112M113 29v112M146 29v112M179 29v112M212 29v112M245 29v112M278 29v112M311 29v112M344 29v112M377 29v112"/>
+      <rect x="14" y="108" width="398" height="9" class="tr-stripe"/>
+      <text x="213" y="88" text-anchor="middle" class="tr-name">BUTUZTRANS</text>
+      <rect x="8" y="20" width="8" height="132" rx="2" class="tr-steel"/>
+      <rect x="10" y="158" width="34" height="6" class="tr-steel"/>
+      <rect x="196" y="160" width="128" height="4" class="tr-guard"/>
+      <rect x="196" y="168" width="128" height="4" class="tr-guard"/>
+      <rect x="338" y="150" width="7" height="34" class="tr-steel"/>
+      <rect x="331" y="183" width="21" height="5" rx="1" class="tr-steel"/>
+      <rect x="60" y="152" width="132" height="8" rx="2" class="tr-steel"/>
+
+      <!-- тягач: рама, бак, крылья -->
+      <rect x="384" y="150" width="232" height="11" class="tr-steel"/>
+      <path class="tr-hose" d="M412 64q30 18 60 6M412 74q30 16 60 8"/>
+      <rect x="452" y="152" width="72" height="24" rx="11" class="tr-tank"/>
+      <path class="tr-tank-line" d="M466 154v20M510 154v20"/>
+      <path d="M400 160a30 30 0 0 1 60 0v-6h-60z" class="tr-steel"/>
+
+      <!-- кабина -->
+      <path class="tr-cab" d="M472 150V42q0-16 15-18l100-6q16-1 18 14l8 106q1 12-12 12h-11a27 27 0 0 0-54 0z"/>
+      <path class="tr-cab-shade" d="M476 46q60-6 128-8l1 8q-66 2-129 8z"/>
+      <path class="tr-seam" d="M538 148V60q0-6 6-6h56"/>
+      <path class="tr-glass" d="M548 62h48q5 0 5 5l2 33h-55z"/>
+      <path class="tr-glass-hi" d="M556 64l-6 34M566 64l-6 34"/>
+      <rect x="500" y="66" width="28" height="4" rx="2" class="tr-seam-fill"/>
+      <text x="505" y="128" class="tr-model">XF</text>
+      <path class="tr-trim" d="M604 34l9 116h4l-9-116z"/>
+      <path class="tr-visor" d="M590 18l28 5-2 8h-24z"/>
+      <rect x="606" y="70" width="12" height="3" class="tr-steel"/>
+      <rect x="616" y="56" width="9" height="40" rx="3" class="tr-mirror"/>
+      <rect x="604" y="124" width="12" height="9" rx="2" class="tr-lamp"/>
+      <rect x="588" y="140" width="30" height="15" rx="3" class="tr-steel"/>
+      <rect x="544" y="152" width="38" height="5" rx="1" class="tr-step"/>
+      <rect x="546" y="163" width="34" height="5" rx="1" class="tr-step"/>
+      <rect x="474" y="132" width="62" height="10" rx="2" class="tr-skirt"/>
+
+      <g id="wheels">
+        <use href="#wheel" x="61" y="155" width="46" height="46"/>
+        <use href="#wheel" x="105" y="155" width="46" height="46"/>
+        <use href="#wheel" x="149" y="155" width="46" height="46"/>
+        <use href="#wheel" x="407" y="155" width="46" height="46"/>
+        <use href="#wheel" x="537" y="155" width="46" height="46"/>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ============ АВТОПАРК ============ -->
+<section class="fleet" id="fleet">
+  <div class="fleet__run" aria-hidden="true"><span id="fleetRun">DAF XF105 Kögel Schmitz Cargobull DAF XF105 Kögel Schmitz Cargobull</span></div>
+  <div class="wrap">
+    <div class="fleet__top">
+      <h2 class="fleet__title">DAF XF105 с тентованными полуприцепами Kögel и Schmitz Cargobull</h2>
+      <!-- ЗАМЕНИТЬ: лучше всего — ваше видео или фото DAF на базе -->
+      <figure class="fleet__media">
+        <video class="lazy-video" muted loop playsinline preload="none">
+          <source src="https://videos.pexels.com/video-files/6685045/6685045-hd_1280_720_30fps.mp4" type="video/mp4">
+        </video>
+        <figcaption>Перед каждым рейсом машину проверяет механик</figcaption>
+      </figure>
+    </div>
+    <!-- ЗАМЕНИТЬ: проверьте цифры под свой парк -->
+    <dl class="fleet__specs">
+      <div><dt>мощность тягача</dt><dd>510 л.с.</dd></div>
+      <div><dt>объём полуприцепа</dt><dd>92 м³</dd></div>
+      <div><dt>груза за рейс, до</dt><dd>22 т</dd></div>
+      <div><dt>европаллет</dt><dd>33</dd></div>
+    </dl>
+    <p class="fleet__note">Загрузка сбоку, сверху и сзади. Машины обслуживаем на своей базе в Бобруйске. Есть и Mercedes-Benz Actros.</p>
+  </div>
+</section>
+
+<!-- ============ УСЛУГИ ============ -->
+<section class="services" id="services">
+  <div class="wrap">
+    <h2 class="services__title">Куда везём</h2>
+    <!-- data-video: ролик, который показывается при наведении (на телефоне — под строкой) -->
+    <ul class="services__list" id="services-list">
+      <li class="svc" data-video="https://videos.pexels.com/video-files/39039020/16611499_640_360_30fps.mp4">
+        <h3>По Беларуси</h3>
+        <p>Между городами и предприятиями. Машину подаём в день заявки или на следующий.</p>
+      </li>
+      <li class="svc" data-video="https://videos.pexels.com/video-files/11081624/11081624-sd_640_360_30fps.mp4">
+        <h3>Россия и Казахстан</h3>
+        <p>Москва, Петербург, Урал, Сибирь, Астана, Алматы. Знаем дороги и стоянки, ездим и зимой.</p>
+      </li>
+      <li class="svc" data-video="https://videos.pexels.com/video-files/5149779/5149779-sd_640_360_30fps.mp4">
+        <h3>Китай</h3>
+        <p>Туда и обратно через Хоргос или Забайкальск. Берём на себя переход границы.</p>
+      </li>
+      <li class="svc" data-video="https://videos.pexels.com/video-files/31025198/13261631_640_360_24fps.mp4">
+        <h3>Документы и GPS</h3>
+        <p>CMR, TIR, транзитные декларации, страхование груза. Каждая машина на GPS, вы знаете, где груз.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ ЗАЯВКА: в виде накладной ============ -->
+<section class="order" id="order">
+  <!-- ЗАМЕНИТЬ: своё видео погрузки — assets/video/unload.mp4 -->
+  <video class="order__video lazy-video" muted loop playsinline preload="none">
+    <source src="https://videos.pexels.com/video-files/39966867/17053281_1280_720_60fps.mp4" type="video/mp4">
+  </video>
+  <div class="order__shade"></div>
+
+  <div class="wrap order__inner">
+    <div class="order__intro">
+      <h2>Посчитаем стоимость за 30 минут</h2>
+      <p>Заполните накладную. Диспетчер перезвонит, назовёт цену и дату подачи машины. Работаем с НДС.</p>
+    </div>
+
+    <form class="waybill" id="orderForm" novalidate>
+      <div class="waybill__top">
+        <span>Заявка на перевозку</span>
+        <span id="waybillNo">№ BT-0000</span>
+      </div>
+      <div class="waybill__route">
+        <label class="field field--big">Откуда<input name="from" required autocomplete="off" placeholder="Бобруйск"></label>
+        <span class="waybill__arrow" aria-hidden="true"></span>
+        <label class="field field--big">Куда<input name="to" required autocomplete="off" placeholder="Урумчи"></label>
+      </div>
+      <div class="waybill__grid">
+        <label class="field">Что везём<input name="cargo" placeholder="Например, мебель"></label>
+        <label class="field">Вес, т<input name="weight" inputmode="decimal" placeholder="20"></label>
+        <label class="field">Дата загрузки<input name="date" type="date"></label>
+        <label class="field">Ваше имя<input name="name" autocomplete="name"></label>
+        <label class="field field--wide">Телефон<input name="phone" type="tel" required autocomplete="tel" placeholder="+375 29 000-00-00"></label>
+      </div>
+      <div class="waybill__foot">
+        <button class="btn btn--black" type="submit">Отправить заявку</button>
+        <p class="waybill__note" id="formNote" role="status"></p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ============ ВОДИТЕЛЯМ ============ -->
+<section class="jobs" id="jobs">
+  <div class="wrap jobs__inner">
+    <div>
+      <h2>Ищем водителей категории CE</h2>
+      <p>Рейсы в Россию и Китай на DAF XF105. Исправная техника, суточные, оплата без задержек.</p>
+    </div>
+    <a href="tel:+375290000000" class="btn btn--black">Позвонить по вакансии</a>
+  </div>
+</section>
+
+<!-- ============ КОНТАКТЫ ============ -->
+<!-- ЗАМЕНИТЬ: реальные контакты -->
+<footer class="footer">
+  <div class="wrap footer__grid">
+    <div>
+      <p class="footer__label">Звоните</p>
+      <a href="tel:+375290000000" class="footer__big">+375 29 000-00-00</a>
+    </div>
+    <div>
+      <p class="footer__label">Пишите</p>
+      <a href="mailto:info@butuztrans.by" class="footer__big">info@butuztrans.by</a>
+      <p class="footer__msg">
+        <a href="viber://chat?number=%2B375290000000">Viber</a>
+        <a href="https://t.me/" target="_blank" rel="noopener">Telegram</a>
+        <a href="https://wa.me/375290000000" target="_blank" rel="noopener">WhatsApp</a>
+      </p>
+    </div>
+    <div>
+      <p class="footer__label">Приезжайте</p>
+      <p class="footer__addr">ООО «Бутузтранс»<br>Могилёвская область, г.&nbsp;Бобруйск</p>
+    </div>
+  </div>
+  <p class="footer__wordmark" aria-hidden="true">Butuz<b>Trans</b></p>
+  <div class="wrap footer__legal">
+    <span>© <span id="year"></span> ООО «Бутузтранс»</span>
+    <span>Видео: Pexels</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
