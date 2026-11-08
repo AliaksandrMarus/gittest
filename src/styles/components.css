@@ -948,8 +948,11 @@
 /* ─── Чат-бот ─────────────────────────────────────────────────── */
 
 /* Элемент+класс даёт специфичность выше .modal — без этого правила
-   центрирующий UA-стиль <dialog> переопределить не получится. */
-dialog.chatbot-panel {
+   центрирующий UA-стиль <dialog> переопределить не получится.
+   Критично: display:flex только при [open] — без этого условия
+   правило перебивает стандартное dialog:not([open]){display:none},
+   и закрытый диалог всё равно остаётся на экране. */
+dialog.chatbot-panel[open] {
   position: fixed;
   inset: auto 1.25rem 1.25rem auto;
   margin: 0;
@@ -960,7 +963,7 @@ dialog.chatbot-panel {
 }
 
 @media (max-width: 30rem) {
-  dialog.chatbot-panel {
+  dialog.chatbot-panel[open] {
     inset: auto 0.75rem calc(0.75rem + var(--quickcall-h, 0px)) 0.75rem;
     width: auto;
   }
