@@ -854,7 +854,7 @@
   inset-inline: 0;
   bottom: 0;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1px;
   translate: 0 100%;
   background: var(--c-line);
@@ -943,6 +943,139 @@
     color: #1a1204;
     border-color: transparent;
   }
+}
+
+/* ─── Чат-бот ─────────────────────────────────────────────────── */
+
+/* Элемент+класс даёт специфичность выше .modal — без этого правила
+   центрирующий UA-стиль <dialog> переопределить не получится. */
+dialog.chatbot-panel {
+  position: fixed;
+  inset: auto 1.25rem 1.25rem auto;
+  margin: 0;
+  width: min(100% - 2.5rem, 24rem);
+  max-height: min(70vh, 34rem);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 30rem) {
+  dialog.chatbot-panel {
+    inset: auto 0.75rem calc(0.75rem + var(--quickcall-h, 0px)) 0.75rem;
+    width: auto;
+  }
+}
+
+dialog.chatbot-panel::backdrop {
+  /* Не блокирующее затемнение — страница за чатом остаётся видна. */
+  background: transparent;
+}
+
+.chatbot__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-height: 0;
+  flex: 1;
+}
+
+.chatbot__log {
+  flex: 1;
+  min-height: 11rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding-right: 0.25rem;
+}
+
+.chatbot__msg {
+  max-width: 88%;
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+}
+
+.chatbot__msg--bot {
+  align-self: flex-start;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-line);
+}
+
+.chatbot__msg--user {
+  align-self: flex-end;
+  background: rgb(94 231 255 / 0.14);
+  border: 1px solid rgb(94 231 255 / 0.3);
+}
+
+.chatbot__link {
+  display: inline-block;
+  margin-top: 0.4rem;
+  color: var(--c-beam);
+  font-size: var(--fs-xs);
+  text-decoration: none;
+}
+
+.chatbot__link:hover {
+  text-decoration: underline;
+}
+
+.chatbot__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chatbot__chip {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--c-text-dim);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.chatbot__chip:hover,
+.chatbot__chip:focus-visible {
+  border-color: var(--c-beam);
+  color: var(--c-beam);
+}
+
+.chatbot__form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chatbot__form input {
+  flex: 1;
+  width: auto;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-md);
+  background: rgb(6 8 11 / 0.6);
+  color: var(--c-text);
+  font: inherit;
+}
+
+.chatbot__form input:focus {
+  outline: none;
+  border-color: var(--c-beam);
+  box-shadow: 0 0 0 3px rgb(94 231 255 / 0.15);
+}
+
+.chatbot__form .btn {
+  padding: 0.6rem 0.9rem;
+  flex-shrink: 0;
+}
+
+.chatbot__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: -0.25rem;
 }
 
 /* ─── Было / Стало ────────────────────────────────────────────── */

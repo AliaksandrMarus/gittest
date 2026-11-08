@@ -1,0 +1,269 @@
+---
+import { getCollection } from 'astro:content';
+import Icon from './Icon.astro';
+import { contacts, scheduleHuman, analytics } from '../config/site';
+import { formatPrice } from '../lib/format';
+import { link } from '../lib/url';
+
+/**
+ * Чат-бот без ИИ и без сервера: поиск ближайшего совпадения в базе
+ * вопрос-ответ, которая почти целиком уже есть в контенте сайта
+ * (faq каждой услуги + цены оттуда же). Работает 24/7 ровно потому,
+ * что это просто JS в браузере — ни разговора, ни запроса к серверу,
+ * ни счёта за API. Не выдаёт себя за свободный диалог: при неудачном
+ * совпадении честно предлагает позвонить или написать.
+ */
+
+interface KbEntry {
+  q: string;
+  a: string;
+  href?: string;
+  keywords?: string[];
+}
+
+const GENERAL_FAQ: KbEntry[] = [
+  {
+    q: 'Где вы находитесь и как доехать?',
+    a: `${contacts.address.full}. Заезд со стороны Минской улицы.`,
+    keywords: ['адрес', 'где', 'находитесь', 'доехать', 'место', 'заехать'],
+  },
+  {
+    q: 'Какой у вас график работы?',
+    a: scheduleHuman,
+    keywords: ['график', 'часы', 'работаете', 'открыто', 'закрыто', 'когда', 'воскресенье'],
+  },
+  {
+    q: 'Нужно ли записываться заранее?',
+    a: 'На мойку можно приехать без записи в рабочие часы. На детейлинг — антикор, оклейку плёнкой, тонировку, химчистку — лучше записаться заранее.',
+    keywords: ['запись', 'записаться', 'бронь', 'очередь', 'предварительно'],
+  },
+  {
+    q: 'Можно ли оплатить картой?',
+    a: 'Да, картой и наличными. Для юрлиц — безналичный расчёт, уточните по телефону.',
+    keywords: ['оплата', 'картой', 'наличные', 'безнал', 'платить'],
+  },
+  {
+    q: 'Как с вами связаться?',
+    a: `Телефон ${contacts.phoneHuman}, также Telegram и Viber — кнопки рядом с этим чатом.`,
+    keywords: ['телефон', 'позвонить', 'контакты', 'связаться', 'номер'],
+  },
+];
+
+const services = await getCollection('services');
+
+const serviceFaq: KbEntry[] = services.flatMap((s) =>
+  s.data.faq.map((f) => ({ ...f, href: link(`/uslugi/${s.id}/`) })),
+);
+
+const priceFaq: KbEntry[] = services.map((s) => {
+  const noteSuffix = s.data.priceNote && !s.data.priceNote.startsWith('от') ? ` (${s.data.priceNote})` : '';
+  return {
+    q: `Сколько стоит ${s.data.short.toLowerCase()}?`,
+    a: `${s.data.short}: ${formatPrice(s.data)}${noteSuffix}, занимает ${s.data.duration}.`,
+    href: link(`/uslugi/${s.id}/`),
+    keywords: [...s.data.short.toLowerCase().split(' '), 'цена', 'стоимость', 'стоит', 'сколько'],
+  };
+});
+
+const kb: KbEntry[] = [...GENERAL_FAQ, ...serviceFaq, ...priceFaq];
+// < внутри ответов (тире, кавычки — не проблема) экранируем на случай "</script>" в тексте.
+const kbJson = JSON.stringify(kb).replace(/</g, '\\u003c');
+---
+
+<dialog
+  class="modal chatbot-panel"
+  data-chatbot-modal
+  aria-labelledby="chatbot-title"
+  data-ym-id={analytics.yandexMetrika}
+  data-phone-raw={contacts.phoneRaw}
+  data-phone-human={contacts.phoneHuman}
+  data-telegram={contacts.telegram}
+>
+  <div class="modal__head">
+    <div>
+      <h3 id="chatbot-title" style="font-size:var(--fs-lg)">Чем помочь?</h3>
+      <p class="text-dim" style="font-size:var(--fs-xs);margin-top:.25rem">
+        Отвечаю по частым вопросам — для остального лучше позвонить
+      </p>
+    </div>
+    <button class="modal__close" type="button" data-close-chatbot aria-label="Закрыть чат">
+      <Icon name="close" size={18} />
+    </button>
+  </div>
+
+  <div class="modal__body chatbot__body">
+    <div class="chatbot__log" data-chatbot-log role="log" aria-live="polite"></div>
+
+    <div class="chatbot__chips" data-chatbot-chips>
+      <button type="button" class="chatbot__chip" data-chatbot-ask="Сколько стоит мойка?">Цены</button>
+      <button type="button" class="chatbot__chip" data-chatbot-ask="Какой у вас график работы?">График</button>
+      <button type="button" class="chatbot__chip" data-chatbot-ask="Нужно ли записываться заранее?">
+        Как записаться
+      </button>
+      <button type="button" class="chatbot__chip" data-chatbot-ask="Где вы находитесь?">Адрес</button>
+    </div>
+
+    <form class="chatbot__form" data-chatbot-form>
+      <label class="visually-hidden" for="chatbot-input">Ваш вопрос</label>
+      <input id="chatbot-input" type="text" name="q" placeholder="Напишите вопрос…" autocomplete="off" />
+      <button class="btn btn--beam" type="submit" aria-label="Отправить вопрос">
+        <Icon name="arrow" size={18} />
+      </button>
+    </form>
+  </div>
+</dialog>
+
+<script type="application/json" id="chatbot-kb" set:html={kbJson} />
+
+<script>
+  interface KbEntry {
+    q: string;
+    a: string;
+    href?: string;
+    keywords?: string[];
+  }
+
+  const modal = document.querySelector<HTMLDialogElement>('[data-chatbot-modal]');
+  const log = document.querySelector<HTMLElement>('[data-chatbot-log]');
+  const form = document.querySelector<HTMLFormElement>('[data-chatbot-form]');
+  const input = document.querySelector<HTMLInputElement>('#chatbot-input');
+  const kbEl = document.getElementById('chatbot-kb');
+
+  if (modal && log && form && input && kbEl) {
+    const kb: KbEntry[] = JSON.parse(kbEl.textContent ?? '[]');
+
+    // Стоп-слова убраны не все: "где"/"когда"/"сколько" несут смысл вопроса
+    // и остаются токенами для сопоставления с ключевыми словами записей.
+    const STOP = new Set([
+      'и', 'в', 'на', 'с', 'по', 'для', 'а', 'но', 'у', 'к', 'от', 'из',
+      'это', 'вы', 'мне', 'мой', 'моя', 'моё', 'ли', 'же', 'то', 'так',
+      'что', 'как', 'ваш', 'ваша', 'при', 'не', 'есть', 'можно',
+    ]);
+
+    function normalize(text: string): string[] {
+      return text
+        .toLowerCase()
+        .replace(/ё/g, 'е')
+        .replace(/[^а-яa-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter((w) => w.length > 1 && !STOP.has(w));
+    }
+
+    const indexed = kb.map((entry) => ({
+      entry,
+      tokens: new Set([...normalize(entry.q), ...(entry.keywords ?? []).flatMap(normalize)]),
+    }));
+
+    function bestMatch(question: string): KbEntry | null {
+      const qTokens = normalize(question);
+      if (!qTokens.length) return null;
+      let best: { entry: KbEntry; score: number } | null = null;
+      for (const { entry, tokens } of indexed) {
+        let hits = 0;
+        for (const t of qTokens) if (tokens.has(t)) hits++;
+        const score = hits / qTokens.length;
+        if (!best || score > best.score) best = { entry, score };
+      }
+      return best && best.score >= 0.3 ? best.entry : null;
+    }
+
+    function reachGoal(goal: string) {
+      const w = window as unknown as { ym?: (id: number, action: string, target: string) => void };
+      const ymId = modal!.dataset.ymId;
+      try {
+        if (ymId) w.ym?.(Number(ymId), 'reachGoal', goal);
+      } catch {
+        /* аналитика не должна ронять чат */
+      }
+    }
+
+    function scrollToEnd() {
+      log!.scrollTop = log!.scrollHeight;
+    }
+
+    function addMessage(text: string, from: 'bot' | 'user', href?: string) {
+      const bubble = document.createElement('div');
+      bubble.className = `chatbot__msg chatbot__msg--${from}`;
+      bubble.textContent = text;
+      if (href) {
+        const a = document.createElement('a');
+        a.href = href;
+        a.className = 'chatbot__link';
+        a.textContent = 'Подробнее об услуге →';
+        bubble.append(document.createElement('br'), a);
+      }
+      log!.append(bubble);
+      scrollToEnd();
+    }
+
+    function addFallback() {
+      const bubble = document.createElement('div');
+      bubble.className = 'chatbot__msg chatbot__msg--bot';
+      bubble.textContent = 'Не нашёл точного ответа — так быстрее узнать наверняка:';
+
+      const actions = document.createElement('div');
+      actions.className = 'chatbot__actions';
+
+      const call = document.createElement('a');
+      call.href = `tel:${modal!.dataset.phoneRaw}`;
+      call.className = 'btn btn--beam';
+      call.textContent = `Позвонить`;
+
+      const tg = document.createElement('a');
+      tg.href = modal!.dataset.telegram ?? '#';
+      tg.target = '_blank';
+      tg.rel = 'noopener';
+      tg.className = 'btn btn--ghost';
+      tg.textContent = 'Telegram';
+
+      actions.append(call, tg);
+      log!.append(bubble, actions);
+      scrollToEnd();
+    }
+
+    function ask(question: string) {
+      const text = question.trim();
+      if (!text) return;
+      addMessage(text, 'user');
+      reachGoal('chatbot_question');
+
+      const match = bestMatch(text);
+      // Небольшая задержка — иначе ответ появляется до того, как вопрос
+      // успевает прочитаться, и выглядит как заготовка, а не ответ.
+      window.setTimeout(() => {
+        if (match) addMessage(match.a, 'bot', match.href);
+        else addFallback();
+      }, 260);
+    }
+
+    let greeted = false;
+    function open() {
+      modal!.showModal();
+      if (!greeted) {
+        greeted = true;
+        addMessage(
+          'Привет! Отвечу на частые вопросы о мойке и детейлинге — выберите тему ниже или напишите свой вопрос.',
+          'bot',
+        );
+      }
+      input!.focus();
+    }
+
+    document.querySelectorAll('[data-open-chatbot]').forEach((btn) => btn.addEventListener('click', open));
+    modal.querySelector('[data-close-chatbot]')?.addEventListener('click', () => modal.close());
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.close();
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('[data-chatbot-ask]').forEach((chip) => {
+      chip.addEventListener('click', () => ask(chip.dataset.chatbotAsk ?? ''));
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      ask(input.value);
+      input.value = '';
+      input.focus();
+    });
+  }
+</script>
