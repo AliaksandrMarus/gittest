@@ -945,6 +945,168 @@
   }
 }
 
+/* ─── Индекс мойки ────────────────────────────────────────────── */
+
+.washindex {
+  display: grid;
+  gap: var(--sp-5);
+  min-height: 15rem;
+}
+
+/* Большой информер — подпрыгивание при наведении, как у карточек услуг,
+   здесь выглядит как дёрганье. */
+.washindex:hover {
+  translate: none;
+}
+
+@media (min-width: 62rem) {
+  .washindex {
+    grid-template-columns: 1fr 1.15fr;
+    align-items: center;
+    gap: var(--sp-7);
+    padding: var(--sp-6);
+  }
+}
+
+.washindex__main {
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: start;
+}
+
+.washindex__score {
+  display: flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  line-height: 1;
+}
+
+.washindex__score strong {
+  font-size: var(--fs-4xl);
+  font-weight: 800;
+  color: var(--c-text-mute);
+  transition: color var(--dur) var(--ease);
+}
+
+.washindex__score span {
+  font-size: var(--fs-lg);
+  color: var(--c-text-mute);
+}
+
+.washindex[data-score='high'] .washindex__score strong {
+  color: var(--c-ok);
+}
+
+.washindex[data-score='mid'] .washindex__score strong {
+  color: var(--c-warm);
+}
+
+.washindex[data-score='low'] .washindex__score strong {
+  color: var(--c-beam);
+}
+
+.washindex__title {
+  font-size: var(--fs-xl);
+}
+
+.washindex__text {
+  max-width: 36rem;
+}
+
+.washindex__hint {
+  font-size: var(--fs-sm);
+  color: var(--c-text-dim);
+}
+
+.washindex__hint a {
+  color: var(--c-beam);
+}
+
+.washindex__actions {
+  margin-top: var(--sp-2);
+}
+
+.washindex__days {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+@media (min-width: 36rem) {
+  .washindex__days {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.washindex__day {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 0.35rem;
+  /* Место под строку осадков зарезервировано заранее: иначе после загрузки
+     прогноза дождливые дни вытягивали бы ряд и сдвигали страницу. */
+  min-height: 7.25rem;
+  padding: 0.75rem 0.25rem;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-md);
+  background: rgb(6 8 11 / 0.45);
+  text-align: center;
+}
+
+.washindex__dayname {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--c-text-dim);
+}
+
+.washindex__icon {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--c-text-mute);
+}
+
+.washindex__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.washindex__day--dry .washindex__icon {
+  color: var(--c-warm);
+}
+
+.washindex__day--rain .washindex__icon,
+.washindex__day--snow .washindex__icon {
+  color: var(--c-beam);
+}
+
+.washindex__temp {
+  font-size: var(--fs-xs);
+  color: var(--c-text);
+  white-space: nowrap;
+}
+
+.washindex__precip {
+  font-size: 0.75rem;
+  color: var(--c-beam);
+  white-space: nowrap;
+}
+
+.washindex__credit {
+  margin-top: 0.6rem;
+  font-size: 0.75rem;
+  color: var(--c-text-mute);
+  text-align: right;
+}
+
+.washindex__credit a {
+  color: inherit;
+}
+
 /* ─── Чат-бот ─────────────────────────────────────────────────── */
 
 /* Элемент+класс даёт специфичность выше .modal — без этого правила

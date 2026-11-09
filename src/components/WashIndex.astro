@@ -1,0 +1,209 @@
+---
+import { schedule } from '../config/site';
+import { link } from '../lib/url';
+
+/**
+ * «Индекс мойки»: стоит ли мыть машину сегодня, судя по прогнозу.
+ *
+ * Прогноз отдаёт /api/weather.php (кэширующий посредник к MET Norway).
+ * Карточка рендерится сразу с заглушками того же размера — данные
+ * подставляются без сдвига вёрстки. Если прогноза нет (нет PHP, как на
+ * превью GitHub Pages, или источник недоступен), остаётся общий совет:
+ * карточка не исчезает и не прыгает.
+ */
+
+const closedDays = schedule.flatMap((day, i) => (day ? [] : [i]));
+const placeholderDays = Array.from({ length: 6 });
+---
+
+<div
+  class="washindex card"
+  data-washindex
+  data-src={link('/api/weather.php')}
+  data-closed={closedDays.join(',')}
+  data-link-salon={link('/uslugi/himchistka-salona/')}
+  data-link-dnishche={link('/uslugi/moyka-dnishcha/')}
+>
+  <div class="washindex__main">
+    <p class="eyebrow" style="margin:0">Индекс мойки · Бобруйск</p>
+    <div class="washindex__score" aria-hidden="true">
+      <strong data-wi-score>—</strong><span>/10</span>
+    </div>
+    <h2 class="washindex__title" id="washindex-title" data-wi-title>Стоит ли мыть машину сегодня?</h2>
+    <p class="washindex__text text-dim" data-wi-text>
+      Смотрим прогноз на неделю: мыть кузов выгоднее в начале сухих дней — тогда чистота держится
+      дольше.
+    </p>
+    <p class="washindex__hint" data-wi-hint hidden></p>
+    <p class="washindex__actions">
+      <button class="btn btn--primary" type="button" data-open-callback>Записаться</button>
+    </p>
+  </div>
+
+  <div class="washindex__side">
+    <ol class="washindex__days" data-wi-days aria-label="Прогноз по дням">
+      {
+        placeholderDays.map(() => (
+          <li class="washindex__day">
+            <span class="washindex__dayname">—</span>
+            <span class="washindex__icon" />
+            <span class="washindex__temp">—</span>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="washindex__credit">
+      Прогноз:{' '}
+      <a href="https://www.met.no/en" target="_blank" rel="noopener nofollow">MET Norway</a>, CC BY 4.0
+    </p>
+  </div>
+</div>
+
+<script>
+  type Day = { date: string; precip: number; snow: boolean; tmin: number; tmax: number };
+
+  const ICONS = {
+    dry: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>',
+    rain: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 15a4.5 4.5 0 1 1 .9-8.9A5.5 5.5 0 0 1 18.5 8 3.5 3.5 0 0 1 18 15H7z" fill="currentColor" opacity=".55"/><path d="M8.5 17.5 7.5 20M12.5 17.5l-1 2.5M16.5 17.5l-1 2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    snow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5 12 6l2.5-1.5M9.5 19.5 12 18l2.5 1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
+  };
+
+  const DRY_MM = 0.5;
+
+  const box = document.querySelector<HTMLElement>('[data-washindex]');
+  if (box) {
+    const $ = <T extends HTMLElement>(sel: string) => box.querySelector<T>(sel)!;
+    const closed = (box.dataset.closed ?? '').split(',').filter(Boolean).map(Number);
+
+    const minskDate = (d: Date) =>
+      new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Minsk' }).format(d);
+
+    // Дата из прогноза — календарный день Минска; полдень UTC гарантирует,
+    // что при форматировании он не съедет на соседние сутки.
+    const asDate = (iso: string) => new Date(`${iso}T12:00:00Z`);
+    const weekday = (iso: string) => asDate(iso).getUTCDay();
+    const longName = (iso: string) =>
+      new Intl.DateTimeFormat('ru-RU', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(asDate(iso));
+    const shortName = (iso: string, i: number) => {
+      if (i === 0) return 'Сегодня';
+      if (i === 1) return 'Завтра';
+      const s = new Intl.DateTimeFormat('ru-RU', { weekday: 'short', timeZone: 'UTC' }).format(asDate(iso));
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    };
+    const plural = (n: number, [one, few, many]: [string, string, string]) => {
+      const m10 = n % 10;
+      const m100 = n % 100;
+      if (m10 === 1 && m100 !== 11) return one;
+      if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+      return many;
+    };
+
+    function render(days: Day[]) {
+      const dry = (d: Day) => d.precip < DRY_MM;
+      let streak = 0;
+      while (streak < days.length && dry(days[streak])) streak++;
+
+      const score = streak >= 4 ? 10 : streak === 3 ? 8 : streak === 2 ? 6 : streak === 1 ? 4 : 2;
+      const nextWet = days[streak];
+      const wetWord = nextWet?.snow ? 'снег' : 'дождь';
+      const closedToday = closed.includes(weekday(days[0].date));
+
+      let title: string;
+      let text: string;
+      let hintHtml = '';
+
+      if (streak === 0) {
+        const nextDry = days.find(dry);
+        title = 'Сегодня осадки — мыть кузов рано';
+        text = nextDry
+          ? `Ближайший сухой день — ${longName(nextDry.date)}.`
+          : 'Сухих дней в ближайшую неделю не видно — тогда лучше мыть сразу после осадков.';
+        hintHtml = `А химчистке салона погода не мешает — <a href="${box.dataset.linkSalon}">записаться на химчистку</a>.`;
+      } else if (streak >= 3) {
+        title = 'Отличное время для мойки';
+        text =
+          streak >= days.length
+            ? 'Осадков не ждём всю неделю — чистота продержится.'
+            : `Без осадков ${streak} ${plural(streak, ['день', 'дня', 'дней'])} подряд — чистота продержится.`;
+      } else {
+        title = 'Помыть можно, но ненадолго';
+        text = `Сухо ${streak === 1 ? 'сегодня' : 'сегодня и завтра'}, дальше ${wetWord}.`;
+      }
+
+      if (closedToday && streak >= 2) {
+        text += ' Сегодня у нас выходной — ждём завтра.';
+      } else if (closedToday && streak === 1) {
+        title = 'Сухо, но сегодня у нас выходной';
+        text = `Завтра ${wetWord} — лучше приехать после осадков.`;
+      }
+
+      const frosty = days.slice(0, 3).some((d) => d.tmin <= 0 || d.snow);
+      if (frosty && streak > 0) {
+        hintHtml = `На дорогах реагент — не забудьте про <a href="${box.dataset.linkDnishche}">мойку днища</a>.`;
+      }
+
+      $('[data-wi-score]').textContent = String(score);
+      $('[data-wi-title]').textContent = title;
+      $('[data-wi-text]').textContent = text;
+      const hint = $('[data-wi-hint]');
+      if (hintHtml) {
+        // Подставляются только наши строки и наши же ссылки из data-атрибутов.
+        hint.innerHTML = hintHtml;
+        hint.hidden = false;
+      }
+      box.dataset.score = score >= 8 ? 'high' : score >= 4 ? 'mid' : 'low';
+
+      const list = $('[data-wi-days]');
+      list.replaceChildren(
+        ...days.map((d, i) => {
+          const li = document.createElement('li');
+          const kind = dry(d) ? 'dry' : d.snow ? 'snow' : 'rain';
+          li.className = `washindex__day washindex__day--${kind}`;
+          const precip = dry(d)
+            ? ''
+            : `<span class="washindex__precip">${String(d.precip).replace('.', ',')} мм</span>`;
+          li.innerHTML = `
+            <span class="washindex__dayname">${shortName(d.date, i)}</span>
+            <span class="washindex__icon">${ICONS[kind]}</span>
+            <span class="washindex__temp">${d.tmax > 0 ? '+' : ''}${d.tmax}°</span>${precip}`;
+          li.setAttribute(
+            'aria-label',
+            `${shortName(d.date, i)}: ${kind === 'dry' ? 'без осадков' : kind === 'snow' ? 'снег' : 'дождь'}, до ${d.tmax}°`,
+          );
+          return li;
+        }),
+      );
+    }
+
+    async function load() {
+      try {
+        const res = await fetch(box!.dataset.src ?? '', { headers: { Accept: 'application/json' } });
+        if (!res.ok) return;
+        const data = (await res.json()) as { days?: Day[] };
+        const today = minskDate(new Date());
+        // Если источник отвалился и отдан вчерашний кэш — прошедшие дни отбрасываем.
+        const days = (data.days ?? []).filter((d) => d.date >= today).slice(0, 6);
+        if (days.length >= 2) render(days);
+      } catch {
+        /* нет прогноза — остаётся общий совет, карточка не ломается */
+      }
+    }
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            io.disconnect();
+            load();
+          }
+        },
+        // С запасом: прогноз успевает прийти до того, как карточка доедет
+        // до экрана, и подстановка текста не видна как прыжок.
+        { rootMargin: '600px' },
+      );
+      io.observe(box);
+    } else {
+      load();
+    }
+  }
+</script>

@@ -7,6 +7,7 @@ import LeadForm from '../components/LeadForm.astro';
 import Faq from '../components/Faq.astro';
 import ReviewsWidget from '../components/ReviewsWidget.astro';
 import HeroVideo from '../components/HeroVideo.astro';
+import WashIndex from '../components/WashIndex.astro';
 import OpenStatus from '../components/OpenStatus.astro';
 import Icon from '../components/Icon.astro';
 import { site, contacts, scheduleHuman } from '../config/site';
@@ -119,6 +120,12 @@ const faq = [
           <LeadForm variant="full" id="form-hero" flat />
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="section section--tight" aria-labelledby="washindex-title">
+    <div class="wrap">
+      <WashIndex />
     </div>
   </section>
 
