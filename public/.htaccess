@@ -19,8 +19,14 @@ AddDefaultCharset UTF-8
   RewriteRule ^wp-json(/.*)?$     /                            [R=301,L]
   RewriteRule ^xmlrpc\.php$       /                            [R=301,L]
 
-  # Единственный канонический вид адреса: https и без www
+  # Единственный канонический вид адреса: https и без www.
+  # Оба условия проверяем вместе: на хостинге за прокси/балансировщиком
+  # (похоже, так устроен hoster.by) TLS обрывается перед Apache, и %{HTTPS}
+  # всегда "off" даже у настоящих https-запросов — без учёта
+  # X-Forwarded-Proto редирект на https срабатывал бы на каждый запрос
+  # заново и зацикливался (ERR_TOO_MANY_REDIRECTS).
   RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
   RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
 
   RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
