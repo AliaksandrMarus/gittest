@@ -35,26 +35,67 @@ function fail(): void
     exit;
 }
 
-function fetchForecast(): ?array
+/**
+ * GET-запрос двумя способами: на части хостингов выключен allow_url_fopen,
+ * но есть расширение curl, на других — наоборот. Причина неудачи пишется
+ * в $error для страницы самодиагностики (?check=1).
+ */
+function httpGet(string $url, string &$error): ?string
+{
+    $error = '';
+
+    if (ini_get('allow_url_fopen')) {
+        $context = stream_context_create([
+            'http' => ['header' => 'User-Agent: ' . USER_AGENT, 'timeout' => 8],
+        ]);
+        $raw = @file_get_contents($url, false, $context);
+        if ($raw !== false) {
+            return $raw;
+        }
+        $error = 'file_get_contents: ' . (error_get_last()['message'] ?? 'неизвестная ошибка');
+    }
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_USERAGENT => USER_AGENT,
+            CURLOPT_TIMEOUT => 8,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_ENCODING => '',
+        ]);
+        $raw = curl_exec($ch);
+        $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($raw !== false && $code === 200) {
+            return $raw;
+        }
+        $error = trim($error . ' | curl: ' . (curl_error($ch) ?: "HTTP $code"), ' |');
+    }
+
+    if ($error === '') {
+        $error = 'на хостинге выключены и allow_url_fopen, и расширение curl';
+    }
+    return null;
+}
+
+function fetchForecast(string &$error = ''): ?array
 {
     // Переменная окружения — только для локальной проверки на тестовых данных;
     // посетитель сайта её задать не может.
     $fixture = getenv('LIGHTON_WEATHER_FIXTURE');
     if ($fixture) {
         $raw = @file_get_contents($fixture);
+        $raw = $raw === false ? null : $raw;
     } else {
         $url = sprintf(
             'https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=%.2f&lon=%.2f',
             LAT,
             LON
         );
-        $context = stream_context_create([
-            'http' => ['header' => 'User-Agent: ' . USER_AGENT, 'timeout' => 8],
-        ]);
-        $raw = @file_get_contents($url, false, $context);
+        $raw = httpGet($url, $error);
     }
 
-    if ($raw === false) {
+    if ($raw === null) {
         return null;
     }
     $data = json_decode($raw, true);
@@ -109,22 +150,75 @@ function summarize(array $met): array
     return $out;
 }
 
-$cacheFile = sys_get_temp_dir() . '/lighton_weather.json';
-$cacheFresh = is_file($cacheFile) && (time() - (int) filemtime($cacheFile)) < CACHE_TTL;
+/**
+ * Кэш — рядом со скриптом, системный /tmp только запасной вариант: на
+ * хостингах с open_basedir (ISPmanager и подобные) PHP часто запрещено
+ * писать в /tmp. Прогноз не секретный, открытый файл в /api/ не страшен.
+ */
+function cacheFile(): string
+{
+    foreach ([__DIR__, sys_get_temp_dir()] as $dir) {
+        if (@is_writable($dir)) {
+            return $dir . '/lighton_weather.json';
+        }
+    }
+    return '';
+}
 
-if (!$cacheFresh) {
-    $met = fetchForecast();
+$cacheFile = cacheFile();
+$cacheAge = ($cacheFile !== '' && @is_file($cacheFile)) ? time() - (int) filemtime($cacheFile) : null;
+$check = isset($_GET['check']);
+
+// В режиме проверки идём к источнику заново, но не чаще раза в минуту —
+// чтобы ссылку проверки нельзя было использовать для засыпания MET запросами.
+$needFetch = $cacheAge === null || $cacheAge >= CACHE_TTL || ($check && $cacheAge >= 60);
+
+$payload = null;
+$error = '';
+$fetchedOk = false;
+
+if ($needFetch) {
+    $met = fetchForecast($error);
     $days = $met ? summarize($met) : [];
     if ($days) {
-        @file_put_contents($cacheFile, json_encode(['days' => $days]), LOCK_EX);
+        $fetchedOk = true;
+        $payload = json_encode(['days' => $days]);
+        // Не записался кэш — не беда: свежий прогноз всё равно отдаём.
+        if ($cacheFile !== '') {
+            @file_put_contents($cacheFile, $payload, LOCK_EX);
+        }
+    } elseif ($met && $error === '') {
+        $error = 'источник ответил, но данных прогноза в ответе нет';
     }
 }
 
 // Если источник недоступен — лучше вчерашний прогноз, чем пустой виджет.
-$cached = is_file($cacheFile) ? file_get_contents($cacheFile) : false;
-if ($cached === false) {
+if ($payload === null && $cacheAge !== null) {
+    $payload = @file_get_contents($cacheFile) ?: null;
+}
+
+if ($check) {
+    // Самодиагностика: https://lighton.by/api/weather.php?check=1
+    header('Cache-Control: no-store');
+    $days = $payload ? (json_decode($payload, true)['days'] ?? []) : [];
+    echo json_encode([
+        'итог' => $days ? 'Прогноз есть — виджет будет работать' : 'Прогноза нет — виджет покажет общий совет',
+        'запрос к MET Norway' => $needFetch
+            ? ($fetchedOk ? 'успешно' : 'ошибка: ' . $error)
+            : 'не делался — свежий кэш, возраст ' . intdiv((int) $cacheAge, 60) . ' мин',
+        'allow_url_fopen' => (bool) ini_get('allow_url_fopen'),
+        'curl' => function_exists('curl_init'),
+        'кэш' => $cacheFile !== '' ? $cacheFile : 'нет папки, доступной для записи',
+        'PHP' => PHP_VERSION,
+        'дней в прогнозе' => count($days),
+        'сегодня' => $days[0] ?? null,
+    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+if ($payload === null) {
     fail();
 }
 
 header('Cache-Control: public, max-age=1800');
-echo $cached;
+echo $payload;

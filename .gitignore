@@ -12,3 +12,4 @@ public/api/leads.log
 # Промежуточные выгрузки фото — в репозиторий не идут
 src/assets/yandex/
 src/assets/wp/
+public/api/lighton_weather.json
