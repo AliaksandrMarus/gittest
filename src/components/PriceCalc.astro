@@ -1,0 +1,184 @@
+---
+import { getCollection } from 'astro:content';
+import LeadForm from './LeadForm.astro';
+import { formatPrice } from '../lib/format';
+
+/**
+ * Калькулятор стоимости. Цены — те же поля контента, что у карточек и
+ * прайса, второго источника цен не появляется. Тип позиции выводится из
+ * самих полей: price=null — «по осмотру», priceMax — вилка, «от … за деталь»
+ * — количество деталей. Классов автомобиля нет: по контенту цена не зависит
+ * от класса легкового, а для микроавтобусов цен нет — их не выдумываем.
+ */
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+
+const items = services.map((s) => {
+  const note = s.data.priceNote ?? '';
+  const open = note.startsWith('от');
+  return {
+    id: s.id,
+    name: s.data.short,
+    label: formatPrice(s.data),
+    note,
+    duration: s.data.duration,
+    min: s.data.price,
+    max: s.data.priceMax ?? s.data.price,
+    open,
+    perPart: open && note.includes('детал'),
+  };
+});
+
+const itemsJson = JSON.stringify(items).replace(/</g, '\\u003c');
+---
+
+<div class="calc" data-calc>
+  <ul class="calc__list">
+    {
+      items.map((item) => (
+        <li class="calc__row">
+          <label class="calc__check">
+            <input type="checkbox" value={item.id} data-calc-item />
+            <span class="calc__name">
+              {item.name}
+              {item.note && <small>{item.note}</small>}
+            </span>
+          </label>
+          {item.perPart && (
+            <label class="calc__qty">
+              <span class="visually-hidden">Количество деталей: {item.name}</span>
+              <input type="number" min="1" max="10" value="1" inputmode="numeric" data-calc-qty={item.id} disabled />
+              <span aria-hidden="true">дет.</span>
+            </label>
+          )}
+          <span class="calc__price">{item.label}</span>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="calc__side">
+    <div class="calc__summary card" aria-live="polite">
+      <p class="eyebrow" style="margin:0">Ваш расчёт</p>
+      <p class="calc__total" data-calc-total>0 руб.</p>
+      <p class="calc__extra" data-calc-extra hidden></p>
+      <p class="calc__time text-dim" data-calc-time>Отметьте услуги слева — сумма посчитается сразу.</p>
+      <p class="calc__note">
+        Цена одна для легкового автомобиля любого класса — от хэтчбека до внедорожника. Для
+        микроавтобуса или грузового сумму уточним по телефону.
+      </p>
+      <LeadForm variant="calc" service="" id="form-calc" submit="Записаться с этим расчётом" flat />
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="calc-items" set:html={itemsJson} />
+
+<script>
+  type Item = {
+    id: string;
+    name: string;
+    label: string;
+    note: string;
+    duration: string;
+    min: number | null;
+    max: number | null;
+    open: boolean;
+    perPart: boolean;
+  };
+
+  const root = document.querySelector<HTMLElement>('[data-calc]');
+  const dataEl = document.getElementById('calc-items');
+
+  if (root && dataEl) {
+    const items: Item[] = JSON.parse(dataEl.textContent ?? '[]');
+    const byId = new Map(items.map((i) => [i.id, i]));
+    const totalEl = root.querySelector<HTMLElement>('[data-calc-total]')!;
+    const extraEl = root.querySelector<HTMLElement>('[data-calc-extra]')!;
+    const timeEl = root.querySelector<HTMLElement>('[data-calc-time]')!;
+    const form = root.querySelector<HTMLFormElement>('form[data-lead-form]');
+    // На превью без обработчика форм вместо формы — блок с контактами, поля нет.
+    const serviceField = form?.querySelector<HTMLInputElement>('input[name="service"]') ?? null;
+
+    /** Верхняя граница срока в минутах: «1–2 дня» → 2880, «1,5–2 часа» → 120. */
+    function upperMinutes(duration: string): number {
+      const nums = (duration.match(/\d+(?:,\d+)?/g) ?? []).map((n) => parseFloat(n.replace(',', '.')));
+      const n = nums.length ? nums[nums.length - 1] : 0;
+      const unit = /дн|день|дня/.test(duration) ? 1440 : /час/.test(duration) ? 60 : 1;
+      return n * unit;
+    }
+
+    const qtyOf = (id: string) => {
+      const input = root.querySelector<HTMLInputElement>(`[data-calc-qty="${id}"]`);
+      const n = Math.round(Number(input?.value ?? 1));
+      return Math.min(10, Math.max(1, Number.isFinite(n) ? n : 1));
+    };
+
+    function update() {
+      const checked = [...root!.querySelectorAll<HTMLInputElement>('[data-calc-item]:checked')]
+        .map((c) => byId.get(c.value))
+        .filter((i): i is Item => Boolean(i));
+
+      root!.querySelectorAll<HTMLInputElement>('[data-calc-qty]').forEach((q) => {
+        q.disabled = !checked.some((i) => i.id === q.dataset.calcQty);
+      });
+
+      let min = 0;
+      let max = 0;
+      let open = false;
+      const onInspection: Item[] = [];
+      const names: string[] = [];
+
+      for (const item of checked) {
+        if (item.min === null) {
+          onInspection.push(item);
+          continue;
+        }
+        const qty = item.perPart ? qtyOf(item.id) : 1;
+        min += item.min * qty;
+        max += (item.max ?? item.min) * qty;
+        open ||= item.open;
+        names.push(item.perPart ? `${item.name} (${qty} дет.)` : item.name);
+      }
+
+      let total: string;
+      if (!names.length) total = onInspection.length ? 'По осмотру' : '0 руб.';
+      else if (open) total = `от ${min} руб.`;
+      else if (min === max) total = `${min} руб.`;
+      else total = `${min}–${max} руб.`;
+      totalEl.textContent = total;
+
+      const inspection = onInspection.map((i) => i.name.toLowerCase()).join(', ');
+      if (names.length && onInspection.length) {
+        extraEl.textContent = `+ ${inspection} — по осмотру`;
+        extraEl.hidden = false;
+      } else {
+        extraEl.hidden = true;
+      }
+
+      if (!checked.length) {
+        timeEl.textContent = 'Отметьте услуги слева — сумма посчитается сразу.';
+      } else {
+        const longest = checked.reduce((a, b) => (upperMinutes(b.duration) > upperMinutes(a.duration) ? b : a));
+        timeEl.textContent =
+          checked.length === 1
+            ? `Срок — ${longest.duration}. Точный назовём при записи.`
+            : `Самая долгая работа — ${longest.name.toLowerCase()}, ${longest.duration}. Точный срок назовём при записи.`;
+      }
+
+      if (serviceField) {
+        const parts = [...names, ...onInspection.map((i) => `${i.name} (по осмотру)`)];
+        serviceField.value = parts.length ? `${parts.join(', ')} · ${total}` : '';
+      }
+    }
+
+    root.addEventListener('change', update);
+    root.addEventListener('input', (e) => {
+      if ((e.target as HTMLElement).matches('[data-calc-qty]')) update();
+    });
+    // После успешной отправки forms.ts сбрасывает форму — вместе со скрытым
+    // полем; возвращаем в него текущий расчёт.
+    form?.addEventListener('reset', () => setTimeout(update));
+    update();
+  }
+</script>

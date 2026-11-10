@@ -17,15 +17,17 @@ export interface Props {
   title?: string;
   flat?: boolean;
   id?: string;
+  /** Своя подпись кнопки — когда стандартная по варианту не подходит по смыслу. */
+  submit?: string;
 }
 
-const { variant = 'full', service, title, flat = false, id = `form-${variant}` } = Astro.props;
+const { variant = 'full', service, title, flat = false, id = `form-${variant}`, submit } = Astro.props;
 
 const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
 const configured = FORM_ENDPOINT !== '';
 
 const submitLabel =
-  variant === 'callback' ? 'Жду звонка' : variant === 'calc' ? 'Узнать стоимость' : 'Записаться';
+  submit ?? (variant === 'callback' ? 'Жду звонка' : variant === 'calc' ? 'Узнать стоимость' : 'Записаться');
 ---
 
 {

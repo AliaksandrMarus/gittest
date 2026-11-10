@@ -22,9 +22,15 @@ const USER_AGENT = 'lighton.by/1.0 lighton9871010@mail.ru';
 
 header('Content-Type: application/json; charset=utf-8');
 
+/**
+ * Нет прогноза — пустой ответ, но с кодом 200: виджет на пустом списке сам
+ * показывает общий совет, а ошибка 5xx светилась бы в консоли у каждого
+ * посетителя (и снижала оценку Lighthouse), если хостинг запрещает PHP
+ * исходящие запросы.
+ */
 function fail(): void
 {
-    http_response_code(503);
+    header('Cache-Control: no-store');
     echo '{"days":[]}';
     exit;
 }

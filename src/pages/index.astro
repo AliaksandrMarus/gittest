@@ -145,9 +145,13 @@ const faq = [
         {services.map((s) => <ServiceCard entry={s} />)}
       </div>
 
-      <p style="margin-top:var(--sp-6)">
+      <p style="margin-top:var(--sp-6);display:flex;flex-wrap:wrap;gap:.75rem">
         <a class="btn btn--ghost" href={link('/uslugi/')}>
           Полный прайс
+          <Icon name="arrow" size={16} />
+        </a>
+        <a class="btn btn--beam" href={link('/uslugi/#calc')}>
+          Посчитать стоимость
           <Icon name="arrow" size={16} />
         </a>
       </p>

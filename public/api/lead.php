@@ -89,7 +89,7 @@ if ($startedAt > 0 && (microtime(true) * 1000 - $startedAt) < MIN_FILL_MS) {
 
 $name    = $field('name', 60);
 $phone   = $field('phone', 30);
-$service = $field('service', 120);
+$service = $field('service', 300);
 $when    = $field('when', 60);
 $car     = $field('car', 80);
 $comment = $field('comment', 600);

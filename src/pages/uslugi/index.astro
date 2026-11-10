@@ -4,6 +4,7 @@ import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import ServiceCard from '../../components/ServiceCard.astro';
 import PriceTable from '../../components/PriceTable.astro';
+import PriceCalc from '../../components/PriceCalc.astro';
 import LeadForm from '../../components/LeadForm.astro';
 import Icon from '../../components/Icon.astro';
 import { contacts, scheduleHuman } from '../../config/site';
@@ -46,6 +47,17 @@ const crumbs = [{ label: 'Услуги' }];
         <h2 id="price-title">Полный прайс</h2>
       </div>
       <PriceTable />
+    </div>
+  </section>
+
+  <section class="section section--tight reveal" id="calc" aria-labelledby="calc-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Калькулятор</p>
+        <h2 id="calc-title">Посчитайте стоимость</h2>
+        <p>Отметьте нужные услуги — сумма и срок посчитаются сразу, а расчёт уйдёт к нам вместе с заявкой.</p>
+      </div>
+      <PriceCalc />
     </div>
   </section>
 

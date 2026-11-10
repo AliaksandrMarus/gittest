@@ -1107,6 +1107,146 @@
   color: inherit;
 }
 
+/* ─── Калькулятор стоимости ───────────────────────────────────── */
+
+.calc {
+  display: grid;
+  gap: var(--sp-6);
+  align-items: start;
+}
+
+@media (min-width: 62rem) {
+  .calc {
+    grid-template-columns: 1.2fr 1fr;
+  }
+
+  /* Итог всегда перед глазами, пока листаешь список услуг. */
+  .calc__side {
+    position: sticky;
+    top: 6rem;
+  }
+}
+
+.calc__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.calc__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-md);
+  background: rgb(6 8 11 / 0.45);
+  transition: border-color var(--dur) var(--ease);
+}
+
+.calc__row:has(input[data-calc-item]:checked) {
+  border-color: rgb(94 231 255 / 0.45);
+  background: rgb(94 231 255 / 0.06);
+}
+
+.calc__check {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.calc__check input {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+  accent-color: var(--c-beam);
+}
+
+.calc__name {
+  display: grid;
+  font-weight: 600;
+}
+
+.calc__name small {
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--c-text-mute);
+}
+
+.calc__qty {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--fs-xs);
+  color: var(--c-text-dim);
+}
+
+.calc__qty input {
+  width: 3.5rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-sm);
+  background: rgb(6 8 11 / 0.6);
+  color: var(--c-text);
+  font: inherit;
+}
+
+.calc__qty input:disabled {
+  opacity: 0.4;
+}
+
+.calc__qty input:focus {
+  outline: none;
+  border-color: var(--c-beam);
+}
+
+.calc__price {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--c-warm);
+  white-space: nowrap;
+}
+
+.calc__summary {
+  gap: var(--sp-3);
+}
+
+.calc__summary:hover {
+  translate: none;
+}
+
+.calc__total {
+  font-size: var(--fs-3xl);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--c-text);
+}
+
+.calc__extra {
+  font-size: var(--fs-sm);
+  color: var(--c-warm);
+}
+
+.calc__note {
+  font-size: var(--fs-xs);
+  color: var(--c-text-mute);
+}
+
+@media (max-width: 30rem) {
+  .calc__row {
+    flex-wrap: wrap;
+  }
+
+  .calc__price {
+    margin-left: auto;
+  }
+}
+
 /* ─── Чат-бот ─────────────────────────────────────────────────── */
 
 /* Элемент+класс даёт специфичность выше .modal — без этого правила
