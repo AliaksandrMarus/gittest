@@ -85,6 +85,17 @@ export const analytics = {
   ga4: '', // TODO: идентификатор потока GA4
 } as const;
 
+/**
+ * Коды подтверждения прав в панелях поисковиков — только значение content
+ * из выданного мета-тега. Пустая строка — тег не выводится.
+ *  - Яндекс.Вебмастер: <meta name="yandex-verification" content="…">
+ *  - Google Search Console: <meta name="google-site-verification" content="…">
+ */
+export const searchVerification = {
+  yandex: '',
+  google: '',
+} as const;
+
 export const nav = [
   { href: '/', label: 'Главная' },
   { href: '/uslugi/', label: 'Услуги' },

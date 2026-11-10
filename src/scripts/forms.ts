@@ -6,7 +6,7 @@
  * приятнее — это прогрессивное улучшение, а не условие работоспособности.
  */
 
-import { analytics } from '../config/site';
+import { analytics, contacts } from '../config/site';
 
 const OPERATOR_CODES = ['25', '29', '33', '44'];
 const MIN_FILL_MS = 3000;
@@ -66,18 +66,18 @@ function status(form: HTMLFormElement, text: string, state: '' | 'ok' | 'error' 
  * счётчики лежат там под ключами вида counter102469598, и Number() от такого
  * ключа даёт NaN, то есть цель уходит в никуда.
  */
-function reachGoal(goal: string) {
+function reachGoal(goal: string, params?: Record<string, string>) {
   const w = window as unknown as {
-    ym?: (id: number, action: string, target: string) => void;
+    ym?: (id: number, action: string, target: string, params?: Record<string, string>) => void;
     gtag?: (...args: unknown[]) => void;
   };
   try {
     // Заглушка ym появляется сразу и копит вызовы до загрузки tag.js,
     // так что цель не потеряется, даже если кликнули в первую секунду.
     if (analytics.yandexMetrika) {
-      w.ym?.(Number(analytics.yandexMetrika), 'reachGoal', goal);
+      w.ym?.(Number(analytics.yandexMetrika), 'reachGoal', goal, params);
     }
-    w.gtag?.('event', goal);
+    w.gtag?.('event', goal, params);
   } catch {
     /* аналитика не должна мешать отправке заявки */
   }
@@ -162,7 +162,8 @@ function initForm(form: HTMLFormElement) {
       form.reset();
       if (tsField) tsField.value = String(Date.now());
       status(form, 'Заявка принята. Перезвоним в рабочее время — Пн–Сб с 09:00 до 19:00.', 'ok');
-      reachGoal('lead_sent');
+      // Параметр form отличает в отчёте Метрики калькулятор, обратный звонок и запись.
+      reachGoal('lead_sent', { form: form.querySelector<HTMLInputElement>('input[name="variant"]')?.value ?? 'full' });
     } catch {
       status(
         form,
@@ -180,7 +181,14 @@ function initForm(form: HTMLFormElement) {
 
 document.querySelectorAll<HTMLFormElement>('[data-lead-form]').forEach(initForm);
 
-// Клик по телефону — тоже конверсия, её стоит считать.
-document.querySelectorAll<HTMLAnchorElement>('a[href^="tel:"]').forEach((a) => {
-  a.addEventListener('click', () => reachGoal('phone_click'));
+// Звонок и переход в мессенджер — такие же обращения, как заявка. Делегирование
+// на document, а не обработчик на каждую ссылку: ссылки, которые появляются
+// позже (кнопки «Позвонить»/Telegram в ответе чат-бота), тоже засчитываются.
+document.addEventListener('click', (e) => {
+  const a = (e.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null;
+  if (!a) return;
+  const href = a.getAttribute('href') ?? '';
+  if (href.startsWith('tel:')) reachGoal('phone_click');
+  else if (href === contacts.telegram) reachGoal('messenger_click', { messenger: 'telegram' });
+  else if (href === contacts.viber) reachGoal('messenger_click', { messenger: 'viber' });
 });

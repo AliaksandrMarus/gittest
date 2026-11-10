@@ -1,5 +1,5 @@
 ---
-import { site, contacts, analytics } from '../config/site';
+import { site, contacts, analytics, searchVerification } from '../config/site';
 import { openingHoursSchema } from '../lib/schedule';
 import { link, absolute } from '../lib/url';
 import Header from '../components/Header.astro';
@@ -105,6 +105,8 @@ const allSchemas = [business, website, ...schemas];
     <meta name="geo.region" content="BY-MA" />
     <meta name="geo.placename" content="Бобруйск" />
     <meta name="geo.position" content={`${contacts.geo.lat};${contacts.geo.lon}`} />
+    {searchVerification.yandex && <meta name="yandex-verification" content={searchVerification.yandex} />}
+    {searchVerification.google && <meta name="google-site-verification" content={searchVerification.google} />}
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={site.name} />

@@ -11,7 +11,7 @@
     "verify": "node scripts/verify.mjs",
     "audit": "node scripts/audit.mjs",
     "photos": "node scripts/fetch-photos.mjs",
-    "check:metrika": "node --experimental-strip-types scripts/check-metrika.mjs"
+    "check:metrika": "node scripts/check-metrika.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",

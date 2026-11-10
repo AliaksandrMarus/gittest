@@ -9,12 +9,16 @@
  * Запуск: npm run preview, затем node scripts/check-metrika.mjs
  */
 
+import { readFileSync } from 'node:fs';
 import { chromium } from 'playwright';
-import { analytics } from '../src/config/site.ts';
 
 const BASE = process.env.BASE ?? 'http://127.0.0.1:4321';
 const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
-const ID = Number(analytics.yandexMetrika);
+// Номер берём из исходника, а не импортом: site.ts читает import.meta.env,
+// которого нет в чистом Node, и импорт падал бы ещё до проверки.
+const ID = Number(
+  readFileSync(new URL('../src/config/site.ts', import.meta.url), 'utf8').match(/yandexMetrika:\s*'(\d+)'/)?.[1],
+);
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: 'ru-BY' });
@@ -85,6 +89,32 @@ check(
   Boolean(leadGoal) && leadGoal[0] === ID,
   'цель lead_sent ушла с верным номером счётчика',
   `цель lead_sent не зарегистрирована: ${JSON.stringify(leadGoal)}`,
+);
+check(
+  leadGoal?.[3]?.form === 'full',
+  'у lead_sent есть параметр формы (form: full)',
+  `у lead_sent нет параметра формы: ${JSON.stringify(leadGoal)}`,
+);
+
+// ─── Цель на переходе в мессенджер ────────────────────────────────────────
+// Ссылку не открываем: отменяем переход, цель должна уйти до него.
+await page.evaluate(() =>
+  document.addEventListener('click', (e) => {
+    if (e.target.closest?.('a[target="_blank"]')) e.preventDefault();
+  }),
+);
+await page.locator('[data-quickcall] a[data-goal="telegram"]').dispatchEvent('click');
+await page.locator('[data-quickcall] a[data-goal="viber"]').dispatchEvent('click');
+await page.waitForTimeout(300);
+
+const afterMessenger = await queue();
+const messengers = afterMessenger
+  ?.filter((a) => a[1] === 'reachGoal' && a[2] === 'messenger_click')
+  .map((a) => a[3]?.messenger);
+check(
+  messengers?.includes('telegram') && messengers?.includes('viber'),
+  'цель messenger_click ушла для Telegram и Viber',
+  `цель messenger_click не зарегистрирована: ${JSON.stringify(messengers)}`,
 );
 
 // ─── Цель на клике по телефону ────────────────────────────────────────────
